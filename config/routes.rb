@@ -3,6 +3,7 @@ Rails.application.routes.draw do
 
   resources :projects
   resources :contributors
+  resources :contributor_types
 
   root "projects#index"
 end

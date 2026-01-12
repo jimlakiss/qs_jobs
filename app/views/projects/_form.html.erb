@@ -29,28 +29,6 @@
 
   <hr>
 
-  <h4>Contributors</h4>
-
-<% ProjectContributor::ROLES.each do |role| %>
-  <div class="mb-3">
-    <label class="form-label"><%= role.humanize %></label>
-
-    <% options = (@contributors_by_type[role] || []) + (@contributors_by_type["other"] || []) %>
-
-    <%= select_tag(
-      "contributors[#{role}]",
-      options_from_collection_for_select(
-        options,
-        :id,
-        :company_name,
-        @project.project_contributors.find { |pc| pc.role == role }&.contributor_id
-      ),
-      include_blank: true,
-      class: "form-select"
-    ) %>
-  </div>
-<% end %>
-
   <%= f.submit class: "btn btn-primary mt-3" %>
 
 <% end %>

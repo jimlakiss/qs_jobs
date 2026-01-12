@@ -1,0 +1,11 @@
+<%= form_with model: @contributor_type do |f| %>
+  <div class="mb-3">
+    <%= f.label :name, "Type name" %>
+    <%= f.text_field :name, class: "form-control" %>
+  </div>
+
+  <%= f.submit class: "btn btn-primary" %>
+  <%= link_to "Cancel",
+        contributor_types_path,
+        class: "btn btn-outline-secondary ms-2" %>
+<% end %>

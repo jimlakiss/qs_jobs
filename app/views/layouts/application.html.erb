@@ -48,37 +48,35 @@
               <%= link_to "Contributors", contributors_path, class: "nav-link" %>
             </li>
 
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle"
-                href="#"
-                role="button"
-                data-bs-toggle="dropdown">
-                Contributors by Type
-              </a>
+              <li class="nav-item">
+                <%= link_to "Contributor Types",
+                  contributor_types_path,
+                  class: "nav-link" %>
+              </li>
 
               <ul class="dropdown-menu">
-                <% Contributor::TYPES.each do |type| %>
-                  <li>
-                    <%= link_to type.humanize,
-                          contributors_path(contributor_type: type),
-                          class: "dropdown-item" %>
-                  </li>
-                <% end %>
-              </ul>
+              <% ContributorType.order(:name).each do |type| %>
+              <li>
+              <%= link_to type.name.humanize,
+              contributors_path(contributor_type: type.id),
+              class: "dropdown-item" %>
+            </li>
+            <% end %>
+</ul>
             </li>
 
           </ul>
 
-          <span class="navbar-text me-3">
-            <%= current_user.email %>
-          </span>
+            <% if user_signed_in? %>
+              <span class="navbar-text me-3">
+              <%= current_user.email %>
+              </span>
 
-          <%= button_to "Logout",
-                destroy_user_session_path,
-                method: :delete,
-                class: "btn btn-outline-secondary btn-sm" %>
-        </div>
-      </div>
+            <%= button_to "Logout",
+            destroy_user_session_path,
+            method: :delete,
+            class: "btn btn-outline-secondary btn-sm" %>
+      <% end %>
 </nav>
     
     <%= yield %>

@@ -1,0 +1,2 @@
+module ContributorTypesHelper
+end

@@ -1,11 +1,13 @@
 <%= form_with model: @contributor do |f| %>
  
   <div class="mb-3">
-    <%= f.label :contributor_type, "Contributor Type" %>
-    <%= f.select :contributor_type,
-          Contributor::TYPES.map { |t| [t.humanize, t] },
-          include_blank: true,
-          class: "form-select" %>
+  <%= f.label :contributor_type_id, "Contributor Type" %>
+  <%= f.collection_select :contributor_type_id,
+        ContributorType.order(:name),
+        :id, :name,
+        include_blank: true,
+        class: "form-select" %>
+</div>
   </div>
  
   <div class="mb-3">

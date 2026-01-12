@@ -10,14 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_12_032933) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_12_040623) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "contributor_types", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name"
+    t.datetime "updated_at", null: false
+  end
 
   create_table "contributors", force: :cascade do |t|
     t.text "address"
     t.string "company_name"
     t.string "contributor_type"
+    t.bigint "contributor_type_id"
     t.datetime "created_at", null: false
     t.string "email"
     t.string "key_contact"
@@ -25,6 +32,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_12_032933) do
     t.string "phone_number"
     t.datetime "updated_at", null: false
     t.string "url"
+    t.index ["contributor_type_id"], name: "index_contributors_on_contributor_type_id"
   end
 
   create_table "project_contributors", force: :cascade do |t|
@@ -60,6 +68,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_12_032933) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "contributors", "contributor_types"
   add_foreign_key "project_contributors", "contributors"
   add_foreign_key "project_contributors", "projects"
 end

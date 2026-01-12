@@ -1,0 +1,30 @@
+<h1>Contributor Types</h1>
+
+<%= link_to "New Contributor Type",
+      new_contributor_type_path,
+      class: "btn btn-primary mb-3" %>
+
+<table class="table table-hover">
+  <thead class="table-light">
+    <tr>
+      <th>Name</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @contributor_types.each do |type| %>
+      <tr>
+        <td><%= type.name.humanize %></td>
+        <td class="text-end">
+          <%= link_to "Edit", edit_contributor_type_path(type),
+                class: "btn btn-sm btn-outline-secondary" %>
+          <%= button_to "Delete",
+                contributor_type_path(type),
+                method: :delete,
+                data: { confirm: "Are you sure?" },
+                class: "btn btn-sm btn-outline-danger ms-2" %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
