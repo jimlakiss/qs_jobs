@@ -1,0 +1,27 @@
+<h1 class="mb-4">Contributors</h1>
+
+<%= link_to "New Contributor", new_contributor_path, class: "btn btn-primary mb-3" %>
+
+<table class="table table-hover">
+  <thead class="table-light">
+    <tr>
+      <th>Company</th>
+      <th>Key Contact</th>
+      <th>Email</th>
+      <th>Phone</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @contributors.each do |contributor| %>
+      <tr>
+        <td>
+          <%= link_to contributor.company_name, contributor_path(contributor) %>
+        </td>
+        <td><%= contributor.key_contact %></td>
+        <td><%= contributor.email %></td>
+        <td><%= contributor.phone_number %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

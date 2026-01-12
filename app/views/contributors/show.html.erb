@@ -1,0 +1,24 @@
+<h1><%= @contributor.company_name %></h1>
+
+<dl class="row">
+  <dt class="col-sm-3">Key Contact</dt>
+  <dd class="col-sm-9"><%= @contributor.key_contact %></dd>
+
+  <dt class="col-sm-3">Address</dt>
+  <dd class="col-sm-9"><%= @contributor.address %></dd>
+
+  <dt class="col-sm-3">Phone</dt>
+  <dd class="col-sm-9"><%= @contributor.phone_number %></dd>
+
+  <dt class="col-sm-3">Email</dt>
+  <dd class="col-sm-9"><%= @contributor.email %></dd>
+
+  <dt class="col-sm-3">Website</dt>
+  <dd class="col-sm-9"><%= @contributor.url %></dd>
+
+  <dt class="col-sm-3">Notes</dt>
+  <dd class="col-sm-9"><%= @contributor.notes %></dd>
+</dl>
+
+<%= link_to "Edit", edit_contributor_path(@contributor), class: "btn btn-secondary" %>
+<%= link_to "Back", contributors_path, class: "btn btn-link" %>

@@ -1,0 +1,38 @@
+<%= form_with model: @contributor do |f| %>
+  <div class="mb-3">
+    <%= f.label :company_name %>
+    <%= f.text_field :company_name, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :key_contact %>
+    <%= f.text_field :key_contact, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :address %>
+    <%= f.text_area :address, class: "form-control", rows: 2 %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :phone_number %>
+    <%= f.text_field :phone_number, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :email %>
+    <%= f.email_field :email, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :url %>
+    <%= f.url_field :url, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :notes %>
+    <%= f.text_area :notes, class: "form-control", rows: 3 %>
+  </div>
+
+  <%= f.submit class: "btn btn-primary" %>
+<% end %>
