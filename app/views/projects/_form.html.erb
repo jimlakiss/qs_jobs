@@ -30,23 +30,23 @@
   <hr>
 
     <hr>
-    <h4>Contributors</h4>
-      <% ContributorType.order(:name).each do |type| %>
-        <div class="mb-3">
-          <label class="form-label"><%= type.name %></label>
+<h4>Contributors</h4>
 
-          <%= select_tag(
-            "contributors[#{type.id}]",
-            options_from_collection_for_select(
-              @contributors_by_type[type.name] || [],
-              :id,
-              :company_name
-            ),
-            include_blank: true,
-            class: "form-select contributor-select"
-          ) %>
-        </div>
-    <% end %>
+<% @contributor_types.each do |type| %>
+  <div class="mb-3">
+    <label class="form-label"><%= type.name %></label>
+
+    <% options = @contributors_by_type[type.id] || [] %>
+    <% selected = @project.project_contributors.find { |pc| pc.role == type.name }&.contributor_id %>
+
+    <%= select_tag(
+      "contributors[#{type.id}]",
+      options_from_collection_for_select(options, :id, :company_name, selected),
+      include_blank: true,
+      class: "form-select"
+    ) %>
+  </div>
+<% end %>
 
   <%= f.submit class: "btn btn-primary mt-3" %>
 
