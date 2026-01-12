@@ -1,0 +1,34 @@
+<h1 class="mb-4">
+  Project <%= @project.code %>
+</h1>
+
+<dl class="row">
+  <dt class="col-sm-3">Date</dt>
+  <dd class="col-sm-9"><%= @project.date %></dd>
+
+  <dt class="col-sm-3">Address</dt>
+  <dd class="col-sm-9"><%= @project.address %></dd>
+
+  <dt class="col-sm-3">Description</dt>
+  <dd class="col-sm-9"><%= @project.description %></dd>
+
+  <dt class="col-sm-3">Job Value</dt>
+  <dd class="col-sm-9">
+    <%= number_to_currency(@project.job_value) if @project.job_value %>
+  </dd>
+</dl>
+
+<hr>
+
+<h4>Contributors</h4>
+
+<ul>
+  <% @project.project_contributors.each do |pc| %>
+    <li>
+      <strong><%= pc.role.humanize %>:</strong>
+      <%= pc.contributor.company_name %>
+    </li>
+  <% end %>
+</ul>
+
+<%= link_to "Back to projects", projects_path, class: "btn btn-secondary mt-3" %>

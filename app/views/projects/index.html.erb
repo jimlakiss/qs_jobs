@@ -1,0 +1,33 @@
+<h1 class="mb-4">Projects</h1>
+
+<table class="table table-hover align-middle">
+  <thead class="table-light">
+    <tr>
+      <th>Code</th>
+      <th>Date</th>
+      <th>Address</th>
+      <th>Description</th>
+      <th class="text-end">Job Value</th>
+      <th>Owner</th>
+      <th>Builder</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @projects.each do |project| %>
+      <tr>
+        <td>
+          <%= link_to project.code, project_path(project), class: "text-decoration-none" %>
+        </td>
+        <td><%= project.date %></td>
+        <td><%= project.address %></td>
+        <td><%= project.description %></td>
+        <td class="text-end">
+          <%= number_to_currency(project.job_value) if project.job_value %>
+        </td>
+        <td><%= contributor_for(project, "owner") %></td>
+        <td><%= contributor_for(project, "builder") %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
