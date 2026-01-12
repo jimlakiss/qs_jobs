@@ -14,8 +14,35 @@
 
   <dt class="col-sm-3">Job Value</dt>
   <dd class="col-sm-9">
-    <%= number_to_currency(@project.job_value) if @project.job_value %>
+    <%= number_to_currency(@project.job_value) if @project.job_value %></dd>
+
+  <dt class="col-sm-3">Owner</dt>
+  <dd class="col-sm-9">
+    <%= @project
+          .project_contributors
+          .find { |pc| pc.role == "Owner" }
+          &.contributor
+          &.company_name || "—" %>
   </dd>
+
+    <hr>
+<h4>Contributors</h4>
+
+<% if @project.project_contributors.any? %>
+  <ul class="list-unstyled">
+    <% @project.project_contributors.each do |pc| %>
+      <li>
+        <strong><%= pc.role %>:</strong>
+        <%= pc.contributor.company_name %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>— No contributors assigned —</p>
+<% end %>
+
+
+
 </dl>
 
 <hr>

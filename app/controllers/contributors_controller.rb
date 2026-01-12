@@ -55,8 +55,8 @@ class ContributorsController < ApplicationController
 
   def contributor_params
     params.require(:contributor).permit(
-      :contributor_type,  
       :company_name,
+      :contributor_type_id,
       :key_contact,
       :address,
       :phone_number,

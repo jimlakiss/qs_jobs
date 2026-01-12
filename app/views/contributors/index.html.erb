@@ -28,7 +28,7 @@
         <td><%= contributor.key_contact %></td>
         <td><%= contributor.email %></td>
         <td><%= contributor.phone_number %></td>
-        <td><%= contributor.contributor_type %></td>
+        <td><%= contributor.contributor_type&.name || "—" %></td>
       </tr>
     <% end %>
   </tbody>

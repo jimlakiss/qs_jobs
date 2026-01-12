@@ -11,7 +11,6 @@
       <th>Description</th>
       <th class="text-end">Job Value</th>
       <th>Owner</th>
-      <th>Builder</th>
     </tr>
   </thead>
 
@@ -27,8 +26,14 @@
         <td class="text-end">
           <%= number_to_currency(project.job_value) if project.job_value %>
         </td>
-        <td><%= contributor_for(project, "owner") %></td>
-        <td><%= contributor_for(project, "builder") %></td>
+        <td>
+        <%= project
+            .project_contributors
+            .find { |pc| pc.role.to_s.casecmp("Owner").zero? }
+            &.contributor
+            &.company_name || "—" %>
+        </td>
+        
       </tr>
     <% end %>
   </tbody>
