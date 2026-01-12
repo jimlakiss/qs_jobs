@@ -1,6 +1,12 @@
 class ContributorsController < ApplicationController
   def index
-    @contributors = Contributor.order(:company_name)
+  @contributors =
+    if params[:contributor_type].present?
+      Contributor.where(contributor_type: params[:contributor_type])
+                 .order(:company_name)
+    else
+      Contributor.order(:company_name)
+    end
   end
 
   def show

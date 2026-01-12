@@ -12,6 +12,8 @@ class ProjectContributor < ApplicationRecord
     "electrical_engineer",
     "energy_efficiency_consultant",
     "tree_arborist_consultant",
+    "acoustic_engineer",
+    "quantity_Surveyor",
     "other"
   ].freeze
 

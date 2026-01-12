@@ -1,4 +1,10 @@
-<h1 class="mb-4">Contributors</h1>
+
+<h1 class="mb-4">
+  Contributors
+  <% if params[:contributor_type].present? %>
+    – <%= params[:contributor_type].humanize %>
+  <% end %>
+</h1>
 
 <%= link_to "New Contributor", new_contributor_path, class: "btn btn-primary mb-3" %>
 

@@ -58,9 +58,14 @@ class ProjectsController < ApplicationController
     )
   end
 
-  def load_contributors
-    @contributors = Contributor.order(:company_name)
+ def load_contributors
+  @contributors_by_type = Hash.new { |h, k| h[k] = [] }
+
+  Contributor.order(:company_name).each do |c|
+    key = c.contributor_type.presence || "other"
+    @contributors_by_type[key] << c
   end
+end
 
   def assign_contributors
     return unless params[:contributors]
