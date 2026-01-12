@@ -32,6 +32,55 @@
     <% end %>
 
   <body>
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom mb-4">
+      <div class="container-fluid">
+        <%= link_to "QS Jobs", root_path, class: "navbar-brand" %>
+
+        <div class="collapse navbar-collapse">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+            <li class="nav-item">
+              <%= link_to "Projects", projects_path, class: "nav-link" %>
+            </li>
+
+            <li class="nav-item">
+              <%= link_to "Contributors", contributors_path, class: "nav-link" %>
+            </li>
+
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown">
+                Contributors by Type
+              </a>
+
+              <ul class="dropdown-menu">
+                <% Contributor::TYPES.each do |type| %>
+                  <li>
+                    <%= link_to type.humanize,
+                          contributors_path(contributor_type: type),
+                          class: "dropdown-item" %>
+                  </li>
+                <% end %>
+              </ul>
+            </li>
+
+          </ul>
+
+          <span class="navbar-text me-3">
+            <%= current_user.email %>
+          </span>
+
+          <%= button_to "Logout",
+                destroy_user_session_path,
+                method: :delete,
+                class: "btn btn-outline-secondary btn-sm" %>
+        </div>
+      </div>
+</nav>
+    
     <%= yield %>
   </body>
 </html>

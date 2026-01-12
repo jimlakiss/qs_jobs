@@ -35,10 +35,21 @@ class ContributorsController < ApplicationController
     end
   end
 
+  def destroy
+    @contributor = Contributor.find(params[:id])
+
+    if @contributor.destroy
+      redirect_to contributors_path, notice: "Contributor deleted"
+    else
+      redirect_to @contributor, alert: "Cannot delete contributor in use"
+    end
+  end
+
   private
 
   def contributor_params
     params.require(:contributor).permit(
+      :contributor_type,  
       :company_name,
       :key_contact,
       :address,

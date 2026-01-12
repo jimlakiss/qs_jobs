@@ -22,3 +22,9 @@
 
 <%= link_to "Edit", edit_contributor_path(@contributor), class: "btn btn-secondary" %>
 <%= link_to "Back", contributors_path, class: "btn btn-link" %>
+
+<%= button_to "Delete",
+      contributor_path(@contributor),
+      method: :delete,
+      data: { confirm: "Are you sure?" },
+      class: "btn btn-danger mt-3" %>

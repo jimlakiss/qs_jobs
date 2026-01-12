@@ -1,0 +1,54 @@
+<%= form_with model: @project do |f| %>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <%= f.label :code %>
+      <%= f.text_field :code, class: "form-control" %>
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <%= f.label :date %>
+      <%= f.date_field :date, class: "form-control" %>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :address %>
+    <%= f.text_area :address, class: "form-control", rows: 2 %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :description %>
+    <%= f.text_area :description, class: "form-control", rows: 3 %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :job_value %>
+    <%= f.number_field :job_value, class: "form-control", step: 0.01 %>
+  </div>
+
+  <hr>
+
+  <h4>Contributors</h4>
+
+  <% ProjectContributor::ROLES.each do |role| %>
+    <div class="mb-3">
+      <label class="form-label"><%= role.humanize %></label>
+
+      <%= select_tag(
+        "contributors[#{role}]",
+        options_from_collection_for_select(
+          @contributors,
+          :id,
+          :company_name,
+          @project.project_contributors.find { |pc| pc.role == role }&.contributor_id
+        ),
+        include_blank: true,
+        class: "form-select"
+      ) %>
+    </div>
+  <% end %>
+
+  <%= f.submit class: "btn btn-primary mt-3" %>
+
+<% end %>
