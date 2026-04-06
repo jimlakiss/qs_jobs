@@ -1,0 +1,64 @@
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note">Danger zone</span>
+      <h1 class="page-title">Delete <%= @contributor.company_name %>?</h1>
+      <p class="page-subtitle">This contributor may be linked to project history. Review before removing it.</p>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-body">
+      <div class="alert alert-warning mb-4" role="alert">
+        This is a second confirmation step to help avoid accidental deletion.
+      </div>
+
+      <dl class="row detail-grid mb-0">
+        <dt class="col-md-3">Contributor</dt>
+        <dd class="col-md-9"><%= @contributor.company_name %></dd>
+
+        <dt class="col-md-3">Type</dt>
+        <dd class="col-md-9"><%= @contributor.contributor_type&.name || "—" %></dd>
+
+        <dt class="col-md-3">Associated Projects</dt>
+        <dd class="col-md-9"><%= @associated_projects.size %></dd>
+      </dl>
+    </div>
+  </div>
+
+  <% if @associated_projects.any? %>
+    <div class="app-card">
+      <div class="app-card-body">
+        <h2 class="h5 mb-3">This contributor is currently linked to:</h2>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Code</th>
+                <th>Date</th>
+                <th>Address</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @associated_projects.each do |project| %>
+                <tr>
+                  <td><%= link_to project.code, project_path(project), class: "fw-semibold text-decoration-none" %></td>
+                  <td><%= project.date&.strftime("%d %b %Y") || "—" %></td>
+                  <td><%= project.address.presence || "—" %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="stack-actions">
+    <%= button_to "Yes, delete this contributor",
+          contributor_path(@contributor),
+          method: :delete,
+          class: "btn btn-danger" %>
+    <%= link_to "Cancel", contributor_path(@contributor), class: "btn btn-outline-secondary" %>
+  </div>
+</section>

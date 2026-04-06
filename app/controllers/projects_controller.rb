@@ -1,5 +1,5 @@
 class ProjectsController < ApplicationController
-  before_action :set_project, only: [:show, :edit, :update, :destroy]
+  before_action :set_project, only: [:show, :edit, :update, :destroy, :confirm_destroy]
   before_action :load_contributors, only: [:new, :edit]
 
   def index
@@ -47,6 +47,10 @@ class ProjectsController < ApplicationController
   end
 
   def edit; end
+
+  def confirm_destroy
+    @assigned_contributors = @project.project_contributors.includes(:contributor)
+  end
 
   def update
     if @project.update(project_params)

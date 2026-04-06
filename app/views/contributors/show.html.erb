@@ -97,10 +97,8 @@
   </div>
 
   <div class="stack-actions">
-    <%= button_to "Delete",
-          contributor_path(@contributor),
-          method: :delete,
-          data: { confirm: "Are you sure?" },
+    <%= link_to "Review Delete",
+          confirm_destroy_contributor_path(@contributor),
           class: "btn btn-danger" %>
   </div>
 </section>

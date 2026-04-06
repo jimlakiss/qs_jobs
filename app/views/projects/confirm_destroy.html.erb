@@ -1,0 +1,36 @@
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note">Danger zone</span>
+      <h1 class="page-title">Delete <%= @project.code.presence || "Project" %>?</h1>
+      <p class="page-subtitle">This is permanent. The project record and its contributor links will be removed.</p>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-body">
+      <div class="alert alert-danger mb-4" role="alert">
+        This cannot be undone. Please review the project details below before deleting.
+      </div>
+
+      <dl class="row detail-grid mb-0">
+        <dt class="col-md-3">Project</dt>
+        <dd class="col-md-9"><%= @project.code.presence || "—" %></dd>
+
+        <dt class="col-md-3">Address</dt>
+        <dd class="col-md-9"><%= @project.address.presence || "—" %></dd>
+
+        <dt class="col-md-3">Assigned Contributors</dt>
+        <dd class="col-md-9"><%= @assigned_contributors.size %></dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="stack-actions">
+    <%= button_to "Yes, delete this project",
+          project_path(@project),
+          method: :delete,
+          class: "btn btn-danger" %>
+    <%= link_to "Cancel", project_path(@project), class: "btn btn-outline-secondary" %>
+  </div>
+</section>

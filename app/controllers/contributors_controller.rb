@@ -1,4 +1,6 @@
 class ContributorsController < ApplicationController
+  before_action :set_contributor, only: [:show, :edit, :update, :destroy, :confirm_destroy]
+
   def index
     @query = params[:q].to_s.strip
     @contributors =
@@ -19,7 +21,6 @@ class ContributorsController < ApplicationController
   end
 
   def show
-    @contributor = Contributor.includes(projects: :project_contributors).find(params[:id])
     @associated_projects = @contributor.projects.distinct.order(date: :desc, code: :asc)
     @associated_job_value = @associated_projects.sum(:job_value)
     @associated_fee_value = @associated_projects.sum(:fee_value)
@@ -39,13 +40,13 @@ class ContributorsController < ApplicationController
     end
   end
 
-  def edit
-    @contributor = Contributor.find(params[:id])
+  def edit; end
+
+  def confirm_destroy
+    @associated_projects = @contributor.projects.distinct.order(date: :desc, code: :asc)
   end
 
   def update
-    @contributor = Contributor.find(params[:id])
-
     if @contributor.update(contributor_params)
       redirect_to @contributor, notice: "Contributor updated"
     else
@@ -54,8 +55,6 @@ class ContributorsController < ApplicationController
   end
 
   def destroy
-    @contributor = Contributor.find(params[:id])
-
     if @contributor.destroy
       redirect_to contributors_path, notice: "Contributor deleted"
     else
@@ -64,6 +63,10 @@ class ContributorsController < ApplicationController
   end
 
   private
+
+  def set_contributor
+    @contributor = Contributor.includes(projects: :project_contributors).find(params[:id])
+  end
 
   def contributor_params
     params.require(:contributor).permit(

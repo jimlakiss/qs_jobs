@@ -1,4 +1,6 @@
 class ContributorTypesController < ApplicationController
+  before_action :set_contributor_type, only: [:show, :edit, :update, :destroy, :confirm_destroy]
+
   def index
     @query = params[:q].to_s.strip
     @contributor_types = ContributorType.all
@@ -7,7 +9,6 @@ class ContributorTypesController < ApplicationController
   end
 
   def show
-    @contributor_type = ContributorType.includes(:contributors).find(params[:id])
     @contributors = @contributor_type.contributors.order(:company_name)
   end
 
@@ -25,12 +26,13 @@ class ContributorTypesController < ApplicationController
     end
   end
 
-  def edit
-    @contributor_type = ContributorType.find(params[:id])
+  def edit; end
+
+  def confirm_destroy
+    @contributors = @contributor_type.contributors.order(:company_name)
   end
 
   def update
-    @contributor_type = ContributorType.find(params[:id])
     previous_name = @contributor_type.name
 
     if @contributor_type.update(contributor_type_params)
@@ -45,8 +47,6 @@ class ContributorTypesController < ApplicationController
   end
 
   def destroy
-    @contributor_type = ContributorType.find(params[:id])
-
     if @contributor_type.destroy
       redirect_to contributor_types_path, notice: "Contributor type deleted"
     else
@@ -56,6 +56,10 @@ class ContributorTypesController < ApplicationController
   end
 
   private
+
+  def set_contributor_type
+    @contributor_type = ContributorType.includes(:contributors).find(params[:id])
+  end
 
   def contributor_type_params
     params.require(:contributor_type).permit(:name)

@@ -39,11 +39,9 @@
               <td class="fw-semibold"><%= link_to type.name.humanize, contributor_type_path(type), class: "text-decoration-none" %></td>
               <td class="text-end">
                 <%= link_to "Edit", edit_contributor_type_path(type), class: "btn btn-sm btn-outline-secondary" %>
-                <%= button_to "Delete",
-                      contributor_type_path(type),
-                      method: :delete,
-                      data: { confirm: "Are you sure?" },
-                      class: "btn btn-sm btn-outline-danger ms-2 d-inline-block" %>
+                <%= link_to "Review Delete",
+                      confirm_destroy_contributor_type_path(type),
+                      class: "btn btn-sm btn-outline-danger ms-2" %>
               </td>
             </tr>
           <% end %>
