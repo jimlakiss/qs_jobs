@@ -15,7 +15,7 @@ class ContributorsController < ApplicationController
       )
     end
 
-    @contributors = @contributors.order(:company_name)
+    @contributors = @contributors.includes(:contributor_type, :projects).order(:company_name)
   end
 
   def show

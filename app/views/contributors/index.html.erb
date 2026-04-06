@@ -40,6 +40,7 @@
           <thead class="table-light">
             <tr>
               <th>Company</th>
+              <th class="text-center">Projects</th>
               <th>Key Contact</th>
               <th>Email</th>
               <th>Phone</th>
@@ -51,6 +52,7 @@
             <% @contributors.each do |contributor| %>
               <tr>
                 <td><%= link_to contributor.company_name, contributor_path(contributor), class: "fw-semibold text-decoration-none" %></td>
+                <td class="text-center"><%= contributor.projects.size %></td>
                 <td><%= contributor.key_contact.presence || "—" %></td>
                 <td><%= contributor.email.presence || "—" %></td>
                 <td><%= contributor.phone_number.presence || "—" %></td>
