@@ -31,8 +31,13 @@ class ContributorTypesController < ApplicationController
 
   def update
     @contributor_type = ContributorType.find(params[:id])
+    previous_name = @contributor_type.name
 
     if @contributor_type.update(contributor_type_params)
+      if previous_name != @contributor_type.name
+        ProjectContributor.where(role: previous_name).update_all(role: @contributor_type.name)
+      end
+
       redirect_to contributor_types_path, notice: "Contributor type updated"
     else
       render :edit, status: :unprocessable_entity
