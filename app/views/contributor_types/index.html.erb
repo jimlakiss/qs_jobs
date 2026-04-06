@@ -1,30 +1,60 @@
-<h1>Contributor Types</h1>
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note">Setup</span>
+      <h1 class="page-title">Contributor Types</h1>
+      <p class="page-subtitle">These types drive the dropdowns used when assigning contributors to projects.</p>
+    </div>
 
-<%= link_to "New Contributor Type",
-      new_contributor_type_path,
-      class: "btn btn-primary mb-3" %>
+    <%= link_to "New Contributor Type", new_contributor_type_path, class: "btn btn-primary" %>
+  </div>
 
-<table class="table table-hover">
-  <thead class="table-light">
-    <tr>
-      <th>Name</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @contributor_types.each do |type| %>
-      <tr>
-        <td><%= type.name.humanize %></td>
-        <td class="text-end">
-          <%= link_to "Edit", edit_contributor_type_path(type),
-                class: "btn btn-sm btn-outline-secondary" %>
-          <%= button_to "Delete",
-                contributor_type_path(type),
-                method: :delete,
-                data: { confirm: "Are you sure?" },
-                class: "btn btn-sm btn-outline-danger ms-2" %>
-        </td>
-      </tr>
+  <div class="app-card">
+    <div class="app-card-body">
+      <%= form_with url: contributor_types_path, method: :get, local: true, class: "search-shell" do %>
+        <div>
+          <label for="contributor-type-search" class="form-label">Search contributor types</label>
+          <%= text_field_tag :q, @query, id: "contributor-type-search", class: "form-control", placeholder: "Search by type name" %>
+        </div>
+        <%= submit_tag "Search", class: "btn btn-primary" %>
+        <% if @query.present? %>
+          <%= link_to "Clear", contributor_types_path, class: "btn btn-outline-secondary" %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="app-card table-shell">
+    <% if @contributor_types.any? %>
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Name</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @contributor_types.each do |type| %>
+            <tr>
+              <td class="fw-semibold"><%= link_to type.name.humanize, contributor_type_path(type), class: "text-decoration-none" %></td>
+              <td class="text-end">
+                <%= link_to "Edit", edit_contributor_type_path(type), class: "btn btn-sm btn-outline-secondary" %>
+                <%= button_to "Delete",
+                      contributor_type_path(type),
+                      method: :delete,
+                      data: { confirm: "Are you sure?" },
+                      class: "btn btn-sm btn-outline-danger ms-2 d-inline-block" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <div class="empty-state">
+        <h2 class="h4 mb-2">No contributor types yet</h2>
+        <p class="mb-3">Add the roles your office actually uses so projects can be assigned properly.</p>
+        <%= link_to "Create a type", new_contributor_type_path, class: "btn btn-primary" %>
+      </div>
     <% end %>
-  </tbody>
-</table>
+  </div>
+</section>

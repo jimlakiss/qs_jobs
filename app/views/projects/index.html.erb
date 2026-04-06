@@ -1,40 +1,136 @@
-<h1 class="mb-4">Projects</h1>
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note">Project register</span>
+      <h1 class="page-title">Projects</h1>
+      <p class="page-subtitle">Track jobs, key details, and the people attached to each project in one place.</p>
+    </div>
 
-<%= link_to "New Project", new_project_path, class: "btn btn-primary mb-3" %>
+    <%= link_to "New Project", new_project_path, class: "btn btn-primary" %>
+  </div>
 
-<table class="table table-hover align-middle">
-  <thead class="table-light">
-    <tr>
-      <th>Code</th>
-      <th>Date</th>
-      <th>Address</th>
-      <th>Description</th>
-      <th class="text-end">Job Value</th>
-      <th>Owner</th>
-    </tr>
-  </thead>
+  <div class="metric-grid">
+    <div class="metric-card">
+      <div class="metric-label">Projects</div>
+      <div class="metric-value"><%= @projects.size %></div>
+    </div>
 
-  <tbody>
-    <% @projects.each do |project| %>
-      <tr>
-        <td>
-          <%= link_to project.code, project_path(project), class: "text-decoration-none" %>
-        </td>
-        <td><%= project.date %></td>
-        <td><%= project.address %></td>
-        <td><%= project.description %></td>
-        <td class="text-end">
-          <%= number_to_currency(project.job_value) if project.job_value %>
-        </td>
-        <td>
-        <%= project
-            .project_contributors
-            .find { |pc| pc.role.to_s.casecmp("Owner").zero? }
-            &.contributor
-            &.company_name || "—" %>
-        </td>
-        
-      </tr>
+    <div class="metric-card">
+      <div class="metric-label">Total Job Value</div>
+      <div class="metric-value"><%= number_to_currency(@total_job_value || 0) %></div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-label">Total Fee Value</div>
+      <div class="metric-value"><%= number_to_currency(@total_fee_value || 0) %></div>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-body">
+      <%= form_with url: projects_path, method: :get, local: true, class: "search-shell" do %>
+        <div>
+          <label for="project-search" class="form-label">Search everything from home</label>
+          <%= text_field_tag :q, @query, id: "project-search", class: "form-control", placeholder: "Search projects, contributors, or contributor types" %>
+        </div>
+        <%= submit_tag "Search", class: "btn btn-primary" %>
+        <% if @query.present? %>
+          <%= link_to "Clear", projects_path, class: "btn btn-outline-secondary" %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @query.present? %>
+    <div class="app-card">
+      <div class="app-card-body">
+        <div class="section-title">
+          <div>
+            <h2 class="h4">Search Results Beyond Projects</h2>
+            <p class="page-subtitle mb-0">Quick matches from contributors and contributor types for "<%= @query %>".</p>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <h3 class="h6 text-muted text-uppercase">Contributors</h3>
+            <% if @matching_contributors.any? %>
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <tbody>
+                    <% @matching_contributors.each do |contributor| %>
+                      <tr>
+                        <td><%= link_to contributor.company_name, contributor_path(contributor), class: "fw-semibold text-decoration-none" %></td>
+                        <td><%= contributor.key_contact.presence || "—" %></td>
+                        <td><%= contributor.contributor_type&.name || "—" %></td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            <% else %>
+              <p class="text-muted mb-0">No contributor matches.</p>
+            <% end %>
+          </div>
+
+          <div class="col-lg-4">
+            <h3 class="h6 text-muted text-uppercase">Contributor Types</h3>
+            <% if @matching_contributor_types.any? %>
+              <div class="d-grid gap-2">
+                <% @matching_contributor_types.each do |type| %>
+                  <%= link_to type.name, contributor_type_path(type), class: "btn btn-outline-secondary text-start" %>
+                <% end %>
+              </div>
+            <% else %>
+              <p class="text-muted mb-0">No contributor type matches.</p>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="app-card table-shell">
+    <% if @projects.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Code</th>
+              <th>Date</th>
+              <th>Address</th>
+              <th>Description</th>
+              <th class="text-end">Job Value</th>
+              <th class="text-end">Fee Value</th>
+              <th>Owner</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <% @projects.each do |project| %>
+              <tr>
+                <td>
+                  <%= link_to project.code.presence || "Untitled project", project_path(project), class: "fw-semibold text-decoration-none" %>
+                </td>
+                <td><%= project.date&.strftime("%d %b %Y") || "—" %></td>
+                <td><%= project.address.presence || "—" %></td>
+                <td><%= project.description.presence || "—" %></td>
+                <td class="text-end"><%= project.job_value ? number_to_currency(project.job_value) : "—" %></td>
+                <td class="text-end"><%= project.fee_value ? number_to_currency(project.fee_value) : "—" %></td>
+                <td>
+                  <%= project.project_contributors.find { |pc| pc.role.to_s.casecmp("Owner").zero? }&.contributor&.company_name || "—" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <h2 class="h4 mb-2">No projects yet</h2>
+        <p class="mb-3">Create your first project to start building out the office job register.</p>
+        <%= link_to "Add the first project", new_project_path, class: "btn btn-primary" %>
+      </div>
     <% end %>
-  </tbody>
-</table>
+  </div>
+</section>

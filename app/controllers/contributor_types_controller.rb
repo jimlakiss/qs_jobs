@@ -1,6 +1,14 @@
 class ContributorTypesController < ApplicationController
   def index
-    @contributor_types = ContributorType.order(:name)
+    @query = params[:q].to_s.strip
+    @contributor_types = ContributorType.all
+    @contributor_types = @contributor_types.where("name ILIKE ?", "%#{@query}%") if @query.present?
+    @contributor_types = @contributor_types.order(:name)
+  end
+
+  def show
+    @contributor_type = ContributorType.includes(:contributors).find(params[:id])
+    @contributors = @contributor_type.contributors.order(:company_name)
   end
 
   def new

@@ -1,35 +1,71 @@
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note">Directory</span>
+      <h1 class="page-title">Contributors</h1>
+      <p class="page-subtitle">
+        <% if params[:contributor_type].present? %>
+          Showing contributors filtered by type.
+        <% else %>
+          Keep your regular consultants, suppliers, and contacts organised here.
+        <% end %>
+      </p>
+    </div>
 
-<h1 class="mb-4">
-  Contributors
-  <% if params[:contributor_type].present? %>
-    – <%= params[:contributor_type].humanize %>
-  <% end %>
-</h1>
+    <%= link_to "New Contributor", new_contributor_path, class: "btn btn-primary" %>
+  </div>
 
-<%= link_to "New Contributor", new_contributor_path, class: "btn btn-primary mb-3" %>
+  <div class="app-card">
+    <div class="app-card-body">
+      <%= form_with url: contributors_path, method: :get, local: true, class: "search-shell" do %>
+        <% if params[:contributor_type].present? %>
+          <%= hidden_field_tag :contributor_type, params[:contributor_type] %>
+        <% end %>
+        <div>
+          <label for="contributor-search" class="form-label">Search contributors</label>
+          <%= text_field_tag :q, @query, id: "contributor-search", class: "form-control", placeholder: "Search by company, contact, email, or phone" %>
+        </div>
+        <%= submit_tag "Search", class: "btn btn-primary" %>
+        <% if @query.present? || params[:contributor_type].present? %>
+          <%= link_to "Clear", contributors_path, class: "btn btn-outline-secondary" %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
 
-<table class="table table-hover">
-  <thead class="table-light">
-    <tr>
-      <th>Company</th>
-      <th>Key Contact</th>
-      <th>Email</th>
-      <th>Phone</th>
-       <th>Contributor Type</th>
-    </tr>
-  </thead>
+  <div class="app-card table-shell">
+    <% if @contributors.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Company</th>
+              <th>Key Contact</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Contributor Type</th>
+            </tr>
+          </thead>
 
-  <tbody>
-    <% @contributors.each do |contributor| %>
-      <tr>
-        <td>
-          <%= link_to contributor.company_name, contributor_path(contributor) %>
-        </td>
-        <td><%= contributor.key_contact %></td>
-        <td><%= contributor.email %></td>
-        <td><%= contributor.phone_number %></td>
-        <td><%= contributor.contributor_type&.name || "—" %></td>
-      </tr>
+          <tbody>
+            <% @contributors.each do |contributor| %>
+              <tr>
+                <td><%= link_to contributor.company_name, contributor_path(contributor), class: "fw-semibold text-decoration-none" %></td>
+                <td><%= contributor.key_contact.presence || "—" %></td>
+                <td><%= contributor.email.presence || "—" %></td>
+                <td><%= contributor.phone_number.presence || "—" %></td>
+                <td><%= contributor.contributor_type&.name || "—" %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <h2 class="h4 mb-2">No contributors yet</h2>
+        <p class="mb-3">Add a contributor to start building reusable contact lists for projects.</p>
+        <%= link_to "Add a contributor", new_contributor_path, class: "btn btn-primary" %>
+      </div>
     <% end %>
-  </tbody>
-</table>
+  </div>
+</section>

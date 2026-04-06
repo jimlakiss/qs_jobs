@@ -1,30 +1,106 @@
-<h1><%= @contributor.company_name %></h1>
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note"><%= @contributor.contributor_type&.name || "Contributor" %></span>
+      <h1 class="page-title"><%= @contributor.company_name %></h1>
+      <p class="page-subtitle"><%= @contributor.notes.presence || "No internal notes have been added for this contributor yet." %></p>
+    </div>
 
-<dl class="row">
-  <dt class="col-sm-3">Key Contact</dt>
-  <dd class="col-sm-9"><%= @contributor.key_contact %></dd>
+    <div class="stack-actions">
+      <%= link_to "Edit", edit_contributor_path(@contributor), class: "btn btn-primary" %>
+      <%= link_to "Back", contributors_path, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
 
-  <dt class="col-sm-3">Address</dt>
-  <dd class="col-sm-9"><%= @contributor.address %></dd>
+  <div class="app-card">
+    <div class="app-card-body">
+      <dl class="row detail-grid mb-0">
+        <dt class="col-md-3">Key Contact</dt>
+        <dd class="col-md-9"><%= @contributor.key_contact.presence || "—" %></dd>
 
-  <dt class="col-sm-3">Phone</dt>
-  <dd class="col-sm-9"><%= @contributor.phone_number %></dd>
+        <dt class="col-md-3">Address</dt>
+        <dd class="col-md-9"><%= @contributor.address.presence || "—" %></dd>
 
-  <dt class="col-sm-3">Email</dt>
-  <dd class="col-sm-9"><%= @contributor.email %></dd>
+        <dt class="col-md-3">Phone</dt>
+        <dd class="col-md-9"><%= @contributor.phone_number.presence || "—" %></dd>
 
-  <dt class="col-sm-3">Website</dt>
-  <dd class="col-sm-9"><%= @contributor.url %></dd>
+        <dt class="col-md-3">Email</dt>
+        <dd class="col-md-9"><%= @contributor.email.presence || "—" %></dd>
 
-  <dt class="col-sm-3">Notes</dt>
-  <dd class="col-sm-9"><%= @contributor.notes %></dd>
-</dl>
+        <dt class="col-md-3">Website</dt>
+        <dd class="col-md-9">
+          <% if @contributor.url.present? %>
+            <%= link_to @contributor.url, @contributor.url, target: "_blank", rel: "noreferrer" %>
+          <% else %>
+            —
+          <% end %>
+        </dd>
+      </dl>
+    </div>
+  </div>
 
-<%= link_to "Edit", edit_contributor_path(@contributor), class: "btn btn-secondary" %>
-<%= link_to "Back", contributors_path, class: "btn btn-link" %>
+  <div class="app-card">
+    <div class="app-card-body">
+      <div class="section-title">
+        <div>
+          <h2 class="h4">Associated Projects</h2>
+          <p class="page-subtitle mb-0">See every job this contributor has been linked to.</p>
+        </div>
+      </div>
 
-<%= button_to "Delete",
-      contributor_path(@contributor),
-      method: :delete,
-      data: { confirm: "Are you sure?" },
-      class: "btn btn-danger mt-3" %>
+      <div class="metric-grid mb-4">
+        <div class="metric-card">
+          <div class="metric-label">Projects</div>
+          <div class="metric-value"><%= @associated_projects.size %></div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">Job Value</div>
+          <div class="metric-value"><%= number_to_currency(@associated_job_value || 0) %></div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">Fee Value</div>
+          <div class="metric-value"><%= number_to_currency(@associated_fee_value || 0) %></div>
+        </div>
+      </div>
+
+      <% if @associated_projects.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Code</th>
+                <th>Date</th>
+                <th>Address</th>
+                <th class="text-end">Job Value</th>
+                <th class="text-end">Fee Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @associated_projects.each do |project| %>
+                <tr>
+                  <td><%= link_to project.code.presence || "Untitled project", project_path(project), class: "fw-semibold text-decoration-none" %></td>
+                  <td><%= project.date&.strftime("%d %b %Y") || "—" %></td>
+                  <td><%= project.address.presence || "—" %></td>
+                  <td class="text-end"><%= project.job_value ? number_to_currency(project.job_value) : "—" %></td>
+                  <td class="text-end"><%= project.fee_value ? number_to_currency(project.fee_value) : "—" %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <p class="text-muted mb-0">This contributor has not been linked to any projects yet.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="stack-actions">
+    <%= button_to "Delete",
+          contributor_path(@contributor),
+          method: :delete,
+          data: { confirm: "Are you sure?" },
+          class: "btn btn-danger" %>
+  </div>
+</section>

@@ -1,2 +1,56 @@
-<h1>ContributorTypes#show</h1>
-<p>Find me in app/views/contributor_types/show.html.erb</p>
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note">Contributor type</span>
+      <h1 class="page-title"><%= @contributor_type.name %></h1>
+      <p class="page-subtitle">Contributors currently grouped under this type.</p>
+    </div>
+
+    <div class="stack-actions">
+      <%= link_to "Edit Type", edit_contributor_type_path(@contributor_type), class: "btn btn-primary" %>
+      <%= link_to "Back to Types", contributor_types_path, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+
+  <div class="metric-grid">
+    <div class="metric-card">
+      <div class="metric-label">Contributors</div>
+      <div class="metric-value"><%= @contributors.size %></div>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-body">
+      <div class="section-title">
+        <h2 class="h4 mb-0">Contributors</h2>
+      </div>
+
+      <% if @contributors.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Company</th>
+                <th>Key Contact</th>
+                <th>Email</th>
+                <th>Phone</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @contributors.each do |contributor| %>
+                <tr>
+                  <td><%= link_to contributor.company_name, contributor_path(contributor), class: "fw-semibold text-decoration-none" %></td>
+                  <td><%= contributor.key_contact.presence || "—" %></td>
+                  <td><%= contributor.email.presence || "—" %></td>
+                  <td><%= contributor.phone_number.presence || "—" %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <p class="text-muted mb-0">No contributors are assigned to this type yet.</p>
+      <% end %>
+    </div>
+  </div>
+</section>

@@ -1,84 +1,71 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Qs Jobs" %></title>
+    <title><%= content_for(:title) || "QS Jobs" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Qs Jobs">
+    <meta name="application-name" content="QS Jobs">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
+  <body class="app-shell">
+    <nav class="navbar navbar-expand-lg app-navbar border-bottom">
+      <div class="container app-container">
+        <%= link_to "QS Jobs", root_path, class: "navbar-brand fw-semibold" %>
 
-    <% if user_signed_in? %>
-      <%= button_to "Log out",
-            destroy_user_session_path,
-            method: :delete,
-            class: "btn btn-outline-secondary" %>
-    <% end %>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-controls="main-nav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-  <body>
-
-        <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom mb-4">
-      <div class="container-fluid">
-        <%= link_to "QS Jobs", root_path, class: "navbar-brand" %>
-
-        <div class="collapse navbar-collapse">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
+        <div class="collapse navbar-collapse" id="main-nav">
+          <ul class="navbar-nav me-auto mb-3 mb-lg-0">
             <li class="nav-item">
               <%= link_to "Projects", projects_path, class: "nav-link" %>
             </li>
-
             <li class="nav-item">
               <%= link_to "Contributors", contributors_path, class: "nav-link" %>
             </li>
-
-              <li class="nav-item">
-                <%= link_to "Contributor Types",
-                  contributor_types_path,
-                  class: "nav-link" %>
-              </li>
-
-              <ul class="dropdown-menu">
-              <% ContributorType.order(:name).each do |type| %>
-              <li>
-              <%= link_to type.name.humanize,
-              contributors_path(contributor_type: type.id),
-              class: "dropdown-item" %>
+            <li class="nav-item">
+              <%= link_to "Contributor Types", contributor_types_path, class: "nav-link" %>
             </li>
-            <% end %>
-</ul>
-            </li>
-
           </ul>
 
-            <% if user_signed_in? %>
-              <span class="navbar-text me-3">
-              <%= current_user.email %>
-              </span>
+          <% if user_signed_in? %>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+              <span class="navbar-text text-muted small"><%= current_user.email %></span>
+              <%= button_to "Log out",
+                    destroy_user_session_path,
+                    method: :delete,
+                    class: "btn btn-outline-secondary btn-sm" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </nav>
 
-            <%= button_to "Logout",
-            destroy_user_session_path,
-            method: :delete,
-            class: "btn btn-outline-secondary btn-sm" %>
-      <% end %>
-</nav>
-    
-    <%= yield %>
+    <main class="py-4 py-lg-5">
+      <div class="container app-container">
+        <% flash.each do |type, message| %>
+          <% alert_class = type.to_s == "notice" ? "success" : "danger" %>
+          <div class="alert alert-<%= alert_class %> alert-dismissible fade show shadow-sm" role="alert">
+            <%= message %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <% end %>
+
+        <%= yield %>
+      </div>
+    </main>
   </body>
 </html>

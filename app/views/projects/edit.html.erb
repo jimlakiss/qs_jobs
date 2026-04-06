@@ -1,2 +1,11 @@
-<h1>Edit Project</h1>
-<%= render "form" %>
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note">Update project</span>
+      <h1 class="page-title">Edit <%= @project.code.presence || "Project" %></h1>
+      <p class="page-subtitle">Adjust project details, update the value, or reassign linked contributors.</p>
+    </div>
+  </div>
+
+  <%= render "form" %>
+</section>

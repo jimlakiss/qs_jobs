@@ -1,16 +1,28 @@
 class ContributorsController < ApplicationController
   def index
-  @contributors =
-    if params[:contributor_type].present?
-      Contributor.where(contributor_type: params[:contributor_type])
-                 .order(:company_name)
-    else
-      Contributor.order(:company_name)
+    @query = params[:q].to_s.strip
+    @contributors =
+      if params[:contributor_type].present?
+        Contributor.where(contributor_type: params[:contributor_type])
+      else
+        Contributor.all
+      end
+
+    if @query.present?
+      @contributors = @contributors.where(
+        "company_name ILIKE :q OR key_contact ILIKE :q OR email ILIKE :q OR phone_number ILIKE :q",
+        q: "%#{@query}%"
+      )
     end
+
+    @contributors = @contributors.order(:company_name)
   end
 
   def show
-    @contributor = Contributor.find(params[:id])
+    @contributor = Contributor.includes(projects: :project_contributors).find(params[:id])
+    @associated_projects = @contributor.projects.distinct.order(date: :desc, code: :asc)
+    @associated_job_value = @associated_projects.sum(:job_value)
+    @associated_fee_value = @associated_projects.sum(:fee_value)
   end
 
   def new

@@ -3,7 +3,29 @@ class ProjectsController < ApplicationController
   before_action :load_contributors, only: [:new, :edit]
 
   def index
-    @projects = Project.includes(project_contributors: :contributor).order(created_at: :desc)
+    @query = params[:q].to_s.strip
+    @projects = Project.includes(project_contributors: :contributor)
+    @projects = @projects.where(
+      "projects.code ILIKE :q OR projects.address ILIKE :q OR projects.description ILIKE :q",
+      q: "%#{@query}%"
+    ) if @query.present?
+    @projects = @projects.order(created_at: :desc)
+    @total_job_value = @projects.sum(:job_value)
+    @total_fee_value = @projects.sum(:fee_value)
+    @matching_contributors = Contributor.none
+    @matching_contributor_types = ContributorType.none
+
+    if @query.present?
+      @matching_contributors = Contributor.where(
+        "company_name ILIKE :q OR key_contact ILIKE :q OR email ILIKE :q",
+        q: "%#{@query}%"
+      ).order(:company_name).limit(10)
+
+      @matching_contributor_types = ContributorType.where(
+        "name ILIKE :q",
+        q: "%#{@query}%"
+      ).order(:name).limit(10)
+    end
   end
 
   def show; end
@@ -48,7 +70,7 @@ class ProjectsController < ApplicationController
   end
 
   def project_params
-    params.require(:project).permit(:code, :date, :address, :description, :job_value)
+    params.require(:project).permit(:code, :date, :address, :description, :job_value, :fee_value)
   end
 
   def load_contributors

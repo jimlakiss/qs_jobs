@@ -1,53 +1,68 @@
-<%= form_with model: @project do |f| %>
+<div class="app-card form-shell">
+  <div class="app-card-body">
+    <%= form_with model: @project do |f| %>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <%= f.label :code, class: "form-label" %>
+          <%= f.text_field :code, class: "form-control", placeholder: "Job code or short reference" %>
+        </div>
 
-  <div class="row">
-    <div class="col-md-6 mb-3">
-      <%= f.label :code %>
-      <%= f.text_field :code, class: "form-control" %>
-    </div>
+        <div class="col-md-6">
+          <%= f.label :date, class: "form-label" %>
+          <%= f.date_field :date, class: "form-control" %>
+        </div>
 
-    <div class="col-md-6 mb-3">
-      <%= f.label :date %>
-      <%= f.date_field :date, class: "form-control" %>
-    </div>
+        <div class="col-12">
+          <%= f.label :address, class: "form-label" %>
+          <%= f.text_area :address, class: "form-control", rows: 2, placeholder: "Site address" %>
+        </div>
+
+        <div class="col-12">
+          <%= f.label :description, class: "form-label" %>
+          <%= f.text_area :description, class: "form-control", rows: 3, placeholder: "Scope, notes, or summary" %>
+        </div>
+
+        <div class="col-md-4">
+          <%= f.label :job_value, class: "form-label" %>
+          <%= f.number_field :job_value, class: "form-control", step: 0.01, placeholder: "0.00" %>
+        </div>
+
+        <div class="col-md-4">
+          <%= f.label :fee_value, class: "form-label" %>
+          <%= f.number_field :fee_value, class: "form-control", step: 0.01, placeholder: "0.00" %>
+        </div>
+      </div>
+
+      <hr class="my-4">
+
+      <div class="section-title">
+        <div>
+          <h2 class="h4">Contributors</h2>
+          <p class="page-subtitle mb-0">Assign the key contacts or companies connected to this project.</p>
+        </div>
+      </div>
+
+      <div class="role-grid">
+        <% @contributor_types.each do |type| %>
+          <% options = @contributors_by_type[type.id] || [] %>
+          <% selected = @project.project_contributors.find { |pc| pc.role == type.name }&.contributor_id %>
+
+          <div class="role-card">
+            <label class="form-label"><%= type.name %></label>
+            <%= select_tag(
+              "contributors[#{type.id}]",
+              options_from_collection_for_select(options, :id, :company_name, selected),
+              include_blank: "No contributor selected",
+              class: "form-select"
+            ) %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="stack-actions mt-4">
+        <%= f.submit class: "btn btn-primary" %>
+        <%= link_to "Cancel", @project.persisted? ? project_path(@project) : projects_path, class: "btn btn-outline-secondary" %>
+      </div>
+    <% end %>
   </div>
-
-  <div class="mb-3">
-    <%= f.label :address %>
-    <%= f.text_area :address, class: "form-control", rows: 2 %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :description %>
-    <%= f.text_area :description, class: "form-control", rows: 3 %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :job_value %>
-    <%= f.number_field :job_value, class: "form-control", step: 0.01 %>
-  </div>
-
-  <hr>
-
-    <hr>
-<h4>Contributors</h4>
-
-<% @contributor_types.each do |type| %>
-  <div class="mb-3">
-    <label class="form-label"><%= type.name %></label>
-
-    <% options = @contributors_by_type[type.id] || [] %>
-    <% selected = @project.project_contributors.find { |pc| pc.role == type.name }&.contributor_id %>
-
-    <%= select_tag(
-      "contributors[#{type.id}]",
-      options_from_collection_for_select(options, :id, :company_name, selected),
-      include_blank: true,
-      class: "form-select"
-    ) %>
-  </div>
-<% end %>
-
-  <%= f.submit class: "btn btn-primary mt-3" %>
-
-<% end %>
+</div>

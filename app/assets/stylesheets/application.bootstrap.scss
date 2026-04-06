@@ -1,2 +1,233 @@
 @import 'bootstrap/scss/bootstrap';
 @import 'bootstrap-icons/font/bootstrap-icons';
+
+:root {
+  --qs-bg: #f4f1ea;
+  --qs-surface: #fffdf8;
+  --qs-surface-strong: #ffffff;
+  --qs-border: #ddd4c6;
+  --qs-text: #2f2922;
+  --qs-muted: #706457;
+  --qs-accent: #1d6b57;
+  --qs-accent-soft: #d8ebe5;
+  --qs-shadow: 0 18px 45px rgba(47, 41, 34, 0.08);
+}
+
+body.app-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(29, 107, 87, 0.12), transparent 28%),
+    linear-gradient(180deg, #f7f4ee 0%, var(--qs-bg) 100%);
+  color: var(--qs-text);
+}
+
+.app-container {
+  max-width: 1120px;
+}
+
+.app-navbar {
+  background: rgba(255, 253, 248, 0.92);
+  backdrop-filter: blur(14px);
+}
+
+.app-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  line-height: 1.05;
+}
+
+.page-subtitle {
+  margin: 0.4rem 0 0;
+  max-width: 60ch;
+  color: var(--qs-muted);
+}
+
+.app-card {
+  background: var(--qs-surface);
+  border: 1px solid var(--qs-border);
+  border-radius: 1.25rem;
+  box-shadow: var(--qs-shadow);
+}
+
+.app-card-body {
+  padding: 1.5rem;
+}
+
+.table-shell {
+  overflow: hidden;
+}
+
+.table-shell .table {
+  margin-bottom: 0;
+}
+
+.table-shell thead th {
+  border-bottom-width: 1px;
+  color: var(--qs-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.table-shell tbody td {
+  vertical-align: middle;
+}
+
+.form-shell {
+  max-width: 880px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.section-title h2,
+.section-title h3,
+.section-title h4 {
+  margin: 0;
+}
+
+.detail-grid dt {
+  color: var(--qs-muted);
+}
+
+.detail-grid dd {
+  margin-bottom: 1rem;
+}
+
+.empty-state {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--qs-muted);
+}
+
+.stack-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.pill-note {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  background: var(--qs-accent-soft);
+  color: var(--qs-accent);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.role-card {
+  padding: 1rem;
+  border: 1px solid var(--qs-border);
+  border-radius: 1rem;
+  background: var(--qs-surface-strong);
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.metric-card {
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--qs-border);
+  border-radius: 1rem;
+  background: var(--qs-surface-strong);
+}
+
+.metric-label {
+  color: var(--qs-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.metric-value {
+  margin-top: 0.35rem;
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.search-shell {
+  display: flex;
+  gap: 0.75rem;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.search-shell .form-control {
+  min-width: min(420px, 100%);
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--qs-accent);
+  --bs-btn-border-color: var(--qs-accent);
+  --bs-btn-hover-bg: #175645;
+  --bs-btn-hover-border-color: #175645;
+  --bs-btn-active-bg: #114235;
+  --bs-btn-active-border-color: #114235;
+}
+
+.btn-outline-secondary {
+  --bs-btn-color: var(--qs-text);
+  --bs-btn-border-color: var(--qs-border);
+  --bs-btn-hover-bg: #f0ebe3;
+  --bs-btn-hover-border-color: #cdbfab;
+  --bs-btn-hover-color: var(--qs-text);
+}
+
+.form-control,
+.form-select {
+  border-color: var(--qs-border);
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: rgba(29, 107, 87, 0.5);
+  box-shadow: 0 0 0 0.25rem rgba(29, 107, 87, 0.15);
+}
+
+@media (max-width: 767.98px) {
+  .app-card-body {
+    padding: 1.1rem;
+  }
+
+  .page-header {
+    align-items: stretch;
+  }
+
+  .table-shell {
+    overflow-x: auto;
+  }
+}

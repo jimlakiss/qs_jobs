@@ -1,11 +1,15 @@
-<%= form_with model: @contributor_type do |f| %>
-  <div class="mb-3">
-    <%= f.label :name, "Type name" %>
-    <%= f.text_field :name, class: "form-control" %>
-  </div>
+<div class="app-card form-shell">
+  <div class="app-card-body">
+    <%= form_with model: @contributor_type do |f| %>
+      <div class="mb-3">
+        <%= f.label :name, "Type name", class: "form-label" %>
+        <%= f.text_field :name, class: "form-control", placeholder: "Owner, Architect, Engineer, Builder..." %>
+      </div>
 
-  <%= f.submit class: "btn btn-primary" %>
-  <%= link_to "Cancel",
-        contributor_types_path,
-        class: "btn btn-outline-secondary ms-2" %>
-<% end %>
+      <div class="stack-actions">
+        <%= f.submit class: "btn btn-primary" %>
+        <%= link_to "Cancel", contributor_types_path, class: "btn btn-outline-secondary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
