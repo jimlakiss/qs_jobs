@@ -62,7 +62,7 @@
                       <tr>
                         <td><%= link_to contributor.company_name, contributor_path(contributor), class: "fw-semibold text-decoration-none" %></td>
                         <td><%= contributor.key_contact.presence || "—" %></td>
-                        <td><%= contributor.contributor_type&.name || "—" %></td>
+                        <td><%= contributor.contributor_type_names.presence&.join(", ") || "—" %></td>
                       </tr>
                     <% end %>
                   </tbody>

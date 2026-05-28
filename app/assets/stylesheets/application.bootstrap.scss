@@ -218,6 +218,24 @@ body.app-shell {
   box-shadow: 0 0 0 0.25rem rgba(29, 107, 87, 0.15);
 }
 
+.contributor-type-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  cursor: pointer;
+  background: var(--qs-surface-strong);
+}
+
+.contributor-type-option-input {
+  margin: 0.2rem 0 0;
+  flex: 0 0 auto;
+}
+
+.contributor-type-option-label {
+  display: block;
+  line-height: 1.35;
+}
+
 @media (max-width: 767.98px) {
   .app-card-body {
     padding: 1.1rem;

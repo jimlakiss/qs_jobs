@@ -5,7 +5,7 @@ class ContributorsController < ApplicationController
     @query = params[:q].to_s.strip
     @contributors =
       if params[:contributor_type].present?
-        Contributor.where(contributor_type: params[:contributor_type])
+        Contributor.joins(:contributor_types).where(contributor_types: { id: params[:contributor_type] }).distinct
       else
         Contributor.all
       end
@@ -17,7 +17,7 @@ class ContributorsController < ApplicationController
       )
     end
 
-    @contributors = @contributors.includes(:contributor_type, :projects).order(:company_name)
+    @contributors = @contributors.includes(:contributor_types, :projects).order(:company_name)
   end
 
   def show
@@ -65,19 +65,19 @@ class ContributorsController < ApplicationController
   private
 
   def set_contributor
-    @contributor = Contributor.includes(projects: :project_contributors).find(params[:id])
+    @contributor = Contributor.includes(:contributor_types, projects: :project_contributors).find(params[:id])
   end
 
   def contributor_params
     params.require(:contributor).permit(
       :company_name,
-      :contributor_type_id,
       :key_contact,
       :address,
       :phone_number,
       :email,
       :url,
-      :notes
+      :notes,
+      contributor_type_ids: []
     )
   end
 end

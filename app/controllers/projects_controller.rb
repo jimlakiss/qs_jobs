@@ -16,7 +16,7 @@ class ProjectsController < ApplicationController
     @matching_contributor_types = ContributorType.none
 
     if @query.present?
-      @matching_contributors = Contributor.where(
+      @matching_contributors = Contributor.includes(:contributor_types).where(
         "company_name ILIKE :q OR key_contact ILIKE :q OR email ILIKE :q",
         q: "%#{@query}%"
       ).order(:company_name).limit(10)
@@ -79,8 +79,13 @@ class ProjectsController < ApplicationController
 
   def load_contributors
     @contributor_types = ContributorType.order(:name)
-    @contributors_by_type = Contributor.includes(:contributor_type).order(:company_name)
-                                       .group_by { |c| c.contributor_type&.id }
+    @contributors_by_type = Hash.new { |hash, key| hash[key] = [] }
+
+    Contributor.includes(:contributor_types).order(:company_name).find_each do |contributor|
+      contributor.contributor_types.each do |type|
+        @contributors_by_type[type.id] << contributor
+      end
+    end
   end
 
   # ✅ THIS is the “save dropdown into DB” wiring

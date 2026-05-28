@@ -2,13 +2,19 @@
   <div class="app-card-body">
     <%= form_with model: @contributor do |f| %>
       <div class="row g-3">
-        <div class="col-md-6">
-          <%= f.label :contributor_type_id, "Contributor Type", class: "form-label" %>
-          <%= f.collection_select :contributor_type_id,
-                ContributorType.order(:name),
-                :id, :name,
-                { include_blank: "Select a type" },
-                class: "form-select" %>
+        <div class="col-12">
+          <%= f.label :contributor_type_ids, "Contributor Types", class: "form-label" %>
+          <div class="row row-cols-1 row-cols-md-2 g-2">
+            <%= f.collection_check_boxes :contributor_type_ids, ContributorType.order(:name), :id, :name do |builder| %>
+              <div class="col">
+                <label class="contributor-type-option border rounded px-3 py-2 w-100 h-100">
+                  <%= builder.check_box class: "contributor-type-option-input" %>
+                  <span class="contributor-type-option-label"><%= builder.text %></span>
+                </label>
+              </div>
+            <% end %>
+          </div>
+          <div class="form-text">Choose every service this contributor can perform.</div>
         </div>
 
         <div class="col-md-6">

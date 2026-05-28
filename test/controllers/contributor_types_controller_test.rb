@@ -1,38 +1,51 @@
 require "test_helper"
 
 class ContributorTypesControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    sign_in users(:one)
+    @contributor_type = contributor_types(:one)
+  end
+
   test "should get index" do
-    get contributor_types_index_url
+    get contributor_types_url
     assert_response :success
   end
 
   test "should get new" do
-    get contributor_types_new_url
+    get new_contributor_type_url
     assert_response :success
   end
 
-  test "should get create" do
-    get contributor_types_create_url
-    assert_response :success
+  test "should create contributor type" do
+    assert_difference("ContributorType.count") do
+      post contributor_types_url, params: { contributor_type: { name: "Civil Engineer" } }
+    end
+
+    assert_redirected_to contributor_types_url
   end
 
   test "should get edit" do
-    get contributor_types_edit_url
+    get edit_contributor_type_url(@contributor_type)
     assert_response :success
   end
 
-  test "should get update" do
-    get contributor_types_update_url
-    assert_response :success
+  test "should update contributor type" do
+    patch contributor_type_url(@contributor_type), params: { contributor_type: { name: "Architectural Designer" } }
+
+    assert_redirected_to contributor_types_url
+    assert_equal "Architectural Designer", @contributor_type.reload.name
   end
 
-  test "should get destroy" do
-    get contributor_types_destroy_url
-    assert_response :success
+  test "should destroy contributor type" do
+    assert_difference("ContributorType.count", -1) do
+      delete contributor_type_url(@contributor_type)
+    end
+
+    assert_redirected_to contributor_types_url
   end
 
   test "should get show" do
-    get contributor_types_show_url
+    get contributor_type_url(@contributor_type)
     assert_response :success
   end
 end

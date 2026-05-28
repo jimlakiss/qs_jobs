@@ -17,8 +17,8 @@
         <dt class="col-md-3">Contributor</dt>
         <dd class="col-md-9"><%= @contributor.company_name %></dd>
 
-        <dt class="col-md-3">Type</dt>
-        <dd class="col-md-9"><%= @contributor.contributor_type&.name || "—" %></dd>
+        <dt class="col-md-3">Types</dt>
+        <dd class="col-md-9"><%= @contributor.contributor_type_names.presence&.join(", ") || "—" %></dd>
 
         <dt class="col-md-3">Associated Projects</dt>
         <dd class="col-md-9"><%= @associated_projects.size %></dd>

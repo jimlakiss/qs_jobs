@@ -120,13 +120,13 @@ class SpreadsheetSeedLoader
 
     contributor = Contributor.find_or_initialize_by(company_name: company_name)
     contributor.assign_attributes(
-      contributor_type: ContributorType.find_or_create_by!(name: mapping[:type]),
       key_contact: row[normalize_header(mapping[:contact])],
       address: row[normalize_header(mapping[:address])],
       phone_number: normalize_phone(row[normalize_header(mapping[:phone])]),
       email: row[normalize_header(mapping[:email])]
     )
     contributor.save!
+    assign_contributor_types(contributor, [mapping[:type]])
     contributor
   end
 
@@ -225,7 +225,6 @@ class SpreadsheetSeedLoader
 
       contributor = Contributor.find_or_initialize_by(company_name: company_name.strip)
       contributor.assign_attributes(
-        contributor_type: lookup_contributor_type(first_present(row, "contributor_type", "type")),
         key_contact: first_present(row, "key_contact", "contact"),
         address: first_present(row, "address"),
         phone_number: first_present(row, "phone_number", "phone", "mobile"),
@@ -234,6 +233,7 @@ class SpreadsheetSeedLoader
         notes: first_present(row, "notes")
       )
       contributor.save!
+      assign_contributor_types(contributor, parse_contributor_type_names(row))
     end
   end
 
@@ -275,6 +275,17 @@ class SpreadsheetSeedLoader
     return if name.blank?
 
     ContributorType.find_or_create_by!(name: name.strip)
+  end
+
+  def assign_contributor_types(contributor, names)
+    contributor.contributor_types = names.filter_map { |name| lookup_contributor_type(name) }
+  end
+
+  def parse_contributor_type_names(row)
+    raw_value = first_present(row, "contributor_types", "contributor_type", "types", "type")
+    return [] if raw_value.blank?
+
+    raw_value.split(/[;,|]/).map(&:strip).reject(&:blank?)
   end
 
   def each_csv_row(path)

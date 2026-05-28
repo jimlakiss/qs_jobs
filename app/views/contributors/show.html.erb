@@ -1,7 +1,7 @@
 <section class="app-page">
   <div class="page-header">
     <div>
-      <span class="pill-note"><%= @contributor.contributor_type&.name || "Contributor" %></span>
+      <span class="pill-note"><%= @contributor.contributor_type_names.presence&.join(", ") || "Contributor" %></span>
       <h1 class="page-title"><%= @contributor.company_name %></h1>
       <p class="page-subtitle"><%= @contributor.notes.presence || "No internal notes have been added for this contributor yet." %></p>
     </div>
@@ -17,6 +17,9 @@
       <dl class="row detail-grid mb-0">
         <dt class="col-md-3">Key Contact</dt>
         <dd class="col-md-9"><%= @contributor.key_contact.presence || "—" %></dd>
+
+        <dt class="col-md-3">Contributor Types</dt>
+        <dd class="col-md-9"><%= @contributor.contributor_type_names.presence&.join(", ") || "—" %></dd>
 
         <dt class="col-md-3">Address</dt>
         <dd class="col-md-9"><%= @contributor.address.presence || "—" %></dd>

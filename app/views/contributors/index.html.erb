@@ -44,7 +44,7 @@
               <th>Key Contact</th>
               <th>Email</th>
               <th>Phone</th>
-              <th>Contributor Type</th>
+              <th>Contributor Types</th>
             </tr>
           </thead>
 
@@ -56,7 +56,7 @@
                 <td><%= contributor.key_contact.presence || "—" %></td>
                 <td><%= contributor.email.presence || "—" %></td>
                 <td><%= contributor.phone_number.presence || "—" %></td>
-                <td><%= contributor.contributor_type&.name || "—" %></td>
+                <td><%= contributor.contributor_type_names.presence&.join(", ") || "—" %></td>
               </tr>
             <% end %>
           </tbody>
