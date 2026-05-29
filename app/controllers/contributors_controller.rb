@@ -17,7 +17,7 @@ class ContributorsController < ApplicationController
       )
     end
 
-    @contributors = @contributors.includes(:contributor_types, :projects).order(:company_name)
+    @contributors = @contributors.includes(:contributor_types, :project_contributors).order(:company_name)
   end
 
   def show
@@ -65,7 +65,7 @@ class ContributorsController < ApplicationController
   private
 
   def set_contributor
-    @contributor = Contributor.includes(:contributor_types, projects: :project_contributors).find(params[:id])
+    @contributor = Contributor.includes(:contributor_types, :project_contributors, projects: :project_contributors).find(params[:id])
   end
 
   def contributor_params

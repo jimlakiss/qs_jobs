@@ -9,4 +9,8 @@ class Contributor < ApplicationRecord
   def contributor_type_names
     contributor_types.map(&:name)
   end
+
+  def distinct_project_count
+    project_contributors.map(&:project_id).uniq.size
+  end
 end
