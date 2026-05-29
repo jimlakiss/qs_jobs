@@ -25,6 +25,10 @@ body.app-shell {
   max-width: 1120px;
 }
 
+.app-container-wide {
+  max-width: 1360px;
+}
+
 .app-navbar {
   background: rgba(255, 253, 248, 0.92);
   backdrop-filter: blur(14px);
@@ -234,6 +238,29 @@ body.app-shell {
 .contributor-type-option-label {
   display: block;
   line-height: 1.35;
+}
+
+.project-code-column {
+  min-width: 10rem;
+  width: 10rem;
+  white-space: nowrap;
+}
+
+.project-code-link {
+  white-space: nowrap;
+  word-break: keep-all;
+  hyphens: none;
+}
+
+.projects-table {
+  min-width: 1200px;
+}
+
+.projects-table .project-code-column,
+.projects-table .project-code-column * {
+  white-space: nowrap;
+  word-break: keep-all;
+  hyphens: none;
 }
 
 @media (max-width: 767.98px) {

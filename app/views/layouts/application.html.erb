@@ -54,7 +54,7 @@
     </nav>
 
     <main class="py-4 py-lg-5">
-      <div class="container app-container">
+      <div class="container <%= content_for(:main_container_class) || 'app-container' %>">
         <% flash.each do |type, message| %>
           <% alert_class = type.to_s == "notice" ? "success" : "danger" %>
           <div class="alert alert-<%= alert_class %> alert-dismissible fade show shadow-sm" role="alert">

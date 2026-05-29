@@ -1,4 +1,6 @@
-<section class="app-page">
+<% content_for :main_container_class, "app-container app-container-wide" %>
+
+<section class="app-page projects-page">
   <div class="page-header">
     <div>
       <span class="pill-note">Project register</span>
@@ -93,10 +95,10 @@
   <div class="app-card table-shell">
     <% if @projects.any? %>
       <div class="table-responsive">
-        <table class="table table-hover align-middle">
+        <table class="table table-hover align-middle projects-table">
           <thead class="table-light">
             <tr>
-              <th>Code</th>
+              <th class="project-code-column">Code</th>
               <th>Date</th>
               <th>Address</th>
               <th>Description</th>
@@ -109,10 +111,12 @@
           <tbody>
             <% @projects.each do |project| %>
               <tr>
-                <td>
-                  <%= link_to project.code.presence || "Untitled project", project_path(project), class: "fw-semibold text-decoration-none" %>
+                <td class="project-code-column">
+                  <% code_label = project.code.presence || "Untitled project" %>
+                  <% code_label = code_label.tr("-", "\u2011") if project.code.present? %>
+                  <%= link_to code_label, project_path(project), class: "fw-semibold text-decoration-none project-code-link" %>
                 </td>
-                <td><%= project.date&.strftime("%d %b %Y") || "—" %></td>
+                <td><%= project.date&.strftime("%d/%m/%y") || "—" %></td>
                 <td><%= project.address.presence || "—" %></td>
                 <td><%= project.description.presence || "—" %></td>
                 <td class="text-end"><%= project.job_value ? number_to_currency(project.job_value) : "—" %></td>
