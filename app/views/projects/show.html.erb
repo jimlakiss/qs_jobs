@@ -1,3 +1,5 @@
+<% active_document_tab = params[:tab].presence_in(%w[imported-documents extracted-data extracted-documents]) || "imported-documents" %>
+
 <section class="app-page">
   <div class="page-header">
     <div>
@@ -51,6 +53,253 @@
       <% else %>
         <p class="text-muted mb-0">No contributors have been linked to this project yet.</p>
       <% end %>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-body">
+      <ul class="nav nav-tabs project-document-tabs" id="project-document-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link <%= "active" if active_document_tab == "imported-documents" %>" id="imported-documents-tab" data-bs-toggle="tab" data-bs-target="#imported-documents-panel" type="button" role="tab" aria-controls="imported-documents-panel" aria-selected="<%= active_document_tab == "imported-documents" %>">
+            Imported Documents
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link <%= "active" if active_document_tab == "extracted-data" %>" id="extracted-data-tab" data-bs-toggle="tab" data-bs-target="#extracted-data-panel" type="button" role="tab" aria-controls="extracted-data-panel" aria-selected="<%= active_document_tab == "extracted-data" %>">
+            Extracted Data
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link <%= "active" if active_document_tab == "extracted-documents" %>" id="extracted-documents-tab" data-bs-toggle="tab" data-bs-target="#extracted-documents-panel" type="button" role="tab" aria-controls="extracted-documents-panel" aria-selected="<%= active_document_tab == "extracted-documents" %>">
+            Extracted Documents
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content project-document-tab-content">
+        <div class="tab-pane fade <%= "show active" if active_document_tab == "imported-documents" %>" id="imported-documents-panel" role="tabpanel" aria-labelledby="imported-documents-tab" tabindex="0">
+          <div class="section-title">
+            <div>
+              <h2 class="h4">Imported Documents</h2>
+              <p class="page-subtitle mb-0">Raw incoming files from emails, clients, consultants, and internal uploads.</p>
+            </div>
+          </div>
+
+          <%= form_with model: @project, url: project_documents_path(@project), method: :post, local: true, class: "document-upload-shell" do |f| %>
+            <div class="document-upload-field">
+              <%= f.label :documents, "Upload documents", class: "form-label" %>
+              <%= f.file_field :documents, multiple: true, class: "form-control" %>
+            </div>
+            <div class="document-upload-meta">
+              <%= f.label :received_at, "Received date/time", class: "form-label" %>
+              <%= f.datetime_local_field :received_at, value: Time.current.strftime("%Y-%m-%dT%H:%M"), class: "form-control" %>
+            </div>
+            <div class="document-upload-meta">
+              <%= f.label :source, "Source", class: "form-label" %>
+              <%= f.text_field :source, class: "form-control", placeholder: "Email, client, consultant" %>
+            </div>
+            <div class="document-upload-meta">
+              <%= f.label :received_from, "Received from", class: "form-label" %>
+              <%= f.text_field :received_from, class: "form-control", placeholder: "Name or company" %>
+            </div>
+            <div class="document-upload-notes">
+              <%= f.label :notes, "Notes", class: "form-label" %>
+              <%= f.text_field :notes, class: "form-control", placeholder: "Optional import notes" %>
+            </div>
+            <%= f.submit "Upload", class: "btn btn-primary" %>
+          <% end %>
+
+          <% if @imported_documents.any? %>
+            <div class="document-list">
+              <% @imported_documents.each do |document| %>
+                <% extraction = @document_extractions_by_attachment_id[document.id] %>
+                <% metadata = @project_documents_by_attachment_id[document.id] %>
+                <div class="document-row">
+                  <div class="document-row-main">
+                    <div class="fw-semibold"><%= document.filename.to_s %></div>
+                    <div class="text-muted small">
+                      <%= document.blob.content_type.presence || "Unknown type" %>
+                      ·
+                      <%= number_to_human_size(document.byte_size) %>
+                      ·
+                      <%= document.created_at.strftime("%d %b %Y") %>
+                    </div>
+                    <div class="text-muted small">
+                      Received <%= metadata&.received_at&.strftime("%d %b %Y %H:%M") || document.created_at.strftime("%d %b %Y %H:%M") %>
+                      <% if metadata&.source.present? %>
+                        · <%= metadata.source %>
+                      <% end %>
+                      <% if metadata&.received_from.present? %>
+                        · From <%= metadata.received_from %>
+                      <% end %>
+                    </div>
+                    <% if metadata&.notes.present? %>
+                      <div class="text-muted small"><%= metadata.notes %></div>
+                    <% end %>
+                    <% if extraction %>
+                      <div class="text-muted small">
+                        Extracted <%= pluralize(extraction.sheets.size, "sheet") %>
+                        ·
+                        <%= extraction.extracted_at&.strftime("%d %b %Y %H:%M") %>
+                      </div>
+                    <% end %>
+                  </div>
+
+                  <div class="stack-actions">
+                    <% if document.content_type == "application/pdf" || document.filename.extension.to_s.casecmp("pdf").zero? %>
+                      <%= link_to "Open Viewer", viewer_project_document_path(@project, document), class: "btn btn-primary btn-sm", data: { turbo: false } %>
+                    <% end %>
+                    <%= link_to "Download", rails_blob_path(document, disposition: "attachment"), class: "btn btn-outline-secondary btn-sm" %>
+                    <%= button_to "Remove",
+                          project_document_path(@project, document),
+                          method: :delete,
+                          form: { data: { turbo_confirm: "Remove #{document.filename}?" } },
+                          class: "btn btn-outline-danger btn-sm" %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-muted mb-0">No imported documents have been uploaded for this project yet.</p>
+          <% end %>
+        </div>
+
+        <div class="tab-pane fade <%= "show active" if active_document_tab == "extracted-data" %>" id="extracted-data-panel" role="tabpanel" aria-labelledby="extracted-data-tab" tabindex="0">
+          <div class="section-title">
+            <div>
+              <h2 class="h4">Extracted Data</h2>
+              <p class="page-subtitle mb-0">Saved JSON captured from the PDF viewer extraction workflow.</p>
+            </div>
+          </div>
+
+          <% if @document_extractions.any? %>
+            <div class="extraction-list">
+              <% @document_extractions.each do |extraction| %>
+                <div class="extraction-block">
+                  <div class="extraction-header">
+                    <div>
+                      <h3 class="h5 mb-1"><%= extraction.source_filename.presence || "Extracted document" %></h3>
+                      <div class="text-muted small">
+                        <%= pluralize(extraction.sheets.size, "sheet") %>
+                        ·
+                        <%= extraction.extracted_at&.strftime("%d %b %Y %H:%M") || "Not timestamped" %>
+                      </div>
+                    </div>
+                    <%= button_to "Delete",
+                          project_document_extraction_path(@project, extraction),
+                          method: :delete,
+                          form: { data: { turbo_confirm: "Delete this extracted data record? The source PDF and exported files will stay attached." } },
+                          class: "btn btn-outline-danger btn-sm" %>
+                  </div>
+
+                  <% if extraction.document_details.present? %>
+                    <dl class="row detail-grid extraction-detail-grid">
+                      <% extraction.document_details.each do |key, value| %>
+                        <dt class="col-md-3"><%= key.to_s.humanize %></dt>
+                        <dd class="col-md-9"><%= value.presence || "—" %></dd>
+                      <% end %>
+                    </dl>
+                  <% end %>
+
+                  <% if extraction.sheets.any? %>
+                    <div class="table-responsive extraction-table-shell">
+                      <table class="table table-sm table-hover align-middle mb-0">
+                        <thead class="table-light">
+                          <tr>
+                            <th>Page</th>
+                            <th>Sheet ID</th>
+                            <th>Description</th>
+                            <th>Revision</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <% extraction.sheets.each do |sheet| %>
+                            <tr>
+                              <td><%= sheet["page"].presence || "—" %></td>
+                              <td><%= sheet["sheet_id"].presence || "—" %></td>
+                              <td><%= sheet["description"].presence || "—" %></td>
+                              <td><%= sheet["issue_id"].presence || "—" %></td>
+                              <td><%= sheet["date"].presence || "—" %></td>
+                              <td><%= sheet["status"].presence || "—" %></td>
+                            </tr>
+                          <% end %>
+                        </tbody>
+                      </table>
+                    </div>
+                  <% end %>
+
+                  <details class="extraction-json">
+                    <summary>View raw JSON</summary>
+                    <pre><%= JSON.pretty_generate({
+                      document_details: extraction.document_details,
+                      sheets: extraction.sheets,
+                      regions: extraction.regions,
+                      measurements: extraction.measurements,
+                      staging_data: extraction.staging_data
+                    }) %></pre>
+                  </details>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="empty-state">
+              <h2 class="h4 mb-2">No extracted data yet</h2>
+              <p class="mb-0">Open a PDF in the viewer, run the extraction, and the saved JSON will appear here.</p>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="tab-pane fade <%= "show active" if active_document_tab == "extracted-documents" %>" id="extracted-documents-panel" role="tabpanel" aria-labelledby="extracted-documents-tab" tabindex="0">
+          <div class="section-title">
+            <div>
+              <h2 class="h4">Extracted Documents</h2>
+              <p class="page-subtitle mb-0">Curated outputs generated from the PDF viewer, including manifests and drawing exports.</p>
+            </div>
+          </div>
+
+          <% if @extracted_documents.any? %>
+            <div class="document-list">
+              <% @extracted_documents.each do |document| %>
+                <% metadata = @project_documents_by_attachment_id[document.id] %>
+                <div class="document-row">
+                  <div class="document-row-main">
+                    <div class="fw-semibold"><%= document.filename.to_s %></div>
+                    <div class="text-muted small">
+                      <%= document.blob.content_type.presence || "Unknown type" %>
+                      ·
+                      <%= number_to_human_size(document.byte_size) %>
+                      ·
+                      Generated <%= metadata&.received_at&.strftime("%d %b %Y %H:%M") || document.created_at.strftime("%d %b %Y %H:%M") %>
+                    </div>
+                    <div class="text-muted small">
+                      <%= metadata&.export_kind.to_s.humanize.presence || "Viewer export" %>
+                      <% if metadata&.generated_from_attachment %>
+                        · From <%= metadata.generated_from_attachment.filename %>
+                      <% end %>
+                    </div>
+                    <% if metadata&.notes.present? %>
+                      <div class="text-muted small"><%= metadata.notes %></div>
+                    <% end %>
+                  </div>
+
+                  <div class="stack-actions">
+                    <%= link_to "Download", rails_blob_path(document, disposition: "attachment"), class: "btn btn-outline-secondary btn-sm" %>
+                    <%= button_to "Remove",
+                          project_document_path(@project, document),
+                          method: :delete,
+                          form: { data: { turbo_confirm: "Remove #{document.filename}?" } },
+                          class: "btn btn-outline-danger btn-sm" %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-muted mb-0">No extracted documents have been generated for this project yet.</p>
+          <% end %>
+        </div>
+      </div>
     </div>
   </div>
 

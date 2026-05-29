@@ -28,7 +28,17 @@ class ProjectsController < ApplicationController
     end
   end
 
-  def show; end
+  def show
+    @document_extractions = @project.document_extractions.order(extracted_at: :desc, updated_at: :desc)
+    @document_extractions_by_attachment_id = @document_extractions.index_by(&:active_storage_attachment_id)
+    @project_documents_by_attachment_id = @project.project_documents.index_by(&:active_storage_attachment_id)
+    @imported_documents = @project.documents.select do |document|
+      @project_documents_by_attachment_id[document.id]&.category != "extracted_document"
+    end
+    @extracted_documents = @project.documents.select do |document|
+      @project_documents_by_attachment_id[document.id]&.category == "extracted_document"
+    end
+  end
 
   def new
     @project = Project.new
