@@ -792,7 +792,7 @@
     projectId: <%= @project.id.to_json %>,
     documentId: <%= @document.id.to_json %>,
     projectUrl: <%= project_path(@project).to_json.html_safe %>,
-    initialPdfUrl: <%= rails_blob_path(@document, disposition: "inline").to_json.html_safe %>,
+    initialPdfUrl: <%= rails_service_blob_proxy_path(@document.blob.signed_id, @document.filename).to_json.html_safe %>,
     initialPdfName: <%= @document.filename.to_s.to_json.html_safe %>,
     saveExtractionUrl: <%= save_extraction_project_document_path(@project, @document).to_json.html_safe %>,
     uploadExportUrl: <%= upload_export_project_document_path(@project, @document).to_json.html_safe %>,
