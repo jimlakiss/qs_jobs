@@ -283,6 +283,25 @@ body.app-shell {
   flex: 1 1 260px;
 }
 
+.document-metadata-editor {
+  margin-top: 0.45rem;
+}
+
+.document-metadata-editor summary {
+  cursor: pointer;
+  color: var(--qs-accent);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.document-metadata-form {
+  display: flex;
+  gap: 0.75rem;
+  align-items: end;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
 .document-list {
   display: grid;
   gap: 0.75rem;

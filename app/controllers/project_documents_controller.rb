@@ -2,7 +2,7 @@ class ProjectDocumentsController < ApplicationController
   layout false, only: :viewer
 
   before_action :set_project
-  before_action :set_document, only: [:viewer, :destroy, :save_extraction, :upload_export]
+  before_action :set_document, only: [:viewer, :update, :destroy, :save_extraction, :upload_export]
 
   def viewer
     redirect_to @project, alert: "Only PDF documents can be opened in the viewer" unless pdf_document?
@@ -17,6 +17,14 @@ class ProjectDocumentsController < ApplicationController
     else
       redirect_to @project, alert: "Choose at least one document to upload"
     end
+  end
+
+  def update
+    metadata = @project.project_documents.find_or_initialize_by(active_storage_attachment_id: @document.id)
+    metadata.category ||= "imported"
+    metadata.update!(document_metadata_params)
+
+    redirect_to project_path(@project, tab: document_tab_param), notice: "Document details updated"
   end
 
   def destroy
@@ -65,6 +73,14 @@ class ProjectDocumentsController < ApplicationController
 
   def document_params
     params.fetch(:project, {}).permit(:received_at, :source, :received_from, :notes, documents: [])
+  end
+
+  def document_metadata_params
+    params.fetch(:project_document, {}).permit(:received_at, :source, :received_from, :notes)
+  end
+
+  def document_tab_param
+    params[:tab].presence_in(%w[imported-documents extracted-documents]) || "imported-documents"
   end
 
   def pdf_document?

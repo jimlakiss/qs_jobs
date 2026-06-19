@@ -1,0 +1,30 @@
+<% metadata ||= ProjectDocument.new(received_at: document.created_at) %>
+
+<details class="document-metadata-editor">
+  <summary>Edit details</summary>
+  <%= form_with scope: :project_document,
+        url: project_document_path(project, document, tab: tab),
+        method: :patch,
+        local: true,
+        class: "document-metadata-form" do |f| %>
+    <div class="document-upload-meta">
+      <%= f.label :received_at, "Received date/time", class: "form-label" %>
+      <%= f.datetime_local_field :received_at,
+            value: (metadata.received_at || document.created_at).strftime("%Y-%m-%dT%H:%M"),
+            class: "form-control" %>
+    </div>
+    <div class="document-upload-meta">
+      <%= f.label :source, "Source", class: "form-label" %>
+      <%= f.text_field :source, value: metadata.source, class: "form-control", placeholder: "Email, client, consultant" %>
+    </div>
+    <div class="document-upload-meta">
+      <%= f.label :received_from, "Received from", class: "form-label" %>
+      <%= f.text_field :received_from, value: metadata.received_from, class: "form-control", placeholder: "Name or company" %>
+    </div>
+    <div class="document-upload-notes">
+      <%= f.label :notes, "Notes", class: "form-label" %>
+      <%= f.text_field :notes, value: metadata.notes, class: "form-control", placeholder: "Optional document notes" %>
+    </div>
+    <%= f.submit "Save details", class: "btn btn-primary btn-sm" %>
+  <% end %>
+</details>

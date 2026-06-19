@@ -33,6 +33,42 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "First issue", metadata.notes
   end
 
+  test "updates document metadata after upload" do
+    @project.documents.attach(
+      io: StringIO.new("temporary document"),
+      filename: "temporary.txt",
+      content_type: "text/plain"
+    )
+    document = @project.documents.first
+    @project.project_documents.create!(
+      active_storage_attachment_id: document.id,
+      category: "imported",
+      received_at: Time.zone.parse("2026-05-28 09:30"),
+      source: "Email",
+      received_from: "Client",
+      notes: "First issue"
+    )
+
+    patch project_document_path(@project, document),
+      params: {
+        tab: "imported-documents",
+        project_document: {
+          received_at: "2026-05-29T10:45",
+          source: "Portal",
+          received_from: "Architect",
+          notes: "Updated issue"
+        }
+      }
+
+    assert_redirected_to project_path(@project, tab: "imported-documents")
+
+    metadata = @project.project_documents.find_by!(active_storage_attachment_id: document.id)
+    assert_equal "Portal", metadata.source
+    assert_equal "Architect", metadata.received_from
+    assert_equal "Updated issue", metadata.notes
+    assert_equal Time.zone.parse("2026-05-29 10:45"), metadata.received_at
+  end
+
   test "removes a project document" do
     @project.documents.attach(
       io: StringIO.new("temporary document"),

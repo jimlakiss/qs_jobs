@@ -136,6 +136,11 @@
                     <% if metadata&.notes.present? %>
                       <div class="text-muted small"><%= metadata.notes %></div>
                     <% end %>
+                    <%= render "document_metadata_form",
+                          project: @project,
+                          document: document,
+                          metadata: metadata,
+                          tab: "imported-documents" %>
                     <% if extraction %>
                       <div class="text-muted small">
                         Extracted <%= pluralize(extraction.sheets.size, "sheet") %>
@@ -282,6 +287,11 @@
                     <% if metadata&.notes.present? %>
                       <div class="text-muted small"><%= metadata.notes %></div>
                     <% end %>
+                    <%= render "document_metadata_form",
+                          project: @project,
+                          document: document,
+                          metadata: metadata,
+                          tab: "extracted-documents" %>
                   </div>
 
                   <div class="stack-actions">

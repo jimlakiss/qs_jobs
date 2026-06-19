@@ -2,7 +2,7 @@ Rails.application.routes.draw do
   devise_for :users, skip: [:registrations]
 
   resources :projects do
-    resources :documents, only: [:create, :destroy], controller: "project_documents" do
+    resources :documents, only: [:create, :update, :destroy], controller: "project_documents" do
       member do
         get :viewer
         post :save_extraction
