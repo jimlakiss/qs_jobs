@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_29_063000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_19_005000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -127,6 +127,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_063000) do
     t.decimal "fee_value"
     t.decimal "job_value"
     t.datetime "updated_at", null: false
+    t.index "lower(btrim((code)::text))", name: "index_projects_on_normalized_code_unique", unique: true
   end
 
   create_table "users", force: :cascade do |t|

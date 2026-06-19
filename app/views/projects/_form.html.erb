@@ -1,6 +1,17 @@
 <div class="app-card form-shell">
   <div class="app-card-body">
     <%= form_with model: @project do |f| %>
+      <% if @project.errors.any? %>
+        <div class="alert alert-danger">
+          <p class="fw-semibold mb-1">Please fix the project details:</p>
+          <ul class="mb-0">
+            <% @project.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
       <div class="row g-3">
         <div class="col-md-6">
           <%= f.label :code, class: "form-label" %>
