@@ -45,6 +45,13 @@ The S3 bucket must allow browser CORS requests from the production app host. A t
 
 Add any custom production domain to `AllowedOrigins` before switching traffic to it.
 
+### Troubleshooting
+
+- If uploads jump to about 90% and then stop, the file body likely reached S3 but the browser did not receive an accepted final response. Check the bucket CORS rule first.
+- A working CORS preflight should return `HTTP 200` with `Access-Control-Allow-Origin`, `Access-Control-Allow-Methods: PUT`, and `Access-Control-Expose-Headers: ETag`.
+- The app AWS user does not need bucket CORS admin permissions for normal uploads, but an operator needs `s3:GetBucketCORS` and `s3:PutBucketCORS` to inspect or change this setting from code/CLI.
+- Heroku `H28 Client Connection Idle` on `/projects/:id/documents` indicates a non-direct multipart upload is still being attempted. Confirm the file field renders a `data-direct-upload-url` attribute and that `@rails/activestorage` is loaded.
+
 ## Notes
 
 - Development and test still use local disk storage.

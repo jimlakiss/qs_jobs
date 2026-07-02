@@ -1,24 +1,15 @@
-# README
+# QS Jobs
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Internal Rails app for tracking QS projects, contributors, and project documents.
 
-Things you may want to cover:
+## Operational Notes
 
-* Ruby version
+- Production document uploads use Active Storage with S3.
+- Large PDFs are uploaded directly from the browser to S3 to avoid Heroku router timeouts.
+- See [docs/s3_storage.md](docs/s3_storage.md) for the required production environment variables, bucket permissions, and CORS setup.
 
-* System dependencies
+## Common Commands
 
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+```sh
+bin/rails test
+```
