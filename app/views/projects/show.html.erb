@@ -88,7 +88,8 @@
           <%= form_with model: @project, url: project_documents_path(@project), method: :post, local: true, class: "document-upload-shell" do |f| %>
             <div class="document-upload-field">
               <%= f.label :documents, "Upload documents", class: "form-label" %>
-              <%= f.file_field :documents, multiple: true, class: "form-control" %>
+              <%= f.file_field :documents, multiple: true, direct_upload: true, class: "form-control" %>
+              <div class="form-text" data-direct-upload-status></div>
             </div>
             <div class="document-upload-meta">
               <%= f.label :received_at, "Received date/time", class: "form-label" %>

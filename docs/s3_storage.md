@@ -25,6 +25,26 @@ The app role or access key needs permission to:
 - delete objects
 - list bucket objects if operational tooling needs it
 
+## Browser Direct Uploads
+
+Project document uploads use Active Storage direct uploads. The browser asks Rails for a signed upload target, sends the file directly to S3, then submits the completed blob ID back to Rails with the document metadata. This avoids Heroku router timeouts for large drawing sets.
+
+The S3 bucket must allow browser CORS requests from the production app host. A typical private-bucket CORS rule is:
+
+```json
+[
+  {
+    "AllowedHeaders": ["*"],
+    "AllowedMethods": ["PUT"],
+    "AllowedOrigins": ["https://cd-projects-392d0aa8a48a.herokuapp.com"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3000
+  }
+]
+```
+
+Add any custom production domain to `AllowedOrigins` before switching traffic to it.
+
 ## Notes
 
 - Development and test still use local disk storage.

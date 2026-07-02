@@ -21,4 +21,14 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_includes response.body, "Code has already been taken"
   end
+
+  test "project document upload uses direct upload wiring" do
+    project = Project.create!(code: "DOC-UPLOAD-001", address: "1 Test Street")
+
+    get project_path(project)
+
+    assert_response :success
+    assert_includes response.body, 'data-direct-upload-url="http://www.example.com/rails/active_storage/direct_uploads"'
+    assert_includes response.body, "data-direct-upload-status"
+  end
 end
