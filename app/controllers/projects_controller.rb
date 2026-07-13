@@ -1,15 +1,28 @@
 class ProjectsController < ApplicationController
+  PROJECT_SORT_OPTIONS = {
+    "code_asc" => {
+      label: "Code: lowest to highest",
+      order: Arel.sql("LOWER(projects.code) ASC, projects.code ASC, projects.id ASC")
+    },
+    "code_desc" => {
+      label: "Code: highest to lowest",
+      order: Arel.sql("LOWER(projects.code) DESC, projects.code DESC, projects.id DESC")
+    }
+  }.freeze
+
   before_action :set_project, only: [:show, :edit, :update, :destroy, :confirm_destroy]
   before_action :load_contributors, only: [:new, :edit]
 
   def index
     @query = params[:q].to_s.strip
+    @sort = params[:sort].presence_in(PROJECT_SORT_OPTIONS.keys) || "code_asc"
+    @project_sort_options = PROJECT_SORT_OPTIONS.map { |value, config| [config.fetch(:label), value] }
     @projects = Project.includes(project_contributors: :contributor)
     @projects = @projects.where(
       "projects.code ILIKE :q OR projects.address ILIKE :q OR projects.description ILIKE :q",
       q: "%#{@query}%"
     ) if @query.present?
-    @projects = @projects.order(created_at: :desc)
+    @projects = @projects.order(PROJECT_SORT_OPTIONS.fetch(@sort).fetch(:order))
     @total_job_value = @projects.sum(:job_value)
     @total_fee_value = @projects.sum(:fee_value)
     @matching_contributors = Contributor.none

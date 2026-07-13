@@ -35,9 +35,13 @@
           <label for="project-search" class="form-label">Search everything from home</label>
           <%= text_field_tag :q, @query, id: "project-search", class: "form-control", placeholder: "Search projects, contributors, or contributor types" %>
         </div>
+        <div>
+          <label for="project-sort" class="form-label">Sort projects</label>
+          <%= select_tag :sort, options_for_select(@project_sort_options, @sort), id: "project-sort", class: "form-select" %>
+        </div>
         <%= submit_tag "Search", class: "btn btn-primary" %>
         <% if @query.present? %>
-          <%= link_to "Clear", projects_path, class: "btn btn-outline-secondary" %>
+          <%= link_to "Clear", projects_path(sort: @sort), class: "btn btn-outline-secondary" %>
         <% end %>
       <% end %>
     </div>
