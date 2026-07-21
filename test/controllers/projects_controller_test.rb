@@ -22,7 +22,7 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Code has already been taken"
   end
 
-  test "projects default to code order from lowest to highest" do
+  test "projects default to code order from highest to lowest" do
     Project.create!(code: "2627-010")
     Project.create!(code: "2627-009")
     Project.create!(code: "2627-007")
@@ -30,7 +30,7 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     get projects_path
 
     assert_response :success
-    assert_equal ["2627-007", "2627-009", "2627-010"], rendered_project_codes
+    assert_equal ["2627-010", "2627-009", "2627-007"], rendered_project_codes
   end
 
   test "projects can be sorted by code from highest to lowest" do

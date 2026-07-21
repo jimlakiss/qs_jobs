@@ -33,6 +33,55 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "First issue", metadata.notes
   end
 
+  test "uploads dwg documents to a project" do
+    file = fixture_file_upload("test_drawing.dwg", "application/acad")
+
+    assert_difference -> { @project.documents.count }, 1 do
+      post project_documents_path(@project),
+        params: {
+          project: {
+            documents: [file],
+            source: "Consultant"
+          }
+        }
+    end
+
+    assert_redirected_to project_path(@project)
+    document = @project.reload.documents.first
+    metadata = @project.project_documents.find_by!(active_storage_attachment_id: document.id)
+
+    assert_equal "test_drawing.dwg", document.filename.to_s
+    assert_equal "imported", metadata.category
+    assert_equal "Consultant", metadata.source
+    assert document.blob.analyzed?
+    assert_not document.blob.metadata.key?("width")
+  end
+
+  test "uploads direct upload dwg documents with blank content type" do
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: file_fixture("test_drawing.dwg").open,
+      filename: "test_drawing.dwg",
+      content_type: nil,
+      identify: false
+    )
+
+    assert_difference -> { @project.documents.count }, 1 do
+      post project_documents_path(@project),
+        params: {
+          project: {
+            documents: [blob.signed_id],
+            source: "Consultant"
+          }
+        }
+    end
+
+    assert_redirected_to project_path(@project)
+    document = @project.reload.documents.first
+
+    assert_equal "test_drawing.dwg", document.filename.to_s
+    assert_equal "Consultant", @project.project_documents.find_by!(active_storage_attachment_id: document.id).source
+  end
+
   test "updates document metadata after upload" do
     @project.documents.attach(
       io: StringIO.new("temporary document"),
@@ -114,10 +163,20 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
         params: {
           extraction: {
             document_details: { project_id: "VW-001", prepared_by: "Architect" },
-            sheets: [{ page: 1, sheet_id: "A001", description: "Cover sheet" }],
+            sheets: [{ page: 1, sheet_id: "RAW-001", description: "Raw cover sheet" }],
             regions: { sheet_id: { x: 0.1, y: 0.2, w: 0.3, h: 0.4 } },
             measurements: {},
-            staging_data: [{ page: 1, filename: "A001 - Cover sheet.pdf" }]
+            staging_data: [
+              {
+                page: 1,
+                filename: "01 - A001 - Cover sheet.pdf",
+                sheet_id: "A001",
+                description: "Cover sheet",
+                issue_id: "B",
+                status: "ready",
+                included: true
+              }
+            ]
           }
         },
         as: :json
@@ -128,6 +187,10 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     extraction = @project.document_extractions.last
     assert_equal "VW-001", extraction.document_details["project_id"]
     assert_equal "A001", extraction.sheets.first["sheet_id"]
+    assert_equal "Cover sheet", extraction.sheets.first["description"]
+    assert_equal "01 - A001 - Cover sheet.pdf", extraction.sheets.first["filename"]
+    assert_equal "B", extraction.sheets.first["issue_id"]
+    assert_equal "ready", extraction.sheets.first["status"]
   end
 
   test "saves exported files back to project documents" do

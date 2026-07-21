@@ -92,11 +92,33 @@ class ProjectDocumentsController < ApplicationController
 
     {
       document_details: normalize_json(extraction[:document_details], {}),
-      sheets: normalize_json(extraction[:sheets], []),
+      sheets: normalized_sheet_rows(extraction),
       regions: normalize_json(extraction[:regions], {}),
       measurements: normalize_json(extraction[:measurements], {}),
       staging_data: normalize_json(extraction[:staging_data], [])
     }
+  end
+
+  def normalized_sheet_rows(extraction)
+    staging_data = normalize_json(extraction[:staging_data], [])
+    staged_sheets = staging_data.filter_map.with_index do |sheet, index|
+      next unless sheet.is_a?(Hash)
+
+      {
+        order: sheet["order"] || index + 1,
+        page: sheet["page"],
+        filename: sheet["filename"],
+        sheet_id: sheet["sheet_id"],
+        description: sheet["description"],
+        issue_id: sheet["issue_id"],
+        date: sheet["date"],
+        issue_description: sheet["issue_description"],
+        status: sheet["status"],
+        included: sheet.fetch("included", true)
+      }.compact
+    end
+
+    staged_sheets.presence || normalize_json(extraction[:sheets], [])
   end
 
   def normalize_json(value, fallback)

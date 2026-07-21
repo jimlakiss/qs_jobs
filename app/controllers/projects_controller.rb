@@ -15,7 +15,7 @@ class ProjectsController < ApplicationController
 
   def index
     @query = params[:q].to_s.strip
-    @sort = params[:sort].presence_in(PROJECT_SORT_OPTIONS.keys) || "code_asc"
+    @sort = params[:sort].presence_in(PROJECT_SORT_OPTIONS.keys) || "code_desc"
     @project_sort_options = PROJECT_SORT_OPTIONS.map { |value, config| [config.fetch(:label), value] }
     @projects = Project.includes(project_contributors: :contributor)
     @projects = @projects.where(

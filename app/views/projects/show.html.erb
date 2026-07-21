@@ -217,6 +217,7 @@
                             <th>Description</th>
                             <th>Revision</th>
                             <th>Date</th>
+                            <th>Filename</th>
                             <th>Status</th>
                           </tr>
                         </thead>
@@ -228,6 +229,7 @@
                               <td><%= sheet["description"].presence || "—" %></td>
                               <td><%= sheet["issue_id"].presence || "—" %></td>
                               <td><%= sheet["date"].presence || "—" %></td>
+                              <td><%= sheet["filename"].presence || "—" %></td>
                               <td><%= sheet["status"].presence || "—" %></td>
                             </tr>
                           <% end %>
