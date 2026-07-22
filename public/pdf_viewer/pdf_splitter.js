@@ -506,7 +506,8 @@
     const included = stagingData.filter(s => s.included);
     if (!included.length) { alert('No sheets selected.'); return; }
 
-    const doc     = window.documentDetails || {};
+    const canonical = window.getCanonicalExportData ? window.getCanonicalExportData() : {};
+    const doc     = canonical.document || window.documentDetails || {};
     const headers = ['order', 'page', 'filename', 'prepared_by', 'project_id', 'sheet_id', 'description', 'issue_id', 'date', 'issue_description', 'status'];
     const q       = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
 
@@ -537,7 +538,8 @@
     const included = stagingData.filter(s => s.included);
     if (!included.length) { alert('No sheets selected.'); return; }
 
-    const doc  = window.documentDetails || {};
+    const canonical = window.getCanonicalExportData ? window.getCanonicalExportData() : {};
+    const doc  = canonical.document || window.documentDetails || {};
     const data = {
       exported_at: new Date().toISOString(),
       project_id:  doc.project_id  || '',
@@ -580,6 +582,7 @@
     showP('Extracting all pages — this may take a moment…');
 
     try {
+      if (window.extractDocumentDetails) await window.extractDocumentDetails(true);
       if (window.applyTemplatesToAllPages) await window.applyTemplatesToAllPages(true);
       buildStagingData();
       await saveExtractionToApp('staging_opened');

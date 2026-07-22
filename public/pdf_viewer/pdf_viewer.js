@@ -1,7 +1,7 @@
 // pdf_viewer.js - COMPLETE LATEST VERSION
 // Multi-page PDF viewer + region drawing + vector/OCR extraction + multi-file support
 
-const ENABLE_VECTOR_EXTRACTION = false;
+const ENABLE_VECTOR_EXTRACTION = true;
 const DOCUMENT_DETAILS = ["prepared_by", "project_id"];
 const REGION_TYPES = ["sheet_id", "description", "issue_id", "date", "issue_description"];
 
@@ -26,6 +26,7 @@ const regionTypeSelect = document.getElementById("region-type");
 const drawTypeSwatch = document.getElementById("draw-type-swatch");
 const preparedByInput = document.getElementById("prepared-by");
 const projectIdInput = document.getElementById("project-id");
+const ocrOnlyToggleBtn = document.getElementById("ocr-only-toggle");
 
 function getPdfjsLib() {
   return (typeof pdfjsLib !== "undefined") ? pdfjsLib : null;
@@ -72,6 +73,7 @@ let lastPointerNorm = null;
 
 let ocrWorkerPromise = null;
 let _ocrJobChain = Promise.resolve();
+let ocrOnlyExtraction = localStorage.getItem("pdfViewerOcrOnlyExtraction") === "true";
 
 let isDrawing = false;
 let startX = 0;
@@ -273,6 +275,23 @@ function runOcrExclusive(fn) {
   _ocrJobChain = _ocrJobChain.then(fn, fn);
   return _ocrJobChain;
 }
+
+function updateOcrOnlyToggle() {
+  if (!ocrOnlyToggleBtn) return;
+  ocrOnlyToggleBtn.classList.toggle("is-active", ocrOnlyExtraction);
+  ocrOnlyToggleBtn.setAttribute("aria-pressed", ocrOnlyExtraction ? "true" : "false");
+  ocrOnlyToggleBtn.title = ocrOnlyExtraction
+    ? "OCR-only extraction is on"
+    : "Skip embedded PDF text and force OCR for extraction";
+}
+
+ocrOnlyToggleBtn?.addEventListener("click", () => {
+  ocrOnlyExtraction = !ocrOnlyExtraction;
+  localStorage.setItem("pdfViewerOcrOnlyExtraction", ocrOnlyExtraction ? "true" : "false");
+  updateOcrOnlyToggle();
+  console.log(`🔎 Extraction mode: ${ocrOnlyExtraction ? "OCR only" : "text first, OCR fallback"}`);
+});
+updateOcrOnlyToggle();
 
 (function initRegionTypeSelect() {
   if (!regionTypeSelect) return;
@@ -1414,6 +1433,23 @@ function getMostRecentRegionOfType(pageNum, type) {
   return null;
 }
 
+function getMostRecentDocumentRegionLocation(type) {
+  const currentRegion = getMostRecentRegionOfType(currentPage, type);
+  if (currentRegion) return { pageNum: currentPage, region: currentRegion };
+
+  const pageNums = Object.keys(regionsByPage)
+    .map((n) => parseInt(n, 10))
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
+
+  for (const pageNum of pageNums) {
+    const region = getMostRecentRegionOfType(pageNum, type);
+    if (region) return { pageNum, region };
+  }
+
+  return null;
+}
+
 function resolveRegionForPage(pageNum, type) {
   const pageRegions = regionsByPage[pageNum] || [];
   const override = [...pageRegions].reverse().find((r) => r.type === type);
@@ -1610,8 +1646,8 @@ function cleanByField(field, raw) {
   }
 
   if (field === "sheet_id") {
-    // Apply 0/O disambiguation before pattern matching
-    const disambiguated = disambiguate0AndO(t);
+    // Sheet IDs conventionally use zero, not the letter O.
+    const disambiguated = disambiguate0AndO(t).replace(/[Oo]/g, "0");
     const m = disambiguated.match(/[A-Za-z0-9][A-Za-z0-9\-_.]*/);
     const result = m ? m[0] : disambiguated;
 
@@ -1721,6 +1757,26 @@ async function extractVectorTextFromRegion(pageNum, region) {
   });
 
   return strings.join(" ").replace(/\s+/g, " ").trim();
+}
+
+async function extractTextFromRegion(pageNum, region) {
+  let extracted = "";
+
+  if (ENABLE_VECTOR_EXTRACTION && !ocrOnlyExtraction) {
+    try {
+      extracted = await extractVectorTextFromRegion(pageNum, region);
+      extracted = cleanByField(region?.type || "", extracted);
+      if (extracted) {
+        console.log(`📄 Page ${pageNum} "${region?.type || "region"}": text selection`);
+        return extracted;
+      }
+    } catch (err) {
+      console.warn(`⚠️ Text extraction failed on page ${pageNum}; falling back to OCR`, err);
+    }
+  }
+
+  extracted = await extractOCRFromRegion(pageNum, region);
+  return cleanByField(region?.type || "", extracted);
 }
 
 async function extractOCRFromRegion(pageNum, region) {
@@ -1833,11 +1889,12 @@ async function extractOCRFromRegion(pageNum, region) {
   });
 }
 
-async function applyTemplatesToAllPages(logProgress = false) {
+async function applyTemplatesToAllPages(logProgress = false, force = false) {
   if (!pdfDoc) return;
 
   const templateCount = Object.keys(regionTemplates).length;
   console.log(`📐 Active templates: ${templateCount}`, Object.keys(regionTemplates));
+  console.log(`🔎 Extraction mode: ${ocrOnlyExtraction ? "OCR only" : "text first, OCR fallback"}`);
   
   if (templateCount === 0) {
     console.warn("⚠️ No templates defined! Draw regions on a page first, then click Extract.");
@@ -1857,7 +1914,8 @@ async function applyTemplatesToAllPages(logProgress = false) {
       if (!sheetDetailsByPage[pageNum]) sheetDetailsByPage[pageNum] = {};
 
       for (const field of REGION_TYPES) {
-        if (Object.prototype.hasOwnProperty.call(sheetDetailsByPage[pageNum], field)) continue;
+        const hasCachedValue = Object.prototype.hasOwnProperty.call(sheetDetailsByPage[pageNum], field);
+        if (hasCachedValue && !force && !ocrOnlyExtraction) continue;
 
         const regions = resolveAllRegionsForPage(pageNum, field);
         if (regions.length === 0) {
@@ -1868,17 +1926,7 @@ async function applyTemplatesToAllPages(logProgress = false) {
         let extractedParts = [];
 
         for (const region of regions) {
-          let extracted = "";
-
-          if (ENABLE_VECTOR_EXTRACTION) {
-            extracted = await extractVectorTextFromRegion(pageNum, region);
-          }
-
-          if (!extracted) {
-            extracted = await extractOCRFromRegion(pageNum, region);
-          }
-
-          extracted = cleanByField(field, extracted);
+          const extracted = await extractTextFromRegion(pageNum, region);
           if (extracted) {
             extractedParts.push(extracted);
           }
@@ -1909,19 +1957,34 @@ async function applyTemplatesToAllPages(logProgress = false) {
 
 window.applyTemplatesToAllPages = applyTemplatesToAllPages;
 
-async function extractAll() {
-  if (!pdfDoc) return alert("No PDF loaded");
+function syncDocumentDetailsFromInputs() {
+  if (preparedByInput) documentDetails.prepared_by = preparedByInput.value || "";
+  if (projectIdInput) documentDetails.project_id = projectIdInput.value || "";
+}
 
-  console.log(`🚀 Extract started - extracting DOCUMENT_DETAILS only (prepared_by, project_id)`);
+async function extractDocumentDetails(logProgress = true, force = false) {
+  if (!pdfDoc) return;
+
+  syncDocumentDetailsFromInputs();
+  if (logProgress) {
+    console.log(`🚀 Extracting DOCUMENT_DETAILS (prepared_by, project_id)`);
+  }
 
   for (const field of DOCUMENT_DETAILS) {
-    const region = getMostRecentRegionOfType(currentPage, field);
+    const currentValue = (documentDetails[field] || "").trim();
+    if (currentValue && !force && !ocrOnlyExtraction) {
+      if (logProgress) console.log(`📄 Document field (${field}) already set →`, currentValue);
+      continue;
+    }
+
+    const location = getMostRecentDocumentRegionLocation(field);
+    const region = location?.region;
     if (!region) {
       console.warn(`⚠️ No region drawn for document field: ${field}`);
       continue;
     }
 
-    let extracted = await extractOCRFromRegion(currentPage, region);
+    let extracted = await extractTextFromRegion(location.pageNum, region);
     extracted = (extracted || "").trim();
 
     if (extracted) {
@@ -1935,11 +1998,20 @@ async function extractAll() {
     console.log(`📄 Document field (${field}) →`, (documentDetails[field] || "").trim() || "<empty>");
   }
 
-  console.log("✅ Extract complete (DOCUMENT_DETAILS only)");
+  if (logProgress) {
+    console.log("✅ Document fields extracted");
+  }
+}
+
+async function extractAll() {
+  if (!pdfDoc) return alert("No PDF loaded");
+
+  await extractDocumentDetails(true, true);
   console.log("ℹ️ REGION_TYPES (sheet_id, description, etc.) are NOT extracted - they use templates/overrides automatically");
 }
 
 window.extractAll = extractAll;
+window.extractDocumentDetails = extractDocumentDetails;
 
 window.addEventListener("keydown", (e) => {
   if (isEditableTarget(document.activeElement)) return;
@@ -2154,6 +2226,8 @@ pdfScroll?.addEventListener("wheel", (e) => {
 }, { passive: false });
 
 function getCanonicalExportData() {
+  syncDocumentDetailsFromInputs();
+
   const doc = {
     prepared_by: (documentDetails.prepared_by || "").trim(),
     project_id: (documentDetails.project_id || "").trim(),
@@ -2187,6 +2261,9 @@ function getCanonicalExportData() {
 }
 
 window.exportExtractedData = async function () {
+  if (typeof extractDocumentDetails === "function") {
+    await extractDocumentDetails(true);
+  }
   if (typeof applyTemplatesToAllPages === "function") {
     await applyTemplatesToAllPages(true);
   }
@@ -2260,6 +2337,10 @@ window.downloadJSON = async function () {
     showProcessing('Processing JSON export...');
     console.log("📦 Starting JSON export...");
     
+    if (typeof extractDocumentDetails === "function") {
+      await extractDocumentDetails(true);
+    }
+
     if (typeof applyTemplatesToAllPages === "function") {
       await applyTemplatesToAllPages(true);
     }
@@ -2284,6 +2365,10 @@ window.downloadCSV = async function () {
     showProcessing('Processing CSV export...');
     console.log("📦 Starting CSV export...");
     
+    if (typeof extractDocumentDetails === "function") {
+      await extractDocumentDetails(true);
+    }
+
     if (typeof applyTemplatesToAllPages === "function") {
       await applyTemplatesToAllPages(true);
     }
@@ -2341,6 +2426,7 @@ Object.defineProperty(window, 'multiPdfDocs',       { get: () => multiPdfDocs,  
 Object.defineProperty(window, 'documentDetails',    { get: () => documentDetails,    configurable: true });
 Object.defineProperty(window, 'sheetDetailsByPage', { get: () => sheetDetailsByPage, configurable: true });
 Object.defineProperty(window, 'regionTemplates',    { get: () => regionTemplates,    configurable: true });
+Object.defineProperty(window, 'getCanonicalExportData', { value: getCanonicalExportData, configurable: true });
 
 // ── Measurement system ───────────────────────────────────────────────────────
 
