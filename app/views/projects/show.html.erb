@@ -93,7 +93,7 @@
             </div>
             <div class="document-upload-meta">
               <%= f.label :received_at, "Received date/time", class: "form-label" %>
-              <%= f.datetime_local_field :received_at, value: Time.current.strftime("%Y-%m-%dT%H:%M"), class: "form-control" %>
+              <%= f.datetime_local_field :received_at, value: sydney_datetime_local_value(Time.current), class: "form-control" %>
             </div>
             <div class="document-upload-meta">
               <%= f.label :source, "Source", class: "form-label" %>
@@ -126,7 +126,7 @@
                       <%= document.created_at.strftime("%d %b %Y") %>
                     </div>
                     <div class="text-muted small">
-                      Received <%= metadata&.received_at&.strftime("%d %b %Y %H:%M") || document.created_at.strftime("%d %b %Y %H:%M") %>
+                      Received <%= sydney_datetime(metadata&.received_at || document.created_at) %>
                       <% if metadata&.source.present? %>
                         · <%= metadata.source %>
                       <% end %>
@@ -279,7 +279,7 @@
                       ·
                       <%= number_to_human_size(document.byte_size) %>
                       ·
-                      Generated <%= metadata&.received_at&.strftime("%d %b %Y %H:%M") || document.created_at.strftime("%d %b %Y %H:%M") %>
+                      Generated <%= sydney_datetime(metadata&.received_at || document.created_at) %>
                     </div>
                     <div class="text-muted small">
                       <%= metadata&.export_kind.to_s.humanize.presence || "Viewer export" %>

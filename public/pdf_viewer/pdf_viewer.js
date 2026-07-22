@@ -467,8 +467,6 @@ async function loadInitialProjectPdf() {
   }
 }
 
-loadInitialProjectPdf();
-
 function setUploadDragActive(active) {
   uploadDropZone?.classList.toggle("is-drag-over", active);
 }
@@ -2448,7 +2446,7 @@ Object.defineProperty(window, 'measurementsByPage', { get: () => measurementsByP
 Object.defineProperty(window, 'scaleZonesByPage',    { get: () => scaleZonesByPage,    configurable: true });
 
 // Drawing state
-let msrSnapEnabled   = true;  // global snap toggle for regions + measurements
+let msrSnapEnabled   = false; // global snap toggle for regions + measurements
 let msrShowSnapDebug = false; // toggle: render all cached snap points as dots
 let msrActiveDrawPts = [];   // normalized points being placed
 let msrPreviewPt     = null; // current mouse position (normalized)
@@ -3980,3 +3978,5 @@ document.getElementById('btn-mode-measure')?.addEventListener('click', () => set
     document.body.style.userSelect = '';
   });
 })();
+
+loadInitialProjectPdf();
