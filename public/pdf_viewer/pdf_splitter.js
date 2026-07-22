@@ -506,13 +506,14 @@
     const included = stagingData.filter(s => s.included);
     if (!included.length) { alert('No sheets selected.'); return; }
 
-    const headers = ['order', 'page', 'filename', 'sheet_id', 'description', 'issue_id', 'date', 'issue_description', 'status'];
+    const doc     = window.documentDetails || {};
+    const headers = ['order', 'page', 'filename', 'prepared_by', 'project_id', 'sheet_id', 'description', 'issue_id', 'date', 'issue_description', 'status'];
     const q       = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
 
     const csv = [
       headers.join(','),
       ...included.map((s, i) =>
-        [i + 1, s.page, s.filename, s.sheet_id, s.description, s.issue_id, s.date, s.issue_description, s.status].map(q).join(',')
+        [i + 1, s.page, s.filename, doc.prepared_by || '', doc.project_id || '', s.sheet_id, s.description, s.issue_id, s.date, s.issue_description, s.status].map(q).join(',')
       ),
     ].join('\n');
 
