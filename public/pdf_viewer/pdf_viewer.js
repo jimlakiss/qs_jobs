@@ -110,8 +110,25 @@ let msrSelectedPtIdx = -1;   // for count: which marker is selected (-1 = whole 
 let msrRectDrawStart = null; // scale-zone rectangle drag start point
 let msrSuppressNextClick = false;
 let msrDragState = null;
+let measurementUiReady = false;
 const snapPointsByPage = new Map(); // pageNum → [{x,y}, ...]
 const snapSegmentsByPage = new Map(); // pageNum → [{a:{x,y}, b:{x,y}}, ...]
+let szPendingPts  = null;   // polygon verts waiting for dialog
+let szRefState    = null;   // { pts: [], phase: 'drawing'|'done' }
+let szActiveTab   = 'ratio';
+const szDialogEl    = document.getElementById('sz-dialog');
+const szBackdropEl  = document.getElementById('sz-backdrop');
+const szTabRatioEl  = document.getElementById('sz-tab-ratio');
+const szTabRefEl    = document.getElementById('sz-tab-ref');
+const szPanelRatio  = document.getElementById('sz-panel-ratio');
+const szPanelRef    = document.getElementById('sz-panel-ref');
+const szRatioSel    = document.getElementById('sz-ratio-sel');
+const szRatioCust   = document.getElementById('sz-ratio-custom');
+const szRefStatusEl = document.getElementById('sz-ref-status');
+const szRefLenRow   = document.getElementById('sz-ref-len-row');
+const szRefLenEl    = document.getElementById('sz-ref-len');
+const szOkBtn       = document.getElementById('sz-ok');
+const szCancelBtn   = document.getElementById('sz-cancel');
 
 // 1 CSS inch = 96px; 1 PDF point = 1/72 inch → actual-size scale = 96/72
 // display% = scale / ACTUAL_SIZE_SCALE * 100  →  100% = actual physical paper size
@@ -1262,9 +1279,11 @@ regionsByPage[currentPage] = pageRegions.filter(r => !r.isGhost || selectedSet.h
     regionsG.appendChild(rect);
   });
 
-  msrRenderMeasurements(measG);
-  msrUpdateScaleLabel();
-  msrUpdateInfoPane();
+  if (measurementUiReady) {
+    msrRenderMeasurements(measG);
+    msrUpdateScaleLabel();
+    msrUpdateInfoPane();
+  }
 }
 
 function syncLegacySelectedId() {
@@ -2495,11 +2514,6 @@ function snapHudUpdateState(snapPt, nearPt) {
   }
 }
 
-// Scale zone dialog state
-let szPendingPts  = null;   // polygon verts waiting for dialog
-let szRefState    = null;   // { pts: [], phase: 'drawing'|'done' }
-let szActiveTab   = 'ratio';
-
 // Element refs — measure toolbar
 const msrToolEls = {
   'select':     document.getElementById('tool-select'),
@@ -2512,21 +2526,6 @@ const activeScaleLblEl = document.getElementById('active-scale-lbl');
 const clearMeasBtn     = document.getElementById('clear-measurements');
 const snapToggleBtn    = document.getElementById('tool-snap-toggle');
 const scaleZoneShapeEl = document.getElementById('scale-zone-shape');
-
-// Element refs — scale zone dialog
-const szDialogEl    = document.getElementById('sz-dialog');
-const szBackdropEl  = document.getElementById('sz-backdrop');
-const szTabRatioEl  = document.getElementById('sz-tab-ratio');
-const szTabRefEl    = document.getElementById('sz-tab-ref');
-const szPanelRatio  = document.getElementById('sz-panel-ratio');
-const szPanelRef    = document.getElementById('sz-panel-ref');
-const szRatioSel    = document.getElementById('sz-ratio-sel');
-const szRatioCust   = document.getElementById('sz-ratio-custom');
-const szRefStatusEl = document.getElementById('sz-ref-status');
-const szRefLenRow   = document.getElementById('sz-ref-len-row');
-const szRefLenEl    = document.getElementById('sz-ref-len');
-const szOkBtn       = document.getElementById('sz-ok');
-const szCancelBtn   = document.getElementById('sz-cancel');
 
 // ── Tool management ──────────────────────────────────────────────────────────
 
@@ -2588,6 +2587,8 @@ clearMeasBtn?.addEventListener('click', () => {
   msrSelectedId    = null;
   redrawRegions();
 });
+
+measurementUiReady = true;
 
 // ── Geometry helpers ─────────────────────────────────────────────────────────
 
