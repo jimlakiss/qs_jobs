@@ -95,6 +95,23 @@ let canvasPadY = 0;          // canvas-outer top/bottom padding (px)
 let recenterAfterRender = false;
 let currentTool = 'select'; // 'select' | 'scale-zone' | 'linear' | 'area' | 'count'
 const thumbnailDataCache = new Map();
+const measurementsByPage = {};  // { pageNum: [measurement, ...] }
+const scaleZonesByPage   = {};  // { pageNum: [zone, ...] }
+const pageBaseDimsCache  = new Map(); // pageNum → { width, height } in PDF pts
+let   msrIdCounter       = 1;
+let msrSnapEnabled   = false; // global snap toggle for regions + measurements
+let msrShowSnapDebug = false; // toggle: render all cached snap points as dots
+let msrActiveDrawPts = [];   // normalized points being placed
+let msrPreviewPt     = null; // current mouse position (normalized)
+let msrSnapPt        = null; // locked snap point — cursor is within snap threshold
+let msrNearPt        = null; // approach point — cursor is near but not yet locked
+let msrSelectedId    = null; // selected measurement id (number) or zone id (string "z<n>")
+let msrSelectedPtIdx = -1;   // for count: which marker is selected (-1 = whole measurement)
+let msrRectDrawStart = null; // scale-zone rectangle drag start point
+let msrSuppressNextClick = false;
+let msrDragState = null;
+const snapPointsByPage = new Map(); // pageNum → [{x,y}, ...]
+const snapSegmentsByPage = new Map(); // pageNum → [{a:{x,y}, b:{x,y}}, ...]
 
 // 1 CSS inch = 96px; 1 PDF point = 1/72 inch → actual-size scale = 96/72
 // display% = scale / ACTUAL_SIZE_SCALE * 100  →  100% = actual physical paper size
@@ -467,6 +484,8 @@ async function loadInitialProjectPdf() {
   }
 }
 
+setTimeout(loadInitialProjectPdf, 0);
+
 function setUploadDragActive(active) {
   uploadDropZone?.classList.toggle("is-drag-over", active);
 }
@@ -700,7 +719,7 @@ async function renderPage(pageNum) {
 
   highlightActiveThumb();
   redrawRegions();
-  msrBuildSnapCache(pageNum); // async, non-blocking
+  if (msrSnapEnabled) msrBuildSnapCache(pageNum); // async, non-blocking
 
   if (page?.cleanup) page.cleanup();
   page = null;
@@ -2436,31 +2455,8 @@ Object.defineProperty(window, 'normalizeSheetId', { value: normalizeSheetId, con
 
 const MSR_SVG_NS = "http://www.w3.org/2000/svg";
 
-// Data stores
-const measurementsByPage = {};  // { pageNum: [measurement, ...] }
-const scaleZonesByPage   = {};  // { pageNum: [zone, ...] }
-const pageBaseDimsCache  = new Map(); // pageNum → { width, height } in PDF pts
-let   msrIdCounter       = 1;
-
 Object.defineProperty(window, 'measurementsByPage', { get: () => measurementsByPage, configurable: true });
 Object.defineProperty(window, 'scaleZonesByPage',    { get: () => scaleZonesByPage,    configurable: true });
-
-// Drawing state
-let msrSnapEnabled   = false; // global snap toggle for regions + measurements
-let msrShowSnapDebug = false; // toggle: render all cached snap points as dots
-let msrActiveDrawPts = [];   // normalized points being placed
-let msrPreviewPt     = null; // current mouse position (normalized)
-let msrSnapPt        = null; // locked snap point — cursor is within snap threshold
-let msrNearPt        = null; // approach point — cursor is near but not yet locked
-let msrSelectedId    = null; // selected measurement id (number) or zone id (string "z<n>")
-let msrSelectedPtIdx = -1;   // for count: which marker is selected (-1 = whole measurement)
-let msrRectDrawStart = null; // scale-zone rectangle drag start point
-let msrSuppressNextClick = false;
-let msrDragState = null;
-
-// Snap cache
-const snapPointsByPage = new Map(); // pageNum → [{x,y}, ...]
-const snapSegmentsByPage = new Map(); // pageNum → [{a:{x,y}, b:{x,y}}, ...]
 
 // ── Snap HUD helpers ─────────────────────────────────────────────────────────
 function snapHudUpdateCount() {
@@ -2576,6 +2572,7 @@ snapToggleBtn?.addEventListener('click', () => {
   msrSnapEnabled = !msrSnapEnabled;
   msrSnapPt = null;
   msrNearPt = null;
+  if (msrSnapEnabled) msrBuildSnapCache(currentPage);
   updateSnapToggleUi();
   msrRedrawOnly();
 });
@@ -3978,5 +3975,3 @@ document.getElementById('btn-mode-measure')?.addEventListener('click', () => set
     document.body.style.userSelect = '';
   });
 })();
-
-loadInitialProjectPdf();

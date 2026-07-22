@@ -806,8 +806,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
-<script src="/pdf_viewer/pdf_viewer.js"></script>
-<script src="/pdf_viewer/pdf_splitter.js"></script>
+<script src="/pdf_viewer/pdf_viewer.js?v=<%= File.mtime(Rails.root.join("public/pdf_viewer/pdf_viewer.js")).to_i %>"></script>
+<script src="/pdf_viewer/pdf_splitter.js?v=<%= File.mtime(Rails.root.join("public/pdf_viewer/pdf_splitter.js")).to_i %>"></script>
 
 <!-- Snap diagnostic HUD — fixed corner overlay, independent of SVG -->
 <div id="snap-hud" style="
