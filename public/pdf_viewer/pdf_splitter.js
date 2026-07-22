@@ -182,7 +182,7 @@
 
     stagingData = exportData.sheets.map((sheet, i) => ({
       page:              sheet.page,
-      sheet_id:          sheet.sheet_id          || '',
+      sheet_id:          normalizeSheetId(sheet.sheet_id),
       description:       sheet.description       || '',
       issue_id:          sheet.issue_id          || '',
       date:              sheet.date              || '',
@@ -211,6 +211,11 @@
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  function normalizeSheetId(value) {
+    const fn = window.normalizeSheetId;
+    return fn ? fn(value) : String(value || '').replace(/[Oo]/g, '0').trim();
+  }
+
   function renderTable() {
     const tbody = document.getElementById('sp-tbody');
     if (!tbody) return;
@@ -223,6 +228,7 @@
 
     rows.forEach(sheet => {
       const trueIndex = stagingData.indexOf(sheet);
+      sheet.sheet_id = normalizeSheetId(sheet.sheet_id);
 
       const tr = document.createElement('tr');
       tr.dataset.page  = sheet.page;
@@ -308,7 +314,9 @@
         input.addEventListener('input', () => {
           const s = stagingData.find(x => x.page === sheet.page);
           if (!s) return;
-          s[input.dataset.field] = input.value;
+          const field = input.dataset.field;
+          s[field] = field === 'sheet_id' ? normalizeSheetId(input.value) : input.value;
+          if (field === 'sheet_id') input.value = s[field];
           s.status = getStatus(s);
           if (!s.filenameOverride) {
             s.filename = generateFilename(s, filenameTemplate, stagingData.indexOf(s));

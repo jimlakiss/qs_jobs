@@ -1587,6 +1587,10 @@ function _normText(s) {
   return String(s || "").replace(/\s+/g, " ").trim();
 }
 
+function normalizeSheetId(value) {
+  return _normText(value).replace(/[Oo]/g, "0");
+}
+
 /**
  * Disambiguates between digit 0 and letter O based on surrounding context
  * Uses heuristics: if surrounded by digits, likely a 0; if by letters, likely an O
@@ -1647,12 +1651,12 @@ function cleanByField(field, raw) {
 
   if (field === "sheet_id") {
     // Sheet IDs conventionally use zero, not the letter O.
-    const disambiguated = disambiguate0AndO(t).replace(/[Oo]/g, "0");
-    const m = disambiguated.match(/[A-Za-z0-9][A-Za-z0-9\-_.]*/);
-    const result = m ? m[0] : disambiguated;
+    const normalized = normalizeSheetId(t);
+    const m = normalized.match(/[A-Za-z0-9][A-Za-z0-9\-_.]*/);
+    const result = m ? normalizeSheetId(m[0]) : normalized;
 
     // Log if disambiguation made changes (for debugging)
-    if (t !== disambiguated) {
+    if (t !== result) {
       console.log(`🔍 sheet_id disambiguation: "${t}" → "${result}"`);
     }
 
@@ -1932,7 +1936,7 @@ async function applyTemplatesToAllPages(logProgress = false, force = false) {
           }
         }
 
-        const finalExtracted = extractedParts.join(" ");
+        const finalExtracted = cleanByField(field, extractedParts.join(" "));
         sheetDetailsByPage[pageNum][field] = finalExtracted || "";
         
         if (logProgress && finalExtracted) {
@@ -2242,7 +2246,7 @@ function getCanonicalExportData() {
     const s = sheetDetailsByPage[p] || {};
     const sheet = {
       page: p,
-      sheet_id: (s.sheet_id || "").trim(),
+      sheet_id: cleanByField("sheet_id", s.sheet_id || ""),
       description: (s.description || "").trim(),
       issue_id: (s.issue_id || "").trim(),
       date: (s.date || "").trim(),
@@ -2427,6 +2431,7 @@ Object.defineProperty(window, 'documentDetails',    { get: () => documentDetails
 Object.defineProperty(window, 'sheetDetailsByPage', { get: () => sheetDetailsByPage, configurable: true });
 Object.defineProperty(window, 'regionTemplates',    { get: () => regionTemplates,    configurable: true });
 Object.defineProperty(window, 'getCanonicalExportData', { value: getCanonicalExportData, configurable: true });
+Object.defineProperty(window, 'normalizeSheetId', { value: normalizeSheetId, configurable: true });
 
 // ── Measurement system ───────────────────────────────────────────────────────
 
