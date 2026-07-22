@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_19_005000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_22_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -68,6 +68,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_19_005000) do
     t.string "phone_number"
     t.datetime "updated_at", null: false
     t.string "url"
+    t.index "lower(btrim((company_name)::text))", name: "index_contributors_on_normalized_company_name_unique", unique: true
   end
 
   create_table "document_extractions", force: :cascade do |t|
