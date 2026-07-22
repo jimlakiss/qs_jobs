@@ -280,6 +280,7 @@ function updateOcrOnlyToggle() {
   if (!ocrOnlyToggleBtn) return;
   ocrOnlyToggleBtn.classList.toggle("is-active", ocrOnlyExtraction);
   ocrOnlyToggleBtn.setAttribute("aria-pressed", ocrOnlyExtraction ? "true" : "false");
+  ocrOnlyToggleBtn.textContent = ocrOnlyExtraction ? "OCR: On" : "OCR: Off";
   ocrOnlyToggleBtn.title = ocrOnlyExtraction
     ? "OCR-only extraction is on"
     : "Skip embedded PDF text and force OCR for extraction";
