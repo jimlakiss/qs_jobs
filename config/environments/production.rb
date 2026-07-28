@@ -71,7 +71,8 @@ Rails.application.configure do
       address: ENV["SMTP_ADDRESS"],
       port: ENV.fetch("SMTP_PORT", 587),
       authentication: ENV.fetch("SMTP_AUTHENTICATION", "plain").to_sym,
-      enable_starttls_auto: ActiveModel::Type::Boolean.new.cast(ENV.fetch("SMTP_ENABLE_STARTTLS_AUTO", "true"))
+      enable_starttls_auto: ActiveModel::Type::Boolean.new.cast(ENV.fetch("SMTP_ENABLE_STARTTLS_AUTO", "true")),
+      ssl: ActiveModel::Type::Boolean.new.cast(ENV.fetch("SMTP_SSL", "false"))
     }.compact
   end
 
