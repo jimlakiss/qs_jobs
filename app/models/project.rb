@@ -6,7 +6,7 @@ class Project < ApplicationRecord
   has_many :document_extractions, dependent: :destroy
   has_many :project_documents, dependent: :destroy
   has_many_attached :documents
-  has_one :client_submission, dependent: :nullify
+  has_many :client_submissions, dependent: :nullify
 
   validates :code, presence: true, uniqueness: { case_sensitive: false }
 

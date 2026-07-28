@@ -168,6 +168,33 @@
             <%= f.submit "Convert to Project", class: "btn btn-primary" %>
           </div>
         <% end %>
+
+        <hr class="my-4">
+
+        <div class="section-title">
+          <div>
+            <h2 class="h4">Add to Existing Project</h2>
+            <p class="page-subtitle mb-0">Attach the uploaded documents to a project that already exists.</p>
+          </div>
+        </div>
+
+        <%= form_with model: @client_submission, url: attach_to_project_client_submission_path(@client_submission), method: :post, local: true do |f| %>
+          <div class="row g-3">
+            <div class="col-12">
+              <%= f.label :project_id, "Existing project", class: "form-label" %>
+              <%= f.collection_select :project_id,
+                    @existing_projects,
+                    :id,
+                    ->(project) { [project.code, project.address.presence].compact.join(" - ") },
+                    { prompt: "Choose a project" },
+                    class: "form-select" %>
+            </div>
+          </div>
+
+          <div class="stack-actions mt-4">
+            <%= f.submit "Add to Existing Project", class: "btn btn-outline-primary" %>
+          </div>
+        <% end %>
       </div>
     </div>
   <% end %>

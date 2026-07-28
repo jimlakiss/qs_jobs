@@ -23,9 +23,10 @@
         <dt class="col-md-3">Address</dt>
         <dd class="col-md-9"><%= @project.address.presence || "—" %></dd>
 
-        <% if @project.client_submission&.client_reference_code.present? %>
+        <% client_reference_codes = @project.client_submissions.filter_map(&:client_reference_code).compact_blank %>
+        <% if client_reference_codes.any? %>
           <dt class="col-md-3">Client Reference</dt>
-          <dd class="col-md-9"><%= @project.client_submission.client_reference_code %></dd>
+          <dd class="col-md-9"><%= client_reference_codes.to_sentence %></dd>
         <% end %>
 
         <dt class="col-md-3">Job Value</dt>

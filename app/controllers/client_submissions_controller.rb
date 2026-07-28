@@ -1,8 +1,8 @@
 class ClientSubmissionsController < ApplicationController
   before_action :require_client_upload_access!, only: [:new, :create]
-  before_action :set_client_submission, only: [:show, :edit, :update, :destroy, :submit, :convert]
+  before_action :set_client_submission, only: [:show, :edit, :update, :destroy, :submit, :convert, :attach_to_project]
   before_action :authorize_client_submission!, only: [:show, :edit, :update, :destroy, :submit]
-  before_action :require_admin!, only: [:convert]
+  before_action :require_admin!, only: [:convert, :attach_to_project]
 
   def index
     @client_submissions =
@@ -16,6 +16,7 @@ class ClientSubmissionsController < ApplicationController
   def show
     @documents_by_attachment_id = @client_submission.client_submission_documents.index_by(&:active_storage_attachment_id)
     @project = Project.new(address: @client_submission.address, description: @client_submission.description)
+    @existing_projects = Project.order(:code) if admin_user? && @client_submission.submitted?
   end
 
   def new
@@ -83,6 +84,19 @@ class ClientSubmissionsController < ApplicationController
     end
   end
 
+  def attach_to_project
+    project = Project.find(attach_to_project_params[:project_id])
+
+    attach_submission_documents_to(project)
+    @client_submission.update!(status: :converted, project: project)
+
+    redirect_to project, notice: "Client submission added to existing project"
+  rescue ActiveRecord::RecordNotFound
+    show
+    flash.now[:alert] = "Choose an existing project"
+    render :show, status: :unprocessable_entity
+  end
+
   private
 
   def set_client_submission
@@ -119,6 +133,10 @@ class ClientSubmissionsController < ApplicationController
 
   def convert_project_params
     params.require(:project).permit(:code, :date, :address, :description)
+  end
+
+  def attach_to_project_params
+    params.require(:client_submission).permit(:project_id)
   end
 
   def attach_documents

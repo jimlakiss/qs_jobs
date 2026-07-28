@@ -102,8 +102,46 @@ class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to project_path(project)
     assert submission.reload.converted?
     assert_equal project, submission.project
-    assert_equal "CLIENT-001", project.client_submission.client_reference_code
+    assert_equal "CLIENT-001", project.client_submissions.first.client_reference_code
     assert_equal contributors(:citywide), project.project_contributors.find_by(role: "Client").contributor
+    assert project.documents.attached?
+    assert_equal "Client portal", project.project_documents.first.source
+  end
+
+  test "admin can add submitted client submission to existing project" do
+    sign_in users(:one)
+    project = Project.create!(
+      code: "QS-EXISTING-001",
+      date: Date.current,
+      address: "10 Intake Street",
+      description: "Existing project"
+    )
+    submission = users(:client).client_submissions.create!(
+      client_reference_code: "CLIENT-EXTRA-001",
+      contributor: contributors(:citywide),
+      address: "10 Intake Street",
+      description: "Extra drawings",
+      required_by: Date.current + 7.days
+    )
+    submission.documents.attach(
+      io: file_fixture("test_document.txt").open,
+      filename: "test_document.txt",
+      content_type: "text/plain"
+    )
+    submission.update!(status: :submitted, submitted_at: Time.current)
+
+    assert_no_difference -> { Project.count } do
+      post attach_to_project_client_submission_path(submission),
+        params: {
+          client_submission: {
+            project_id: project.id
+          }
+        }
+    end
+
+    assert_redirected_to project_path(project)
+    assert submission.reload.converted?
+    assert_equal project, submission.project
     assert project.documents.attached?
     assert_equal "Client portal", project.project_documents.first.source
   end

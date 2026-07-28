@@ -22,6 +22,7 @@ Rails.application.routes.draw do
     member do
       post :submit
       post :convert
+      post :attach_to_project
     end
   end
 
