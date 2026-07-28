@@ -186,8 +186,19 @@ class ProjectIssuesControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[name='project_issue[version]'][value='1']"
     assert_select "input[name='project_issue[replace_documents]']"
     assert_select "a[data-turbo-method='delete'][href='#{document_project_issue_path(@project, issue, issue.documents.attachments.first)}']", text: "Remove"
+    assert_select "form[action='#{project_issue_path(@project, issue)}'] button", text: "Delete Issue"
     assert_select "input[type='submit'][value='Save Issue']"
     assert_select "input[type='submit'][value='Save and Resend Email']"
+  end
+
+  test "project page shows full issue delete action" do
+    issue = create_issued_issue
+
+    get project_path(@project)
+
+    assert_response :success
+    assert_select "a[href='#{edit_project_issue_path(@project, issue)}']", text: "Edit"
+    assert_select "form[action='#{project_issue_path(@project, issue)}'] button", text: "Delete"
   end
 
   test "admin can revise issue details without resending email" do

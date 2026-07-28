@@ -95,7 +95,16 @@
                   </td>
                   <td><%= sydney_datetime(issue.sent_at || issue.created_at) %></td>
                   <td class="text-end"><%= issue.documents.count %></td>
-                  <td class="text-end"><%= link_to "Edit", edit_project_issue_path(@project, issue), class: "btn btn-outline-secondary btn-sm" %></td>
+                  <td class="text-end">
+                    <div class="stack-actions justify-content-end">
+                      <%= link_to "Edit", edit_project_issue_path(@project, issue), class: "btn btn-outline-secondary btn-sm" %>
+                      <%= button_to "Delete",
+                            project_issue_path(@project, issue),
+                            method: :delete,
+                            form: { data: { turbo_confirm: "Delete this issued document package? The recipient will no longer be able to access it." } },
+                            class: "btn btn-outline-danger btn-sm" %>
+                    </div>
+                  </td>
                 </tr>
               <% end %>
             </tbody>

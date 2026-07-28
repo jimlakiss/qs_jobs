@@ -8,6 +8,11 @@
 
     <div class="stack-actions">
       <%= link_to "View Issue", project_issue_path(@project, @project_issue), class: "btn btn-outline-secondary" %>
+      <%= button_to "Delete Issue",
+            project_issue_path(@project, @project_issue),
+            method: :delete,
+            form: { data: { turbo_confirm: "Delete this issued document package? The recipient will no longer be able to access it." } },
+            class: "btn btn-outline-danger" %>
       <%= link_to "Back to Project", project_path(@project), class: "btn btn-outline-secondary" %>
     </div>
   </div>
