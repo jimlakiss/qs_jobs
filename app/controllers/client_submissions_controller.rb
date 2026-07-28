@@ -1,13 +1,14 @@
 class ClientSubmissionsController < ApplicationController
   before_action :require_client_upload_access!, only: [:new, :create]
-  before_action :set_client_submission, only: [:show, :edit, :update, :destroy, :submit, :convert, :attach_to_project]
+  before_action :set_client_submission, only: [:show, :edit, :update, :destroy, :submit, :convert, :attach_to_project, :archive, :unarchive]
   before_action :authorize_client_submission!, only: [:show, :edit, :update, :destroy, :submit]
-  before_action :require_admin!, only: [:convert, :attach_to_project]
+  before_action :require_admin!, only: [:convert, :attach_to_project, :archive, :unarchive]
 
   def index
     @client_submissions =
       if admin_user?
-        ClientSubmission.includes(:contributor, :submitted_by, :project).latest_first
+        @show_archived = ActiveModel::Type::Boolean.new.cast(params[:archived])
+        admin_client_submissions_scope.includes(:contributor, :submitted_by, :project).latest_first
       else
         current_user.client_submissions.includes(:project).latest_first
       end
@@ -97,6 +98,16 @@ class ClientSubmissionsController < ApplicationController
     render :show, status: :unprocessable_entity
   end
 
+  def archive
+    @client_submission.update!(archived_at: Time.current)
+    redirect_to client_submissions_path, notice: "Client submission archived"
+  end
+
+  def unarchive
+    @client_submission.update!(archived_at: nil)
+    redirect_to client_submissions_path(archived: true), notice: "Client submission restored"
+  end
+
   private
 
   def set_client_submission
@@ -114,6 +125,10 @@ class ClientSubmissionsController < ApplicationController
     return if current_user.client_upload_access?
 
     redirect_to client_submissions_path, alert: "Project upload access has not been enabled for this login"
+  end
+
+  def admin_client_submissions_scope
+    @show_archived ? ClientSubmission.archived : ClientSubmission.active
   end
 
   def editable_by_client?

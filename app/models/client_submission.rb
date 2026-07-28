@@ -13,9 +13,16 @@ class ClientSubmission < ApplicationRecord
   validate :documents_present, if: :submitted?
 
   scope :latest_first, -> { order(created_at: :desc) }
+  scope :active, -> { where(archived_at: nil) }
+  scope :archived, -> { where.not(archived_at: nil) }
+  scope :pending_review, -> { active.where.not(status: :converted) }
 
   def submit!
     update!(status: :submitted, submitted_at: Time.current)
+  end
+
+  def archived?
+    archived_at.present?
   end
 
   private

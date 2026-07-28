@@ -6,7 +6,15 @@
       <p class="page-subtitle"><%= admin_user? ? "Review incoming client work and convert accepted submissions into projects." : "Track drafts and submitted project documents." %></p>
     </div>
 
-    <% unless admin_user? %>
+    <% if admin_user? %>
+      <div class="stack-actions">
+        <% if @show_archived %>
+          <%= link_to "Active Uploads", client_submissions_path, class: "btn btn-outline-secondary" %>
+        <% else %>
+          <%= link_to "Archived Uploads", client_submissions_path(archived: true), class: "btn btn-outline-secondary" %>
+        <% end %>
+      </div>
+    <% else %>
       <%= link_to "New Submission", new_client_submission_path, class: "btn btn-primary" %>
     <% end %>
   </div>
@@ -26,6 +34,9 @@
               <th>Status</th>
               <th>Address</th>
               <th class="text-end">Documents</th>
+              <% if admin_user? %>
+                <th class="text-end">Actions</th>
+              <% end %>
             </tr>
           </thead>
           <tbody>
@@ -53,6 +64,21 @@
                 <td><span class="badge text-bg-light"><%= submission.status.humanize %></span></td>
                 <td><%= submission.address.presence || "—" %></td>
                 <td class="text-end"><%= submission.documents.count %></td>
+                <% if admin_user? %>
+                  <td class="text-end">
+                    <% if submission.archived? %>
+                      <%= button_to "Restore",
+                            unarchive_client_submission_path(submission),
+                            method: :post,
+                            class: "btn btn-outline-secondary btn-sm" %>
+                    <% else %>
+                      <%= button_to "Archive",
+                            archive_client_submission_path(submission),
+                            method: :post,
+                            class: "btn btn-outline-secondary btn-sm" %>
+                    <% end %>
+                  </td>
+                <% end %>
               </tr>
             <% end %>
           </tbody>
@@ -60,8 +86,8 @@
       </div>
     <% else %>
       <div class="empty-state">
-        <h2 class="h4 mb-2">No submissions yet</h2>
-        <p class="mb-3"><%= admin_user? ? "Client submissions will appear here once they are sent." : "Create a draft to start uploading documents." %></p>
+        <h2 class="h4 mb-2"><%= admin_user? && @show_archived ? "No archived submissions" : "No submissions yet" %></h2>
+        <p class="mb-3"><%= admin_user? ? "Client submissions will appear here once they are uploaded." : "Create a draft to start uploading documents." %></p>
         <% unless admin_user? %>
           <%= link_to "New Submission", new_client_submission_path, class: "btn btn-primary" %>
         <% end %>

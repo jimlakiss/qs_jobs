@@ -5,7 +5,7 @@ class ApplicationController < ActionController::Base
   allow_browser versions: :modern
   stale_when_importmap_changes
 
-  helper_method :admin_user?, :client_user?
+  helper_method :admin_user?, :client_user?, :pending_client_uploads_count
 
   private
 
@@ -24,5 +24,10 @@ class ApplicationController < ActionController::Base
   def require_admin!
     redirect_to client_submissions_path, alert: "You do not have access to that area" unless admin_user?
   end
-end
 
+  def pending_client_uploads_count
+    return 0 unless admin_user?
+
+    @pending_client_uploads_count ||= ClientSubmission.pending_review.count
+  end
+end

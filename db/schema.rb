@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_28_015000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_28_050000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -55,6 +55,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_015000) do
 
   create_table "client_submissions", force: :cascade do |t|
     t.text "address"
+    t.datetime "archived_at"
     t.string "client_reference_code"
     t.bigint "contributor_id", null: false
     t.datetime "created_at", null: false
@@ -66,6 +67,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_015000) do
     t.datetime "submitted_at"
     t.bigint "submitted_by_id", null: false
     t.datetime "updated_at", null: false
+    t.index ["archived_at"], name: "index_client_submissions_on_archived_at"
     t.index ["contributor_id"], name: "index_client_submissions_on_contributor_id"
     t.index ["project_id"], name: "index_client_submissions_on_project_id"
     t.index ["required_by"], name: "index_client_submissions_on_required_by"

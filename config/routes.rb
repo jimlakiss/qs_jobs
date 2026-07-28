@@ -23,6 +23,8 @@ Rails.application.routes.draw do
       post :submit
       post :convert
       post :attach_to_project
+      post :archive
+      post :unarchive
     end
   end
 

@@ -114,6 +114,59 @@ class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{project_path(project)}']", text: "QS-ADMIN-001"
   end
 
+  test "admin can archive and restore client submissions" do
+    sign_in users(:one)
+    submission = users(:client).client_submissions.create!(
+      client_reference_code: "CLIENT-ARCHIVE-001",
+      contributor: contributors(:citywide),
+      address: "10 Archive Street",
+      description: "Archive package",
+      required_by: Date.current + 7.days
+    )
+
+    post archive_client_submission_path(submission)
+
+    assert_redirected_to client_submissions_path
+    assert submission.reload.archived?
+
+    get client_submissions_path
+    assert_response :success
+    assert_select "a", text: "CLIENT-ARCHIVE-001", count: 0
+
+    get client_submissions_path(archived: true)
+    assert_response :success
+    assert_select "a", text: "CLIENT-ARCHIVE-001"
+
+    post unarchive_client_submission_path(submission)
+
+    assert_redirected_to client_submissions_path(archived: true)
+    assert_not submission.reload.archived?
+  end
+
+  test "admin client uploads nav shows active unconverted count" do
+    sign_in users(:one)
+    users(:client).client_submissions.create!(
+      client_reference_code: "CLIENT-PENDING-001",
+      contributor: contributors(:citywide),
+      address: "10 Pending Street",
+      description: "Pending package",
+      required_by: Date.current + 7.days
+    )
+    users(:client).client_submissions.create!(
+      client_reference_code: "CLIENT-ARCHIVED-001",
+      contributor: contributors(:citywide),
+      archived_at: Time.current,
+      address: "10 Archived Street",
+      description: "Archived package",
+      required_by: Date.current + 7.days
+    )
+
+    get client_submissions_path
+
+    assert_response :success
+    assert_select "a.nav-link[href='#{client_submissions_path}'] .badge", text: "1"
+  end
+
   test "admin can convert submitted client submission into project" do
     sign_in users(:one)
     submission = users(:client).client_submissions.create!(
