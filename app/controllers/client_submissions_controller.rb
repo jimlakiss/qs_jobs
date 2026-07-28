@@ -16,7 +16,7 @@ class ClientSubmissionsController < ApplicationController
   def show
     @documents_by_attachment_id = @client_submission.client_submission_documents.index_by(&:active_storage_attachment_id)
     @project = Project.new(address: @client_submission.address, description: @client_submission.description)
-    @existing_projects = Project.order(:code) if admin_user? && @client_submission.submitted?
+    @existing_projects = Project.order(:code) if admin_user? && processable_by_admin?
   end
 
   def new
@@ -118,6 +118,10 @@ class ClientSubmissionsController < ApplicationController
 
   def editable_by_client?
     admin_user? || @client_submission.draft?
+  end
+
+  def processable_by_admin?
+    admin_user? && !@client_submission.converted?
   end
 
   def client_submission_params

@@ -124,7 +124,7 @@
     </div>
   </div>
 
-  <% if admin_user? && @client_submission.submitted? %>
+  <% if admin_user? && !@client_submission.converted? %>
     <div class="app-card form-shell">
       <div class="app-card-body">
         <div class="section-title">

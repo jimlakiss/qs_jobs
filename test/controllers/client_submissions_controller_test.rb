@@ -145,4 +145,35 @@ class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
     assert project.documents.attached?
     assert_equal "Client portal", project.project_documents.first.source
   end
+
+  test "admin can convert draft client submission into project" do
+    sign_in users(:one)
+    submission = users(:client).client_submissions.create!(
+      client_reference_code: "CLIENT-DRAFT-001",
+      contributor: contributors(:citywide),
+      address: "10 Draft Street",
+      description: "Draft package",
+      required_by: Date.current + 7.days
+    )
+    submission.documents.attach(
+      io: file_fixture("test_document.txt").open,
+      filename: "test_document.txt",
+      content_type: "text/plain"
+    )
+
+    assert_difference -> { Project.count }, 1 do
+      post convert_client_submission_path(submission),
+        params: {
+          project: {
+            code: "QS-DRAFT-001",
+            date: Date.current,
+            address: submission.address,
+            description: submission.description
+          }
+        }
+    end
+
+    assert_redirected_to project_path(Project.find_by!(code: "QS-DRAFT-001"))
+    assert submission.reload.converted?
+  end
 end
