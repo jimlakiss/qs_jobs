@@ -20,7 +20,16 @@
 
         <div class="col-md-6">
           <%= f.label :required_by, "Required by", class: "form-label" %>
-          <%= f.date_field :required_by, class: "form-control" %>
+          <div class="input-group">
+            <%= f.date_field :required_by, class: "form-control", data: { required_by_input: true } %>
+          </div>
+          <div class="btn-group btn-group-sm mt-2" role="group" aria-label="Required by quick dates">
+            <% [7, 14, 21, 28].each do |days| %>
+              <button type="button" class="btn btn-outline-secondary" data-required-by-offset="<%= days %>">
+                <%= days %> days
+              </button>
+            <% end %>
+          </div>
         </div>
 
         <div class="col-12">
@@ -30,7 +39,7 @@
 
         <div class="col-12">
           <%= f.label :description, "Project details", class: "form-label" %>
-          <%= f.text_area :description, class: "form-control", rows: 3, placeholder: "Quantity surveying services for new home..." %>
+          <%= f.text_area :description, class: "form-control", rows: 3, placeholder: "New Home, Alterations & additions, Trade Estimate..." %>
         </div>
 
         <div class="col-12">

@@ -39,3 +39,19 @@ document.addEventListener("direct-uploads:end", (event) => {
     status.classList.remove("text-danger")
   })
 })
+
+document.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-required-by-offset]")
+  if (!button) return
+
+  const form = button.closest("form")
+  const input = form?.querySelector("[data-required-by-input]")
+  if (!input) return
+
+  const date = new Date()
+  date.setDate(date.getDate() + Number(button.dataset.requiredByOffset))
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  input.value = `${year}-${month}-${day}`
+})

@@ -29,3 +29,10 @@
 
 en:
   hello: "Hello world"
+  activerecord:
+    attributes:
+      client_submission:
+        address: "Project address"
+        description: "Project details"
+        required_by: "Required by"
+        documents: "Documents"
