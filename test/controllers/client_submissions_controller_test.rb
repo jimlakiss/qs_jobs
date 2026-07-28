@@ -230,6 +230,33 @@ class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
     assert ActiveStorage::Blob.exists?(attachment.blob_id)
   end
 
+  test "admin show renders remove button for uploaded document without existing metadata" do
+    sign_in users(:one)
+    submission = users(:client).client_submissions.create!(
+      client_reference_code: "CLIENT-MISSING-META-001",
+      contributor: contributors(:citywide),
+      address: "10 Missing Metadata Street",
+      description: "Legacy upload",
+      required_by: Date.current + 7.days
+    )
+    submission.documents.attach(
+      io: file_fixture("test_document.txt").open,
+      filename: "test_document.txt",
+      content_type: "text/plain"
+    )
+    submission.update!(status: :submitted, submitted_at: Time.current)
+
+    assert_difference -> { submission.client_submission_documents.count }, 1 do
+      get client_submission_path(submission)
+    end
+
+    assert_response :success
+    document = submission.client_submission_documents.reload.first
+    assert_equal "test_document.txt", document.display_name
+    assert_select "a", text: "Download", count: 1
+    assert_select "form[action='#{client_submission_document_path(submission, document)}'] button", text: "Remove"
+  end
+
   test "admin client uploads nav shows active unconverted count" do
     sign_in users(:one)
     users(:client).client_submissions.create!(

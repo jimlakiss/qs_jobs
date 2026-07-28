@@ -15,6 +15,7 @@ class ClientSubmissionsController < ApplicationController
   end
 
   def show
+    sync_document_metadata!
     @documents_by_attachment_id = @client_submission.client_submission_documents.index_by(&:active_storage_attachment_id)
     @project = Project.new(address: @client_submission.address, description: @client_submission.description)
     @existing_projects = Project.order(:code) if admin_user? && processable_by_admin?
@@ -172,6 +173,10 @@ class ClientSubmissionsController < ApplicationController
         document.display_name = attachment.filename.to_s
       end
     end
+  end
+
+  def sync_document_metadata!
+    create_document_metadata([])
   end
 
   def attach_submission_documents_to(project)
