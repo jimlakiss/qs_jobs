@@ -82,6 +82,7 @@
                 <th>Recipient</th>
                 <th>Issued</th>
                 <th class="text-end">Files</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -94,6 +95,7 @@
                   </td>
                   <td><%= sydney_datetime(issue.sent_at || issue.created_at) %></td>
                   <td class="text-end"><%= issue.documents.count %></td>
+                  <td class="text-end"><%= link_to "Edit", edit_project_issue_path(@project, issue), class: "btn btn-outline-secondary btn-sm" %></td>
                 </tr>
               <% end %>
             </tbody>

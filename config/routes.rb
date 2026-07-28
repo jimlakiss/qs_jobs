@@ -10,7 +10,11 @@ Rails.application.routes.draw do
       end
     end
     resources :document_extractions, only: [:destroy]
-    resources :issues, only: [:new, :create, :show], controller: "project_issues"
+    resources :issues, except: [:index], controller: "project_issues" do
+      member do
+        delete "documents/:attachment_id", action: :destroy_document, as: :document
+      end
+    end
 
     member do
       get :confirm_destroy

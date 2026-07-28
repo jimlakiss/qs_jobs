@@ -157,7 +157,7 @@ class ProjectIssuesControllerTest < ActionDispatch::IntegrationTest
     assert_select "option", text: /Citywide Development Pty Ltd/
     assert_select ".page-subtitle", text: /assigned contributor/
     assert_select "form[data-controller='project-issue-title'][data-project-issue-title-prefix-value='ISSUE-001 - 1 Issue Street']"
-    assert_select "input[name='title_preview'][value='ISSUE-001 - 1 Issue Street | <purpose>']"
+    assert_select "input[name='title_preview'][value='ISSUE-001 - 1 Issue Street | Estimate Issue']"
     assert_select "input[name='title_preview'][data-project-issue-title-target='preview']"
     assert_select "input[name='project_issue[description]'][value='Estimate Issue'][data-project-issue-title-target='purpose']"
     assert_select "input[name='project_issue[revision]'][placeholder='A'][data-project-issue-title-target='revision']"
@@ -173,5 +173,144 @@ class ProjectIssuesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".alert-warning", text: /Assigned contributors without portal access/
     assert_select "a[href='#{contributor_path(contributor)}']", text: "No Login Pty Ltd"
+  end
+
+  test "edit issue page shows revision controls and attachment actions" do
+    issue = create_issued_issue
+
+    get edit_project_issue_path(@project, issue)
+
+    assert_response :success
+    assert_select "form[action='#{project_issue_path(@project, issue)}']"
+    assert_select "input[name='project_issue[revision]'][value='A']"
+    assert_select "input[name='project_issue[version]'][value='1']"
+    assert_select "input[name='project_issue[replace_documents]']"
+    assert_select "a[data-turbo-method='delete'][href='#{document_project_issue_path(@project, issue, issue.documents.attachments.first)}']", text: "Remove"
+    assert_select "input[type='submit'][value='Save Issue']"
+    assert_select "input[type='submit'][value='Save and Resend Email']"
+  end
+
+  test "admin can revise issue details without resending email" do
+    issue = create_issued_issue
+
+    assert_no_enqueued_emails do
+      patch project_issue_path(@project, issue),
+        params: {
+          project_issue: {
+            recipient_user_id: users(:client).id,
+            description: "Revised issue",
+            revision: "B",
+            version: "2",
+            body: "Revised body"
+          },
+          commit: "Save Issue"
+        }
+    end
+
+    assert_redirected_to project_issue_path(@project, issue)
+    issue.reload
+    assert_equal "ISSUE-001 - 1 Issue Street | Revised issue | Revision B Version 2", issue.title
+    assert_equal "Revised body", issue.body
+  end
+
+  test "admin can revise issue and resend email" do
+    issue = create_issued_issue
+
+    assert_enqueued_emails 1 do
+      patch project_issue_path(@project, issue),
+        params: {
+          project_issue: {
+            recipient_user_id: users(:client).id,
+            description: "Revised issue",
+            revision: "C",
+            version: "",
+            body: "Please review the revised issue."
+          },
+          commit: "Save and Resend Email"
+        }
+    end
+
+    assert_redirected_to project_issue_path(@project, issue)
+    assert_equal "ISSUE-001 - 1 Issue Street | Revised issue | Revision C", issue.reload.title
+  end
+
+  test "admin can add and replace issue attachments" do
+    issue = create_issued_issue
+
+    patch project_issue_path(@project, issue),
+      params: {
+        project_issue: {
+          recipient_user_id: users(:client).id,
+          description: issue.description,
+          body: issue.body,
+          documents: [fixture_file_upload("test_drawing.dwg", "application/acad")]
+        },
+        commit: "Save Issue"
+      }
+
+    assert_redirected_to project_issue_path(@project, issue)
+    assert_equal 2, issue.reload.documents.count
+
+    patch project_issue_path(@project, issue),
+      params: {
+        project_issue: {
+          recipient_user_id: users(:client).id,
+          description: issue.description,
+          body: issue.body,
+          replace_documents: "1",
+          documents: [fixture_file_upload("test_drawing.dwg", "application/acad")]
+        },
+        commit: "Save Issue"
+      }
+
+    assert_redirected_to project_issue_path(@project, issue)
+    assert_equal 1, issue.reload.documents.count
+    assert_equal "test_drawing.dwg", issue.documents.first.filename.to_s
+  end
+
+  test "admin can remove issue attachment but not the final file" do
+    issue = create_issued_issue
+    issue.documents.attach(fixture_file_upload("test_drawing.dwg", "application/acad"))
+    first_attachment = issue.documents.attachments.first
+
+    assert_difference -> { issue.reload.documents.count }, -1 do
+      delete document_project_issue_path(@project, issue, first_attachment)
+    end
+
+    assert_redirected_to edit_project_issue_path(@project, issue)
+
+    final_attachment = issue.reload.documents.attachments.first
+    assert_no_difference -> { issue.reload.documents.count } do
+      delete document_project_issue_path(@project, issue, final_attachment)
+    end
+
+    assert_redirected_to edit_project_issue_path(@project, issue)
+    assert_equal "An issued package must keep at least one attachment", flash[:alert]
+  end
+
+  test "admin can destroy an issued package" do
+    issue = create_issued_issue
+
+    assert_difference -> { ProjectIssue.count }, -1 do
+      delete project_issue_path(@project, issue)
+    end
+
+    assert_redirected_to project_path(@project)
+  end
+
+  private
+
+  def create_issued_issue
+    issue = @project.project_issues.create!(
+      contributor: contributors(:citywide),
+      recipient_user: users(:client),
+      description: "Issued estimate",
+      revision: "A",
+      version: "1",
+      body: "Please download the attached estimate."
+    )
+    issue.documents.attach(fixture_file_upload("test_document.txt", "text/plain"))
+    issue.send!
+    issue
   end
 end

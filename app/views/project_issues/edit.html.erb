@@ -1,0 +1,23 @@
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note">Revise issued documents</span>
+      <h1 class="page-title"><%= @project_issue.title %></h1>
+      <p class="page-subtitle">Revise the issued package, update attachments, or resend the portal notification.</p>
+    </div>
+
+    <div class="stack-actions">
+      <%= link_to "View Issue", project_issue_path(@project, @project_issue), class: "btn btn-outline-secondary" %>
+      <%= link_to "Back to Project", project_path(@project), class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+
+  <div class="app-card form-shell">
+    <div class="app-card-body">
+      <%= render "form",
+            form_url: project_issue_path(@project, @project_issue),
+            form_method: :patch,
+            submit_label: "Save Issue" %>
+    </div>
+  </div>
+</section>
