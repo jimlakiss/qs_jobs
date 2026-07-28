@@ -65,6 +65,55 @@ class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to client_submissions_path
   end
 
+  test "client submissions index shows project code as plain text for client" do
+    sign_in users(:client)
+    project = Project.create!(
+      code: "QS-CLIENT-001",
+      date: Date.current,
+      address: "10 Intake Street",
+      description: "Converted project"
+    )
+    users(:client).client_submissions.create!(
+      client_reference_code: "CLIENT-001",
+      contributor: contributors(:citywide),
+      project: project,
+      status: :converted,
+      address: "10 Intake Street",
+      description: "Quantity surveying services",
+      required_by: Date.current + 7.days
+    )
+
+    get client_submissions_path
+
+    assert_response :success
+    assert_select "td", text: /QS-CLIENT-001/
+    assert_select "a[href='#{project_path(project)}']", count: 0
+  end
+
+  test "client submissions index links project code for admin" do
+    sign_in users(:one)
+    project = Project.create!(
+      code: "QS-ADMIN-001",
+      date: Date.current,
+      address: "10 Intake Street",
+      description: "Converted project"
+    )
+    users(:client).client_submissions.create!(
+      client_reference_code: "CLIENT-001",
+      contributor: contributors(:citywide),
+      project: project,
+      status: :converted,
+      address: "10 Intake Street",
+      description: "Quantity surveying services",
+      required_by: Date.current + 7.days
+    )
+
+    get client_submissions_path
+
+    assert_response :success
+    assert_select "a[href='#{project_path(project)}']", text: "QS-ADMIN-001"
+  end
+
   test "admin can convert submitted client submission into project" do
     sign_in users(:one)
     submission = users(:client).client_submissions.create!(

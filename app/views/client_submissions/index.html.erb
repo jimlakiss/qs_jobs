@@ -17,6 +17,7 @@
         <table class="table table-hover align-middle">
           <thead class="table-light">
             <tr>
+              <th>Project Number</th>
               <th>Reference</th>
               <% if admin_user? %>
                 <th>Client</th>
@@ -30,6 +31,17 @@
           <tbody>
             <% @client_submissions.each do |submission| %>
               <tr>
+                <td>
+                  <% if submission.project.present? %>
+                    <% if admin_user? %>
+                      <%= link_to submission.project.code, submission.project, class: "fw-semibold text-decoration-none" %>
+                    <% else %>
+                      <span class="fw-semibold"><%= submission.project.code %></span>
+                    <% end %>
+                  <% else %>
+                    —
+                  <% end %>
+                </td>
                 <td><%= link_to submission.client_reference_code.presence || "Submission ##{submission.id}", submission, class: "fw-semibold text-decoration-none" %></td>
                 <% if admin_user? %>
                   <td>
