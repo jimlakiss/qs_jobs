@@ -66,17 +66,24 @@
                 <td class="text-end"><%= submission.documents.count %></td>
                 <% if admin_user? %>
                   <td class="text-end">
-                    <% if submission.archived? %>
-                      <%= button_to "Restore",
-                            unarchive_client_submission_path(submission),
-                            method: :post,
-                            class: "btn btn-outline-secondary btn-sm" %>
-                    <% else %>
-                      <%= button_to "Archive",
-                            archive_client_submission_path(submission),
-                            method: :post,
-                            class: "btn btn-outline-secondary btn-sm" %>
-                    <% end %>
+                    <div class="d-flex justify-content-end gap-2">
+                      <% if submission.archived? %>
+                        <%= button_to "Restore",
+                              unarchive_client_submission_path(submission),
+                              method: :post,
+                              class: "btn btn-outline-secondary btn-sm" %>
+                      <% else %>
+                        <%= button_to "Archive",
+                              archive_client_submission_path(submission),
+                              method: :post,
+                              class: "btn btn-outline-secondary btn-sm" %>
+                      <% end %>
+                      <%= button_to "Delete",
+                            client_submission_path(submission),
+                            method: :delete,
+                            form: { data: { turbo_confirm: "Delete this client upload package? This will not delete any linked project." } },
+                            class: "btn btn-outline-danger btn-sm" %>
+                    </div>
                   </td>
                 <% end %>
               </tr>

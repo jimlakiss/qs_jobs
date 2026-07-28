@@ -1,6 +1,7 @@
 require "test_helper"
 
 class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
   include ActionMailer::TestHelper
 
   test "client can create a draft submission with documents" do
@@ -151,6 +152,82 @@ class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to client_submissions_path(archived: true)
     assert_not submission.reload.archived?
+  end
+
+  test "admin can destroy converted client submission without destroying linked project" do
+    sign_in users(:one)
+    project = Project.create!(
+      code: "QS-DELETE-001",
+      date: Date.current,
+      address: "10 Delete Street",
+      description: "Converted project"
+    )
+    submission = users(:client).client_submissions.create!(
+      client_reference_code: "CLIENT-DELETE-001",
+      contributor: contributors(:citywide),
+      project: project,
+      status: :converted,
+      address: "10 Delete Street",
+      description: "Delete intake package",
+      required_by: Date.current + 7.days
+    )
+    submission.documents.attach(
+      io: file_fixture("test_document.txt").open,
+      filename: "test_document.txt",
+      content_type: "text/plain"
+    )
+    project.documents.attach(submission.documents.first.blob)
+
+    assert_difference -> { ClientSubmission.count }, -1 do
+      assert_no_difference -> { Project.count } do
+        perform_enqueued_jobs do
+          delete client_submission_path(submission)
+        end
+      end
+    end
+
+    assert_redirected_to client_submissions_path
+    assert Project.exists?(project.id)
+    assert project.reload.documents.attached?
+  end
+
+  test "admin can remove document from converted client submission without removing project copy" do
+    sign_in users(:one)
+    project = Project.create!(
+      code: "QS-DOC-DELETE-001",
+      date: Date.current,
+      address: "10 Document Street",
+      description: "Converted project"
+    )
+    submission = users(:client).client_submissions.create!(
+      client_reference_code: "CLIENT-DOC-DELETE-001",
+      contributor: contributors(:citywide),
+      project: project,
+      status: :converted,
+      address: "10 Document Street",
+      description: "Delete one file",
+      required_by: Date.current + 7.days
+    )
+    submission.documents.attach(
+      io: file_fixture("test_document.txt").open,
+      filename: "test_document.txt",
+      content_type: "text/plain"
+    )
+    attachment = submission.documents.attachments.first
+    document = submission.client_submission_documents.create!(
+      active_storage_attachment_id: attachment.id,
+      display_name: "Document to remove"
+    )
+    project.documents.attach(attachment.blob)
+
+    perform_enqueued_jobs do
+      delete client_submission_document_path(submission, document)
+    end
+
+    assert_redirected_to client_submission_path(submission)
+    assert_not submission.reload.documents.attached?
+    assert project.reload.documents.attached?
+    assert ActiveStorage::Blob.exists?(attachment.blob_id)
   end
 
   test "admin client uploads nav shows active unconverted count" do

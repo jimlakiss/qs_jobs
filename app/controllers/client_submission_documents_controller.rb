@@ -42,7 +42,9 @@ class ClientSubmissionDocumentsController < ApplicationController
   end
 
   def ensure_draft!
-    redirect_to @client_submission, alert: "Submitted documents cannot be changed" unless @client_submission.draft?
+    return if admin_user? || @client_submission.draft?
+
+    redirect_to @client_submission, alert: "Submitted documents cannot be changed"
   end
 
   def set_document

@@ -11,6 +11,13 @@
         <%= link_to "Edit Details", edit_client_submission_path(@client_submission), class: "btn btn-outline-secondary" %>
         <%= button_to "Submit", submit_client_submission_path(@client_submission), method: :post, class: "btn btn-primary" %>
       <% end %>
+      <% if admin_user? %>
+        <%= button_to "Delete Upload",
+              client_submission_path(@client_submission),
+              method: :delete,
+              form: { data: { turbo_confirm: "Delete this client upload package? This will not delete any linked project." } },
+              class: "btn btn-outline-danger" %>
+      <% end %>
       <%= link_to "Back", client_submissions_path, class: "btn btn-outline-secondary" %>
     </div>
   </div>
@@ -54,7 +61,9 @@
       <div class="section-title">
         <div>
           <h2 class="h4">Documents</h2>
-          <p class="page-subtitle mb-0">Rename files or add notes before submitting.</p>
+          <p class="page-subtitle mb-0">
+            <%= admin_user? ? "Review, rename, annotate, or remove uploaded files." : "Rename files or add notes before submitting." %>
+          </p>
         </div>
       </div>
 
@@ -87,7 +96,7 @@
                   <div class="text-muted small"><%= metadata.notes %></div>
                 <% end %>
 
-                <% if @client_submission.draft? && metadata %>
+                <% if (admin_user? || @client_submission.draft?) && metadata %>
                   <details class="document-metadata-editor">
                     <summary>Edit document details</summary>
                     <%= form_with model: metadata, url: client_submission_document_path(@client_submission, metadata), method: :patch, local: true, class: "document-metadata-form" do |f| %>
@@ -107,7 +116,7 @@
 
               <div class="stack-actions">
                 <%= link_to "Download", rails_blob_path(document, disposition: "attachment"), class: "btn btn-outline-secondary btn-sm" %>
-                <% if @client_submission.draft? && metadata %>
+                <% if (admin_user? || @client_submission.draft?) && metadata %>
                   <%= button_to "Remove",
                         client_submission_document_path(@client_submission, metadata),
                         method: :delete,
