@@ -1,39 +1,9 @@
 class ContributorsController < ApplicationController
-  CONTRIBUTOR_SORT_OPTIONS = {
-    "code" => {
-      order: ->(direction) { { id: direction } }
-    },
-    "company" => {
-      order: ->(direction) { Arel.sql("LOWER(contributors.company_name) #{sql_direction(direction)}, contributors.company_name #{sql_direction(direction)}, contributors.id ASC") }
-    },
-    "projects" => {
-      aggregate: true,
-      joins: :project_contributors,
-      order: ->(direction) { Arel.sql("COUNT(DISTINCT project_contributors.project_id) #{sql_direction(direction)}, contributors.id ASC") }
-    },
-    "contact" => {
-      order: ->(direction) { Arel.sql("LOWER(contributors.key_contact) #{sql_direction(direction)} NULLS LAST, contributors.id ASC") }
-    },
-    "email" => {
-      order: ->(direction) { Arel.sql("LOWER(contributors.email) #{sql_direction(direction)} NULLS LAST, contributors.id ASC") }
-    },
-    "phone" => {
-      order: ->(direction) { Arel.sql("LOWER(contributors.phone_number) #{sql_direction(direction)} NULLS LAST, contributors.id ASC") }
-    },
-    "types" => {
-      aggregate: true,
-      joins: :contributor_types,
-      order: ->(direction) { Arel.sql("LOWER(MIN(contributor_types.name)) #{sql_direction(direction)} NULLS LAST, contributors.id ASC") }
-    }
-  }.freeze
-
   before_action :require_admin!
   before_action :set_contributor, only: [:show, :edit, :update, :destroy, :confirm_destroy]
 
   def index
     @query = params[:q].to_s.strip
-    @sort = params[:sort].presence_in(CONTRIBUTOR_SORT_OPTIONS.keys) || "code"
-    @direction = params[:direction].presence_in(%w[asc desc]) || "asc"
     @contributors =
       if params[:contributor_type].present?
         Contributor.joins(:contributor_types).where(contributor_types: { id: params[:contributor_type] }).distinct
@@ -48,7 +18,7 @@ class ContributorsController < ApplicationController
       )
     end
 
-    @contributors = sort_contributors(@contributors).includes(:contributor_types, :project_contributors)
+    @contributors = @contributors.includes(:contributor_types, :project_contributors).order(:company_name)
   end
 
   def show
@@ -110,16 +80,5 @@ class ContributorsController < ApplicationController
       :notes,
       contributor_type_ids: []
     )
-  end
-
-  def sort_contributors(scope)
-    sort_config = CONTRIBUTOR_SORT_OPTIONS.fetch(@sort)
-    scope = scope.left_joins(sort_config[:joins]) if sort_config[:joins]
-    scope = scope.group("contributors.id") if sort_config[:aggregate]
-    scope.order(sort_config.fetch(:order).call(@direction))
-  end
-
-  def self.sql_direction(direction)
-    direction == "desc" ? "DESC" : "ASC"
   end
 end

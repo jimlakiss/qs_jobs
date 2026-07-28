@@ -13,14 +13,4 @@ module ApplicationHelper
   def sydney_datetime_local_value(value)
     sydney_time(value)&.strftime("%Y-%m-%dT%H:%M")
   end
-
-  def sortable_table_header(label, sort_key, current_sort:, current_direction:)
-    active = current_sort == sort_key.to_s
-    next_direction = active && current_direction == "asc" ? "desc" : "asc"
-    label_text = active ? "#{label} (#{current_direction})" : label
-
-    link_to label_text,
-      url_for(request.query_parameters.merge(sort: sort_key, direction: next_direction)),
-      class: "text-decoration-none fw-semibold"
-  end
 end
