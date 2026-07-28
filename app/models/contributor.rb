@@ -5,6 +5,7 @@ class Contributor < ApplicationRecord
   has_many :contributor_types, -> { order(:name) }, through: :contributor_type_assignments
   has_many :project_contributors, dependent: :restrict_with_error
   has_many :projects, through: :project_contributors
+  has_many :project_issues, dependent: :restrict_with_error
   has_one :portal_user, -> { where(role: :client) }, class_name: "User", dependent: :nullify
 
   validates :company_name, presence: true, uniqueness: { case_sensitive: false }

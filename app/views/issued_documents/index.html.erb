@@ -1,0 +1,43 @@
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note">Client area</span>
+      <h1 class="page-title">Issued Documents</h1>
+      <p class="page-subtitle">Documents issued to you by the iQs Jobs team.</p>
+    </div>
+
+    <%= link_to "Client Area", client_area_path, class: "btn btn-outline-secondary" %>
+  </div>
+
+  <div class="app-card table-shell">
+    <% if @project_issues.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Project Number</th>
+              <th>Title</th>
+              <th>Issued</th>
+              <th class="text-end">Files</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @project_issues.each do |issue| %>
+              <tr>
+                <td><span class="fw-semibold"><%= issue.project.code.presence || "—" %></span></td>
+                <td><%= link_to issue.title, issued_document_path(issue), class: "fw-semibold text-decoration-none" %></td>
+                <td><%= sydney_datetime(issue.sent_at || issue.created_at) %></td>
+                <td class="text-end"><%= issue.documents.count %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <h2 class="h4 mb-2">No issued documents yet</h2>
+        <p class="mb-0">Issued documents will appear here when the iQs Jobs team sends files to you.</p>
+      </div>
+    <% end %>
+  </div>
+</section>

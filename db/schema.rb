@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_28_050000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_28_165457) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -151,6 +151,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_050000) do
     t.index ["project_id", "category"], name: "index_project_documents_on_project_id_and_category"
     t.index ["project_id"], name: "index_project_documents_on_project_id"
     t.index ["received_at"], name: "index_project_documents_on_received_at"
+  end
+
+  create_table "project_issues", force: :cascade do |t|
+    t.text "body"
+    t.bigint "contributor_id", null: false
+    t.datetime "created_at", null: false
+    t.string "description"
+    t.bigint "project_id", null: false
+    t.bigint "recipient_user_id", null: false
+    t.string "revision"
+    t.datetime "sent_at"
+    t.integer "status", default: 0, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.string "version"
+    t.index ["contributor_id"], name: "index_project_issues_on_contributor_id"
+    t.index ["project_id"], name: "index_project_issues_on_project_id"
+    t.index ["recipient_user_id"], name: "index_project_issues_on_recipient_user_id"
+    t.index ["sent_at"], name: "index_project_issues_on_sent_at"
+    t.index ["status"], name: "index_project_issues_on_status"
   end
 
   create_table "projects", force: :cascade do |t|
@@ -315,6 +335,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_050000) do
   add_foreign_key "project_contributors", "projects"
   add_foreign_key "project_documents", "document_extractions"
   add_foreign_key "project_documents", "projects"
+  add_foreign_key "project_issues", "contributors"
+  add_foreign_key "project_issues", "projects"
+  add_foreign_key "project_issues", "users", column: "recipient_user_id"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

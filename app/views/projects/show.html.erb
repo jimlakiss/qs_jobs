@@ -9,6 +9,7 @@
     </div>
 
     <div class="stack-actions">
+      <%= link_to "Issue Documents", new_project_issue_path(@project), class: "btn btn-primary" %>
       <%= link_to "Edit Project", edit_project_path(@project), class: "btn btn-primary" %>
       <%= link_to "Back to Projects", projects_path, class: "btn btn-outline-secondary" %>
     </div>
@@ -58,6 +59,48 @@
         </div>
       <% else %>
         <p class="text-muted mb-0">No contributors have been linked to this project yet.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-body">
+      <div class="section-title">
+        <div>
+          <h2 class="h4">Issued Documents</h2>
+          <p class="page-subtitle mb-0">Document packages sent to assigned contributors through the portal.</p>
+        </div>
+        <%= link_to "Issue Documents", new_project_issue_path(@project), class: "btn btn-outline-secondary btn-sm" %>
+      </div>
+
+      <% if @project_issues.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Title</th>
+                <th>Recipient</th>
+                <th>Issued</th>
+                <th class="text-end">Files</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @project_issues.each do |issue| %>
+                <tr>
+                  <td><%= link_to issue.title, project_issue_path(@project, issue), class: "fw-semibold text-decoration-none" %></td>
+                  <td>
+                    <div class="fw-semibold"><%= issue.contributor.company_name %></div>
+                    <div class="text-muted small"><%= issue.recipient_user.email %></div>
+                  </td>
+                  <td><%= sydney_datetime(issue.sent_at || issue.created_at) %></td>
+                  <td class="text-end"><%= issue.documents.count %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <p class="text-muted mb-0">No documents have been issued from this project yet.</p>
       <% end %>
     </div>
   </div>

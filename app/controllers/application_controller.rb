@@ -10,7 +10,7 @@ class ApplicationController < ActionController::Base
   private
 
   def after_sign_in_path_for(resource)
-    resource.client? ? client_submissions_path : super
+    resource.client? ? client_area_path : super
   end
 
   def admin_user?
@@ -22,7 +22,7 @@ class ApplicationController < ActionController::Base
   end
 
   def require_admin!
-    redirect_to client_submissions_path, alert: "You do not have access to that area" unless admin_user?
+    redirect_to client_area_path, alert: "You do not have access to that area" unless admin_user?
   end
 
   def pending_client_uploads_count

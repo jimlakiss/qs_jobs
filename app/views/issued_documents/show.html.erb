@@ -1,0 +1,16 @@
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note">Issued documents</span>
+      <h1 class="page-title"><%= @project_issue.title %></h1>
+      <p class="page-subtitle"><%= @project_issue.project.code.presence || "iQs Jobs project" %></p>
+    </div>
+
+    <div class="stack-actions">
+      <%= link_to "Client Area", client_area_path, class: "btn btn-outline-secondary" %>
+      <%= link_to "All Issued Documents", issued_documents_path, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+
+  <%= render "project_issue", project_issue: @project_issue, admin_view: false %>
+</section>

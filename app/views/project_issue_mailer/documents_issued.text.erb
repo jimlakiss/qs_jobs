@@ -1,0 +1,18 @@
+Hi <%= @project_issue.contributor.key_contact.presence || @project_issue.contributor.company_name %>,
+
+New documents have been issued to you in the iQs Jobs portal.
+
+Project: <%= @project.code.presence || "Project ##{@project.id}" %>
+Title: <%= @project_issue.title %>
+Description: <%= @project_issue.description.presence || "Not supplied" %>
+
+Message:
+<%= @project_issue.body.presence || "No message supplied." %>
+
+Attachments: <%= pluralize(@project_issue.documents.count, "file") %> available
+
+Log in to download the documents:
+<%= issued_document_url(@project_issue) %>
+
+Thanks,
+the iQs Team

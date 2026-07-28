@@ -2,8 +2,8 @@
   <div class="page-header">
     <div>
       <span class="pill-note"><%= admin_user? ? "Client intake" : "Client portal" %></span>
-      <h1 class="page-title">Client Uploads</h1>
-      <p class="page-subtitle"><%= admin_user? ? "Review incoming client work and convert accepted submissions into projects." : "Track drafts and submitted project documents." %></p>
+      <h1 class="page-title"><%= admin_user? ? "Client Area" : "Client Area" %></h1>
+      <p class="page-subtitle"><%= admin_user? ? "Review incoming client work and convert accepted submissions into projects." : "Track your uploads and download documents issued by the iQs Jobs team." %></p>
     </div>
 
     <% if admin_user? %>
@@ -19,7 +19,59 @@
     <% end %>
   </div>
 
+  <% unless admin_user? %>
+    <div class="app-card table-shell">
+      <div class="app-card-body">
+        <div class="section-title">
+          <div>
+            <h2 class="h4">Issued Documents</h2>
+            <p class="page-subtitle mb-0">Files issued to you by the iQs Jobs team.</p>
+          </div>
+          <%= link_to "View All", issued_documents_path, class: "btn btn-outline-secondary btn-sm" %>
+        </div>
+
+        <% if @project_issues.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Project Number</th>
+                  <th>Title</th>
+                  <th>Issued</th>
+                  <th class="text-end">Files</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @project_issues.first(5).each do |issue| %>
+                  <tr>
+                    <td><span class="fw-semibold"><%= issue.project.code.presence || "—" %></span></td>
+                    <td><%= link_to issue.title, issued_document_path(issue), class: "fw-semibold text-decoration-none" %></td>
+                    <td><%= sydney_datetime(issue.sent_at || issue.created_at) %></td>
+                    <td class="text-end"><%= issue.documents.count %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <p class="text-muted mb-0">No documents have been issued to you yet.</p>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <div class="app-card table-shell">
+    <% unless admin_user? %>
+      <div class="app-card-body border-bottom">
+        <div class="section-title mb-0">
+          <div>
+            <h2 class="h4">Your Uploads</h2>
+            <p class="page-subtitle mb-0">Drafts and project documents you have submitted to iQs Jobs.</p>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
     <% if @client_submissions.any? %>
       <div class="table-responsive">
         <table class="table table-hover align-middle">

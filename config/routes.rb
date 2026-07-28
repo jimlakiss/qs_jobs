@@ -10,6 +10,7 @@ Rails.application.routes.draw do
       end
     end
     resources :document_extractions, only: [:destroy]
+    resources :issues, only: [:new, :create, :show], controller: "project_issues"
 
     member do
       get :confirm_destroy
@@ -27,6 +28,9 @@ Rails.application.routes.draw do
       post :unarchive
     end
   end
+
+  get :client_area, to: "client_submissions#index"
+  resources :issued_documents, only: [:index, :show]
 
   resources :contributors do
     resource :portal_access, only: [:create, :update, :destroy], controller: "contributor_portal_access"

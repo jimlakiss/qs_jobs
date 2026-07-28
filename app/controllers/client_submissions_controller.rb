@@ -10,6 +10,7 @@ class ClientSubmissionsController < ApplicationController
         @show_archived = ActiveModel::Type::Boolean.new.cast(params[:archived])
         admin_client_submissions_scope.includes(:contributor, :submitted_by, :project).latest_first
       else
+        @project_issues = current_user.received_project_issues.includes(:project, :contributor).available_to_clients
         current_user.client_submissions.includes(:project).latest_first
       end
   end

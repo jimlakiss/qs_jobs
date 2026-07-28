@@ -1,0 +1,15 @@
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note">Issued documents</span>
+      <h1 class="page-title"><%= @project_issue.title %></h1>
+      <p class="page-subtitle"><%= @project_issue.description.presence || @project.code %></p>
+    </div>
+
+    <div class="stack-actions">
+      <%= link_to "Back to Project", project_path(@project), class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+
+  <%= render "issued_documents/project_issue", project_issue: @project_issue, admin_view: true %>
+</section>

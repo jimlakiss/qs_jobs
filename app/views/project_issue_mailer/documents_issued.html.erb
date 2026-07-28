@@ -1,0 +1,28 @@
+<p>Hi <%= @project_issue.contributor.key_contact.presence || @project_issue.contributor.company_name %>,</p>
+
+<p>New documents have been issued to you in the iQs Jobs portal.</p>
+
+<dl>
+  <dt>Project</dt>
+  <dd><%= @project.code.presence || "Project ##{@project.id}" %></dd>
+
+  <dt>Title</dt>
+  <dd><%= @project_issue.title %></dd>
+
+  <% if @project_issue.description.present? %>
+    <dt>Description</dt>
+    <dd><%= @project_issue.description %></dd>
+  <% end %>
+
+  <% if @project_issue.body.present? %>
+    <dt>Message</dt>
+    <dd><%= simple_format(@project_issue.body) %></dd>
+  <% end %>
+
+  <dt>Attachments</dt>
+  <dd><%= pluralize(@project_issue.documents.count, "file") %> available</dd>
+</dl>
+
+<p><%= link_to "Log in to download the documents", issued_document_url(@project_issue) %></p>
+
+<p>Thanks,<br>the iQs Team</p>

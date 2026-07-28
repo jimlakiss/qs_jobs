@@ -1,0 +1,61 @@
+<div class="app-card">
+  <div class="app-card-body">
+    <dl class="row detail-grid mb-0">
+      <dt class="col-md-3">Project Number</dt>
+      <dd class="col-md-9"><%= project_issue.project.code.presence || "—" %></dd>
+
+      <% if admin_view %>
+        <dt class="col-md-3">Recipient</dt>
+        <dd class="col-md-9">
+          <div class="fw-semibold"><%= project_issue.contributor.company_name %></div>
+          <div class="text-muted small"><%= project_issue.recipient_user.email %></div>
+        </dd>
+      <% end %>
+
+      <dt class="col-md-3">Issued</dt>
+      <dd class="col-md-9"><%= sydney_datetime(project_issue.sent_at || project_issue.created_at) %></dd>
+
+      <dt class="col-md-3">Description</dt>
+      <dd class="col-md-9"><%= project_issue.description.presence || "—" %></dd>
+
+      <dt class="col-md-3">Message</dt>
+      <dd class="col-md-9"><%= simple_format(project_issue.body.presence || "—") %></dd>
+    </dl>
+  </div>
+</div>
+
+<div class="app-card">
+  <div class="app-card-body">
+    <div class="section-title">
+      <div>
+        <h2 class="h4">Attachments</h2>
+        <p class="page-subtitle mb-0"><%= pluralize(project_issue.documents.count, "file") %> available to download.</p>
+      </div>
+    </div>
+
+    <% if project_issue.documents.attached? %>
+      <div class="document-list">
+        <% project_issue.documents.each do |document| %>
+          <div class="document-row">
+            <div class="document-row-main">
+              <div class="fw-semibold"><%= document.filename.to_s %></div>
+              <div class="text-muted small">
+                <%= document.blob.content_type.presence || "Unknown type" %>
+                ·
+                <%= number_to_human_size(document.byte_size) %>
+                ·
+                <%= document.created_at.strftime("%d %b %Y") %>
+              </div>
+            </div>
+
+            <div class="stack-actions">
+              <%= link_to "Download", rails_blob_path(document, disposition: "attachment"), class: "btn btn-outline-secondary btn-sm" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-muted mb-0">No attachments are available.</p>
+    <% end %>
+  </div>
+</div>

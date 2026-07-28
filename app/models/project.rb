@@ -5,6 +5,7 @@ class Project < ApplicationRecord
   has_many :contributors, through: :project_contributors
   has_many :document_extractions, dependent: :destroy
   has_many :project_documents, dependent: :destroy
+  has_many :project_issues, dependent: :destroy
   has_many_attached :documents
   has_many :client_submissions, dependent: :nullify
 
