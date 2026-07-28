@@ -22,7 +22,7 @@ class ContributorsController < ApplicationController
   end
 
   def show
-    @associated_projects = @contributor.projects.distinct.order(date: :desc, code: :asc)
+    @associated_projects = associated_projects_by_code
     @associated_job_value = @associated_projects.sum(:job_value)
     @associated_fee_value = @associated_projects.sum(:fee_value)
   end
@@ -44,7 +44,7 @@ class ContributorsController < ApplicationController
   def edit; end
 
   def confirm_destroy
-    @associated_projects = @contributor.projects.distinct.order(date: :desc, code: :asc)
+    @associated_projects = associated_projects_by_code
   end
 
   def update
@@ -80,5 +80,9 @@ class ContributorsController < ApplicationController
       :notes,
       contributor_type_ids: []
     )
+  end
+
+  def associated_projects_by_code
+    @contributor.projects.distinct.order(Arel.sql("projects.code DESC NULLS LAST, projects.id DESC"))
   end
 end
