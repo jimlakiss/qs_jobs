@@ -1,6 +1,8 @@
 require "test_helper"
 
 class ProjectsControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
   setup do
     sign_in users(:one)
   end
@@ -52,6 +54,36 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, 'data-direct-upload-url="http://www.example.com/rails/active_storage/direct_uploads"'
     assert_includes response.body, "data-direct-upload-status"
+  end
+
+  test "deleting project unlinks converted client submission without removing client upload" do
+    project = Project.create!(code: "CLIENT-LINK-001", address: "1 Test Street")
+    submission = users(:client).client_submissions.create!(
+      client_reference_code: "CLIENT-LINK",
+      contributor: contributors(:citywide),
+      project: project,
+      status: :converted,
+      address: "1 Test Street",
+      description: "Converted package",
+      required_by: Date.current + 7.days
+    )
+    submission.documents.attach(
+      io: file_fixture("test_document.txt").open,
+      filename: "test_document.txt",
+      content_type: "text/plain"
+    )
+    project.documents.attach(submission.documents.first.blob)
+
+    assert_difference -> { Project.count }, -1 do
+      perform_enqueued_jobs do
+        delete project_path(project)
+      end
+    end
+
+    assert_redirected_to projects_path
+    assert_nil submission.reload.project
+    assert submission.converted?
+    assert submission.documents.attached?
   end
 
   private
