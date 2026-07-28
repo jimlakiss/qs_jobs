@@ -28,28 +28,38 @@ class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "test_document.txt", submission.client_submission_documents.first.display_name
   end
 
-  test "client submit sends notification emails" do
-    sign_in users(:client)
-    submission = users(:client).client_submissions.create!(
-      client_reference_code: "CLIENT-001",
-      contributor: contributors(:citywide),
-      address: "10 Intake Street",
-      description: "Quantity surveying services",
-      required_by: Date.current + 7.days
-    )
-    submission.documents.attach(
-      io: file_fixture("test_document.txt").open,
-      filename: "test_document.txt",
-      content_type: "text/plain"
-    )
+  test "client submit sends notification emails to client and internal inbox" do
+    previous_internal_email = ENV["CLIENT_SUBMISSIONS_EMAIL"]
+    ENV["CLIENT_SUBMISSIONS_EMAIL"] = "iqsjobs@cdconsult.net.au"
 
-    assert_enqueued_emails 2 do
-      post submit_client_submission_path(submission)
+    begin
+      sign_in users(:client)
+      submission = users(:client).client_submissions.create!(
+        client_reference_code: "CLIENT-001",
+        contributor: contributors(:citywide),
+        address: "10 Intake Street",
+        description: "Quantity surveying services",
+        required_by: Date.current + 7.days
+      )
+      submission.documents.attach(
+        io: file_fixture("test_document.txt").open,
+        filename: "test_document.txt",
+        content_type: "text/plain"
+      )
+
+      assert_emails 2 do
+        perform_enqueued_jobs do
+          post submit_client_submission_path(submission)
+        end
+      end
+
+      assert_redirected_to client_submission_path(submission)
+      assert submission.reload.submitted?
+      assert submission.submitted_at.present?
+      assert_equal ["client@example.com", "iqsjobs@cdconsult.net.au"], ActionMailer::Base.deliveries.last(2).flat_map(&:to)
+    ensure
+      ENV["CLIENT_SUBMISSIONS_EMAIL"] = previous_internal_email
     end
-
-    assert_redirected_to client_submission_path(submission)
-    assert submission.reload.submitted?
-    assert submission.submitted_at.present?
   end
 
   test "client cannot access another client's submission" do
