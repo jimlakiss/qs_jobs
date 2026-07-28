@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_22_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_28_014000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,6 +42,37 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_22_010000) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "client_submission_documents", force: :cascade do |t|
+    t.bigint "active_storage_attachment_id", null: false
+    t.bigint "client_submission_id", null: false
+    t.datetime "created_at", null: false
+    t.string "display_name"
+    t.text "notes"
+    t.datetime "updated_at", null: false
+    t.index ["active_storage_attachment_id"], name: "index_client_submission_documents_on_attachment_id", unique: true
+    t.index ["client_submission_id"], name: "index_client_submission_documents_on_client_submission_id"
+  end
+
+  create_table "client_submissions", force: :cascade do |t|
+    t.text "address"
+    t.string "client_reference_code"
+    t.bigint "contributor_id", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.text "notes"
+    t.bigint "project_id"
+    t.date "required_by"
+    t.integer "status", default: 0, null: false
+    t.datetime "submitted_at"
+    t.bigint "submitted_by_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["contributor_id"], name: "index_client_submissions_on_contributor_id"
+    t.index ["project_id"], name: "index_client_submissions_on_project_id"
+    t.index ["required_by"], name: "index_client_submissions_on_required_by"
+    t.index ["status"], name: "index_client_submissions_on_status"
+    t.index ["submitted_by_id"], name: "index_client_submissions_on_submitted_by_id"
+  end
+
   create_table "contributor_type_assignments", force: :cascade do |t|
     t.bigint "contributor_id", null: false
     t.bigint "contributor_type_id", null: false
@@ -66,6 +97,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_22_010000) do
     t.string "key_contact"
     t.text "notes"
     t.string "phone_number"
+    t.boolean "project_upload_access", default: false, null: false
     t.datetime "updated_at", null: false
     t.string "url"
     t.index "lower(btrim((company_name)::text))", name: "index_contributors_on_normalized_company_name_unique", unique: true
@@ -132,19 +164,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_22_010000) do
   end
 
   create_table "users", force: :cascade do |t|
+    t.bigint "contributor_id"
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
+    t.integer "role", default: 0, null: false
     t.datetime "updated_at", null: false
+    t.index ["contributor_id"], name: "index_users_on_contributor_id"
+    t.index ["contributor_id"], name: "index_users_on_unique_contributor_portal_access", unique: true, where: "(contributor_id IS NOT NULL)"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "client_submission_documents", "client_submissions"
+  add_foreign_key "client_submissions", "contributors"
+  add_foreign_key "client_submissions", "projects"
+  add_foreign_key "client_submissions", "users", column: "submitted_by_id"
   add_foreign_key "contributor_type_assignments", "contributor_types"
   add_foreign_key "contributor_type_assignments", "contributors"
   add_foreign_key "document_extractions", "projects"
@@ -152,4 +192,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_22_010000) do
   add_foreign_key "project_contributors", "projects"
   add_foreign_key "project_documents", "document_extractions"
   add_foreign_key "project_documents", "projects"
+  add_foreign_key "users", "contributors"
 end

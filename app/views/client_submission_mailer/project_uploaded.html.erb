@@ -1,0 +1,28 @@
+<p>Hi <%= @client_submission.contributor.key_contact.presence || @client_submission.contributor.company_name %>,</p>
+
+<p>A new project has been added to the iQs Jobs portal.</p>
+
+<dl>
+  <dt>Client</dt>
+  <dd><%= @client_submission.contributor.company_name %></dd>
+
+  <dt>Client reference</dt>
+  <dd><%= @client_submission.client_reference_code.presence || "Not supplied" %></dd>
+
+  <dt>Required by</dt>
+  <dd><%= @client_submission.required_by&.strftime("%d %b %Y") || "Not supplied" %></dd>
+
+  <dt>Project address</dt>
+  <dd><%= simple_format(@client_submission.address) %></dd>
+
+  <dt>Project details</dt>
+  <dd><%= simple_format(@client_submission.description) %></dd>
+
+  <dt>Cover notes</dt>
+  <dd><%= simple_format(@client_submission.notes.presence || "No notes supplied") %></dd>
+
+  <dt>Documents</dt>
+  <dd><%= pluralize(@client_submission.documents.count, "document") %> uploaded</dd>
+</dl>
+
+<p>Thanks,<br>the iQs Team</p>

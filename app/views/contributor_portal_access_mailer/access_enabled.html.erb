@@ -1,0 +1,15 @@
+<p>Hi <%= @contributor.key_contact.presence || @contributor.company_name %>,</p>
+
+<p>Project upload access has been enabled for <strong><%= @contributor.company_name %></strong> in the iQs Jobs portal.</p>
+
+<dl>
+  <dt>Login email</dt>
+  <dd><%= @user.email %></dd>
+
+  <dt>Portal</dt>
+  <dd><%= link_to new_user_session_url, new_user_session_url %></dd>
+</dl>
+
+<p>If a temporary password has been assigned, it will be provided separately. You can also use the password reset option from the login page.</p>
+
+<p>Thanks,<br>the iQs Team</p>

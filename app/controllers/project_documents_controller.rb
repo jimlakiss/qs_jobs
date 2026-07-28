@@ -1,6 +1,7 @@
 class ProjectDocumentsController < ApplicationController
   layout false, only: :viewer
 
+  before_action :require_admin!
   before_action :set_project
   before_action :set_document, only: [:viewer, :update, :destroy, :save_extraction, :upload_export]
 
@@ -149,7 +150,7 @@ class ProjectDocumentsController < ApplicationController
         project_document.category = "extracted_document"
         project_document.received_at = Time.current
         project_document.source = "PDF viewer"
-        project_document.received_from = "QS Jobs"
+        project_document.received_from = "iQs Jobs"
         project_document.export_kind = params[:kind]
         project_document.generated_from_attachment_id = @document.id
         project_document.document_extraction = current_extraction

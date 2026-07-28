@@ -1,0 +1,11 @@
+citywide:
+  company_name: Citywide Development Pty Ltd
+  key_contact: James
+  email: client@example.com
+  project_upload_access: true
+
+acme:
+  company_name: Acme Homes Pty Ltd
+  key_contact: Alex
+  email: other-client@example.com
+  project_upload_access: true

@@ -1,0 +1,59 @@
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note"><%= admin_user? ? "Client intake" : "Client portal" %></span>
+      <h1 class="page-title">Client Uploads</h1>
+      <p class="page-subtitle"><%= admin_user? ? "Review incoming client work and convert accepted submissions into projects." : "Track drafts and submitted project documents." %></p>
+    </div>
+
+    <% unless admin_user? %>
+      <%= link_to "New Submission", new_client_submission_path, class: "btn btn-primary" %>
+    <% end %>
+  </div>
+
+  <div class="app-card table-shell">
+    <% if @client_submissions.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Reference</th>
+              <% if admin_user? %>
+                <th>Client</th>
+              <% end %>
+              <th>Required By</th>
+              <th>Status</th>
+              <th>Address</th>
+              <th class="text-end">Documents</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @client_submissions.each do |submission| %>
+              <tr>
+                <td><%= link_to submission.client_reference_code.presence || "Submission ##{submission.id}", submission, class: "fw-semibold text-decoration-none" %></td>
+                <% if admin_user? %>
+                  <td>
+                    <div class="fw-semibold"><%= submission.contributor.company_name %></div>
+                    <div class="text-muted small"><%= submission.submitted_by.email %></div>
+                  </td>
+                <% end %>
+                <td><%= submission.required_by&.strftime("%d/%m/%y") || "—" %></td>
+                <td><span class="badge text-bg-light"><%= submission.status.humanize %></span></td>
+                <td><%= submission.address.presence || "—" %></td>
+                <td class="text-end"><%= submission.documents.count %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <h2 class="h4 mb-2">No submissions yet</h2>
+        <p class="mb-3"><%= admin_user? ? "Client submissions will appear here once they are sent." : "Create a draft to start uploading documents." %></p>
+        <% unless admin_user? %>
+          <%= link_to "New Submission", new_client_submission_path, class: "btn btn-primary" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</section>

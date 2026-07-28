@@ -1,0 +1,174 @@
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note"><%= @client_submission.status.humanize %></span>
+      <h1 class="page-title"><%= @client_submission.client_reference_code.presence || "Client Submission" %></h1>
+      <p class="page-subtitle"><%= @client_submission.description.presence || "No project details supplied." %></p>
+    </div>
+
+    <div class="stack-actions">
+      <% if @client_submission.draft? && !admin_user? %>
+        <%= link_to "Edit Details", edit_client_submission_path(@client_submission), class: "btn btn-outline-secondary" %>
+        <%= button_to "Submit", submit_client_submission_path(@client_submission), method: :post, class: "btn btn-primary" %>
+      <% end %>
+      <%= link_to "Back", client_submissions_path, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-body">
+      <dl class="row detail-grid mb-0">
+        <% if admin_user? %>
+          <dt class="col-md-3">Client</dt>
+          <dd class="col-md-9">
+            <div class="fw-semibold"><%= @client_submission.contributor.company_name %></div>
+            <div class="text-muted small"><%= @client_submission.submitted_by.email %></div>
+          </dd>
+        <% end %>
+
+        <dt class="col-md-3">Client Reference</dt>
+        <dd class="col-md-9"><%= @client_submission.client_reference_code.presence || "—" %></dd>
+
+        <dt class="col-md-3">Required By</dt>
+        <dd class="col-md-9"><%= @client_submission.required_by&.strftime("%d %b %Y") || "—" %></dd>
+
+        <dt class="col-md-3">Address</dt>
+        <dd class="col-md-9"><%= simple_format(@client_submission.address.presence || "—") %></dd>
+
+        <dt class="col-md-3">Cover Notes</dt>
+        <dd class="col-md-9"><%= simple_format(@client_submission.notes.presence || "—") %></dd>
+
+        <dt class="col-md-3">Submitted</dt>
+        <dd class="col-md-9"><%= @client_submission.submitted_at&.strftime("%d %b %Y %H:%M") || "Not sent yet" %></dd>
+
+        <% if @client_submission.project %>
+          <dt class="col-md-3">Project</dt>
+          <dd class="col-md-9"><%= link_to @client_submission.project.code, project_path(@client_submission.project) %></dd>
+        <% end %>
+      </dl>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-body">
+      <div class="section-title">
+        <div>
+          <h2 class="h4">Documents</h2>
+          <p class="page-subtitle mb-0">Rename files or add notes before submitting.</p>
+        </div>
+      </div>
+
+      <% if @client_submission.draft? %>
+        <%= form_with model: @client_submission, url: client_submission_documents_path(@client_submission), method: :post, local: true, class: "document-upload-shell" do |f| %>
+          <div class="document-upload-field">
+            <%= f.label :documents, "Drop documents here", class: "form-label" %>
+            <%= f.file_field :documents, multiple: true, direct_upload: true, class: "form-control" %>
+            <div class="form-text" data-direct-upload-status></div>
+          </div>
+          <%= f.submit "Upload", class: "btn btn-primary" %>
+        <% end %>
+      <% end %>
+
+      <% if @client_submission.documents.attached? %>
+        <div class="document-list">
+          <% @client_submission.documents.each do |document| %>
+            <% metadata = @documents_by_attachment_id[document.id] %>
+            <div class="document-row">
+              <div class="document-row-main">
+                <div class="fw-semibold"><%= metadata&.display_name.presence || document.filename.to_s %></div>
+                <div class="text-muted small">
+                  <%= document.blob.content_type.presence || "Unknown type" %>
+                  ·
+                  <%= number_to_human_size(document.byte_size) %>
+                  ·
+                  <%= document.created_at.strftime("%d %b %Y") %>
+                </div>
+                <% if metadata&.notes.present? %>
+                  <div class="text-muted small"><%= metadata.notes %></div>
+                <% end %>
+
+                <% if @client_submission.draft? && metadata %>
+                  <details class="document-metadata-editor">
+                    <summary>Edit document details</summary>
+                    <%= form_with model: metadata, url: client_submission_document_path(@client_submission, metadata), method: :patch, local: true, class: "document-metadata-form" do |f| %>
+                      <div class="document-upload-meta">
+                        <%= f.label :display_name, "Display name", class: "form-label" %>
+                        <%= f.text_field :display_name, class: "form-control" %>
+                      </div>
+                      <div class="document-upload-notes">
+                        <%= f.label :notes, "Notes", class: "form-label" %>
+                        <%= f.text_field :notes, class: "form-control" %>
+                      </div>
+                      <%= f.submit "Save", class: "btn btn-outline-secondary btn-sm" %>
+                    <% end %>
+                  </details>
+                <% end %>
+              </div>
+
+              <div class="stack-actions">
+                <%= link_to "Download", rails_blob_path(document, disposition: "attachment"), class: "btn btn-outline-secondary btn-sm" %>
+                <% if @client_submission.draft? && metadata %>
+                  <%= button_to "Remove",
+                        client_submission_document_path(@client_submission, metadata),
+                        method: :delete,
+                        form: { data: { turbo_confirm: "Remove #{metadata.display_name}?" } },
+                        class: "btn btn-outline-danger btn-sm" %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-muted mb-0">No documents have been uploaded yet.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <% if admin_user? && @client_submission.submitted? %>
+    <div class="app-card form-shell">
+      <div class="app-card-body">
+        <div class="section-title">
+          <div>
+            <h2 class="h4">Convert to Project</h2>
+            <p class="page-subtitle mb-0">Assign our project code and create the internal project record.</p>
+          </div>
+        </div>
+
+        <%= form_with model: @project, url: convert_client_submission_path(@client_submission), method: :post, local: true do |f| %>
+          <% if @project.errors.any? %>
+            <div class="alert alert-danger">
+              <ul class="mb-0">
+                <% @project.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <%= f.label :code, "Our project code", class: "form-label" %>
+              <%= f.text_field :code, class: "form-control", placeholder: "Manual internal reference" %>
+            </div>
+            <div class="col-md-6">
+              <%= f.label :date, class: "form-label" %>
+              <%= f.date_field :date, value: Date.current, class: "form-control" %>
+            </div>
+            <div class="col-12">
+              <%= f.label :address, class: "form-label" %>
+              <%= f.text_area :address, class: "form-control", rows: 2 %>
+            </div>
+            <div class="col-12">
+              <%= f.label :description, class: "form-label" %>
+              <%= f.text_area :description, class: "form-control", rows: 3 %>
+            </div>
+          </div>
+
+          <div class="stack-actions mt-4">
+            <%= f.submit "Convert to Project", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</section>

@@ -4,6 +4,25 @@ class ApplicationController < ActionController::Base
   # Rails 8 defaults
   allow_browser versions: :modern
   stale_when_importmap_changes
-end
 
+  helper_method :admin_user?, :client_user?
+
+  private
+
+  def after_sign_in_path_for(resource)
+    resource.client? ? client_submissions_path : super
+  end
+
+  def admin_user?
+    current_user&.admin?
+  end
+
+  def client_user?
+    current_user&.client?
+  end
+
+  def require_admin!
+    redirect_to client_submissions_path, alert: "You do not have access to that area" unless admin_user?
+  end
+end
 

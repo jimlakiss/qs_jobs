@@ -10,6 +10,7 @@ class ProjectsController < ApplicationController
     }
   }.freeze
 
+  before_action :require_admin!
   before_action :set_project, only: [:show, :edit, :update, :destroy, :confirm_destroy]
   before_action :load_contributors, only: [:new, :edit]
 

@@ -1,0 +1,21 @@
+Hi <%= @client_submission.contributor.key_contact.presence || @client_submission.contributor.company_name %>,
+
+A new project has been added to the iQs Jobs portal.
+
+Client: <%= @client_submission.contributor.company_name %>
+Client reference: <%= @client_submission.client_reference_code.presence || "Not supplied" %>
+Required by: <%= @client_submission.required_by&.strftime("%d %b %Y") || "Not supplied" %>
+
+Project address:
+<%= @client_submission.address %>
+
+Project details:
+<%= @client_submission.description %>
+
+Cover notes:
+<%= @client_submission.notes.presence || "No notes supplied" %>
+
+Documents: <%= pluralize(@client_submission.documents.count, "document") %> uploaded
+
+Thanks,
+the iQs Team

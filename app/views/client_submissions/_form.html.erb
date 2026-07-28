@@ -1,0 +1,56 @@
+<div class="app-card form-shell">
+  <div class="app-card-body">
+    <%= form_with model: @client_submission, local: true do |f| %>
+      <% if @client_submission.errors.any? %>
+        <div class="alert alert-danger">
+          <p class="fw-semibold mb-1">Please fix the submission details:</p>
+          <ul class="mb-0">
+            <% @client_submission.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <%= f.label :client_reference_code, "Your reference", class: "form-label" %>
+          <%= f.text_field :client_reference_code, class: "form-control", placeholder: "Builder job number, PO, or internal reference" %>
+        </div>
+
+        <div class="col-md-6">
+          <%= f.label :required_by, "Required by", class: "form-label" %>
+          <%= f.date_field :required_by, class: "form-control" %>
+        </div>
+
+        <div class="col-12">
+          <%= f.label :address, "Project address", class: "form-label" %>
+          <%= f.text_area :address, class: "form-control", rows: 2, placeholder: "Site address" %>
+        </div>
+
+        <div class="col-12">
+          <%= f.label :description, "Project details", class: "form-label" %>
+          <%= f.text_area :description, class: "form-control", rows: 3, placeholder: "Quantity surveying services for new home..." %>
+        </div>
+
+        <div class="col-12">
+          <%= f.label :notes, "Cover notes", class: "form-label" %>
+          <%= f.text_area :notes, class: "form-control", rows: 4, placeholder: "Anything we should know before reviewing the documents" %>
+        </div>
+
+        <% if @client_submission.new_record? %>
+          <div class="col-12">
+            <%= f.label :documents, "Documents", class: "form-label" %>
+            <%= f.file_field :documents, multiple: true, direct_upload: true, class: "form-control" %>
+            <div class="form-text" data-direct-upload-status></div>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="stack-actions mt-4">
+        <%= f.submit @client_submission.new_record? ? "Create Draft" : "Update Draft", class: "btn btn-primary" %>
+        <%= link_to "Cancel", @client_submission.persisted? ? client_submission_path(@client_submission) : client_submissions_path, class: "btn btn-outline-secondary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

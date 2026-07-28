@@ -1,4 +1,5 @@
 class DocumentExtractionsController < ApplicationController
+  before_action :require_admin!
   before_action :set_project
 
   def destroy

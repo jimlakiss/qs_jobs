@@ -16,7 +16,18 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :client_submissions do
+    resources :documents, only: [:create, :update, :destroy], controller: "client_submission_documents"
+
+    member do
+      post :submit
+      post :convert
+    end
+  end
+
   resources :contributors do
+    resource :portal_access, only: [:create, :update, :destroy], controller: "contributor_portal_access"
+
     member do
       get :confirm_destroy
     end

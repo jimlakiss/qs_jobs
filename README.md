@@ -1,4 +1,6 @@
-# QS Jobs
+# iQs Jobs
+
+See [Email Setup](docs/email_setup.md) for production SMTP and notification configuration.
 
 Internal Rails app for tracking QS projects, contributors, and project documents.
 

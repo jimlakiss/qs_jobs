@@ -23,6 +23,11 @@
         <dt class="col-md-3">Address</dt>
         <dd class="col-md-9"><%= @project.address.presence || "—" %></dd>
 
+        <% if @project.client_submission&.client_reference_code.present? %>
+          <dt class="col-md-3">Client Reference</dt>
+          <dd class="col-md-9"><%= @project.client_submission.client_reference_code %></dd>
+        <% end %>
+
         <dt class="col-md-3">Job Value</dt>
         <dd class="col-md-9"><%= @project.job_value ? number_to_currency(@project.job_value) : "—" %></dd>
 

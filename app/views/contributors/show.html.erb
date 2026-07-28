@@ -14,6 +14,53 @@
 
   <div class="app-card">
     <div class="app-card-body">
+      <div class="section-title">
+        <div>
+          <h2 class="h4">Portal Access</h2>
+          <p class="page-subtitle mb-0">Allow this contributor to log in and upload project submissions.</p>
+        </div>
+      </div>
+
+      <% portal_user = @contributor.portal_user %>
+      <%= form_with url: contributor_portal_access_path(@contributor), method: portal_user ? :patch : :post, local: true do %>
+        <div class="row g-3 align-items-end">
+          <div class="col-md-5">
+            <%= label_tag "portal_access_email", "Login email", class: "form-label" %>
+            <%= email_field_tag "portal_access[email]", portal_user&.email || @contributor.email, id: "portal_access_email", class: "form-control", placeholder: "client@example.com" %>
+          </div>
+
+          <div class="col-md-4">
+            <%= label_tag "portal_access_password", "Password", class: "form-label" %>
+            <%= password_field_tag "portal_access[password]", nil, id: "portal_access_password", class: "form-control", placeholder: portal_user ? "Leave blank to keep existing" : "Required for new login" %>
+          </div>
+
+          <div class="col-md-3">
+            <label class="contributor-type-option border rounded px-3 py-2 w-100">
+              <%= check_box_tag "portal_access[project_upload_access]", "1", @contributor.project_upload_access?, class: "contributor-type-option-input" %>
+              <span class="contributor-type-option-label">Project upload access</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="stack-actions mt-3">
+          <%= submit_tag portal_user ? "Update Portal Access" : "Create Portal Access", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+
+      <% if portal_user %>
+        <div class="stack-actions mt-3">
+          <%= button_to "Remove Portal Access",
+                contributor_portal_access_path(@contributor),
+                method: :delete,
+                form: { data: { turbo_confirm: "Remove portal access for #{portal_user.email}?" } },
+                class: "btn btn-outline-danger" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-body">
       <dl class="row detail-grid mb-0">
         <dt class="col-md-3">Key Contact</dt>
         <dd class="col-md-9"><%= @contributor.key_contact.presence || "—" %></dd>

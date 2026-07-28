@@ -1,4 +1,5 @@
 class ContributorTypesController < ApplicationController
+  before_action :require_admin!
   before_action :set_contributor_type, only: [:show, :edit, :update, :destroy, :confirm_destroy]
 
   def index
