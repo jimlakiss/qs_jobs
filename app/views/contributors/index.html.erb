@@ -21,6 +21,8 @@
         <% if params[:contributor_type].present? %>
           <%= hidden_field_tag :contributor_type, params[:contributor_type] %>
         <% end %>
+        <%= hidden_field_tag :sort, @sort %>
+        <%= hidden_field_tag :direction, @direction %>
         <div>
           <label for="contributor-search" class="form-label">Search contributors</label>
           <%= text_field_tag :q, @query, id: "contributor-search", class: "form-control", placeholder: "Search by company, contact, email, or phone" %>
@@ -39,18 +41,20 @@
         <table class="table table-hover align-middle">
           <thead class="table-light">
             <tr>
-              <th>Company</th>
-              <th class="text-center">Projects</th>
-              <th>Key Contact</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Contributor Types</th>
+              <th><%= sortable_table_header("Code", "code", current_sort: @sort, current_direction: @direction) %></th>
+              <th><%= sortable_table_header("Company", "company", current_sort: @sort, current_direction: @direction) %></th>
+              <th class="text-center"><%= sortable_table_header("Projects", "projects", current_sort: @sort, current_direction: @direction) %></th>
+              <th><%= sortable_table_header("Key Contact", "contact", current_sort: @sort, current_direction: @direction) %></th>
+              <th><%= sortable_table_header("Email", "email", current_sort: @sort, current_direction: @direction) %></th>
+              <th><%= sortable_table_header("Phone", "phone", current_sort: @sort, current_direction: @direction) %></th>
+              <th><%= sortable_table_header("Contributor Types", "types", current_sort: @sort, current_direction: @direction) %></th>
             </tr>
           </thead>
 
           <tbody>
             <% @contributors.each do |contributor| %>
               <tr>
+                <td><%= link_to "/#{contributor.id}", contributor_path(contributor), class: "fw-semibold text-decoration-none" %></td>
                 <td><%= link_to contributor.company_name, contributor_path(contributor), class: "fw-semibold text-decoration-none" %></td>
                 <td class="text-center"><%= contributor.distinct_project_count %></td>
                 <td><%= contributor.key_contact.presence || "—" %></td>
