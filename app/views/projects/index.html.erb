@@ -14,7 +14,7 @@
   <div class="metric-grid">
     <div class="metric-card">
       <div class="metric-label">Projects</div>
-      <div class="metric-value"><%= @projects.size %></div>
+      <div class="metric-value"><%= @project_count %></div>
     </div>
 
     <div class="metric-card">
@@ -39,9 +39,13 @@
           <label for="project-sort" class="form-label">Sort projects</label>
           <%= select_tag :sort, options_for_select(@project_sort_options, @sort), id: "project-sort", class: "form-select" %>
         </div>
+        <div>
+          <label for="project-page-size" class="form-label">Per page</label>
+          <%= select_tag :per_page, options_for_select(@page_size_options, @page_size), id: "project-page-size", class: "form-select" %>
+        </div>
         <%= submit_tag "Search", class: "btn btn-primary" %>
         <% if @query.present? %>
-          <%= link_to "Clear", projects_path(sort: @sort), class: "btn btn-outline-secondary" %>
+          <%= link_to "Clear", projects_path(sort: @sort, per_page: @page_size), class: "btn btn-outline-secondary" %>
         <% end %>
       <% end %>
     </div>
@@ -96,6 +100,31 @@
     </div>
   <% end %>
 
+  <% if @projects.any? %>
+    <div class="pagination-strip">
+      <div class="pagination-actions">
+        <% if @page <= 1 %>
+          <span class="pagination-link pagination-link-disabled">Previous</span>
+        <% else %>
+          <%= link_to "Previous",
+            projects_path(@project_filters.merge(page: @page - 1)),
+            class: "pagination-link" %>
+        <% end %>
+        <span class="pagination-position">Page <%= @page %> of <%= @total_pages %></span>
+        <% if @page >= @total_pages %>
+          <span class="pagination-link pagination-link-disabled">Next</span>
+        <% else %>
+          <%= link_to "Next",
+            projects_path(@project_filters.merge(page: @page + 1)),
+            class: "pagination-link" %>
+        <% end %>
+        <span class="pagination-summary">
+          Showing <%= @page_start %>-<%= @page_end %> of <%= pluralize(@project_count, "project") %>
+        </span>
+      </div>
+    </div>
+  <% end %>
+
   <div class="app-card table-shell">
     <% if @projects.any? %>
       <div class="table-responsive">
@@ -141,4 +170,29 @@
       </div>
     <% end %>
   </div>
+
+  <% if @projects.any? %>
+    <div class="pagination-strip pagination-strip-bottom">
+        <div class="pagination-actions">
+          <% if @page <= 1 %>
+            <span class="pagination-link pagination-link-disabled">Previous</span>
+          <% else %>
+            <%= link_to "Previous",
+              projects_path(@project_filters.merge(page: @page - 1)),
+              class: "pagination-link" %>
+          <% end %>
+          <span class="pagination-position">Page <%= @page %> of <%= @total_pages %></span>
+          <% if @page >= @total_pages %>
+            <span class="pagination-link pagination-link-disabled">Next</span>
+          <% else %>
+            <%= link_to "Next",
+              projects_path(@project_filters.merge(page: @page + 1)),
+              class: "pagination-link" %>
+          <% end %>
+          <span class="pagination-summary">
+            Showing <%= @page_start %>-<%= @page_end %> of <%= pluralize(@project_count, "project") %>
+          </span>
+        </div>
+    </div>
+  <% end %>
 </section>

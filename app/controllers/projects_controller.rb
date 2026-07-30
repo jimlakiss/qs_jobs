@@ -1,4 +1,7 @@
 class ProjectsController < ApplicationController
+  PAGE_SIZE_OPTIONS = [25, 50, 100].freeze
+  DEFAULT_PAGE_SIZE = 25
+
   PROJECT_SORT_OPTIONS = {
     "code_asc" => {
       label: "Code: lowest to highest",
@@ -17,15 +20,32 @@ class ProjectsController < ApplicationController
   def index
     @query = params[:q].to_s.strip
     @sort = params[:sort].presence_in(PROJECT_SORT_OPTIONS.keys) || "code_desc"
+    @page_size = params[:per_page].to_i.presence_in(PAGE_SIZE_OPTIONS) || DEFAULT_PAGE_SIZE
+    @page = [params[:page].to_i, 1].max
     @project_sort_options = PROJECT_SORT_OPTIONS.map { |value, config| [config.fetch(:label), value] }
-    @projects = Project.includes(project_contributors: :contributor)
-    @projects = @projects.where(
+    @page_size_options = PAGE_SIZE_OPTIONS
+    @project_filters = { q: @query.presence, sort: @sort, per_page: @page_size }.compact
+
+    projects_scope = Project.all
+    projects_scope = projects_scope.where(
       "projects.code ILIKE :q OR projects.address ILIKE :q OR projects.description ILIKE :q",
       q: "%#{@query}%"
     ) if @query.present?
-    @projects = @projects.order(PROJECT_SORT_OPTIONS.fetch(@sort).fetch(:order))
-    @total_job_value = @projects.sum(:job_value)
-    @total_fee_value = @projects.sum(:fee_value)
+
+    @project_count = projects_scope.count
+    @total_pages = [(@project_count.to_f / @page_size).ceil, 1].max
+    @page = @total_pages if @page > @total_pages
+    @page_start = @project_count.zero? ? 0 : ((@page - 1) * @page_size) + 1
+    @page_end = [@page * @page_size, @project_count].min
+    @total_job_value = projects_scope.sum(:job_value)
+    @total_fee_value = projects_scope.sum(:fee_value)
+
+    @projects = projects_scope
+      .includes(project_contributors: :contributor)
+      .order(PROJECT_SORT_OPTIONS.fetch(@sort).fetch(:order))
+      .offset((@page - 1) * @page_size)
+      .limit(@page_size)
+
     @matching_contributors = Contributor.none
     @matching_contributor_types = ContributorType.none
 

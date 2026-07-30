@@ -78,6 +78,57 @@ body.app-shell {
   margin-bottom: 0;
 }
 
+.pagination-strip {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1rem;
+  padding: 0;
+}
+
+.pagination-strip-bottom {
+  margin-top: -0.75rem;
+}
+
+.pagination-position {
+  align-self: center;
+  color: var(--qs-muted);
+  font-size: 0.875rem;
+}
+
+.pagination-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.pagination-summary {
+  color: var(--qs-muted);
+  font-size: 0.875rem;
+}
+
+.pagination-link {
+  color: var(--qs-accent);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.pagination-link:hover,
+.pagination-link:focus {
+  color: #175645;
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
+
+.pagination-link-disabled {
+  color: #a8b7b1;
+  cursor: default;
+  font-weight: 600;
+}
+
 .table-shell thead th {
   border-bottom-width: 1px;
   color: var(--qs-muted);
@@ -199,6 +250,10 @@ body.app-shell {
   --bs-btn-hover-border-color: #175645;
   --bs-btn-active-bg: #114235;
   --bs-btn-active-border-color: #114235;
+  --bs-btn-disabled-bg: #b9d6cc;
+  --bs-btn-disabled-border-color: #b9d6cc;
+  --bs-btn-disabled-color: #f8fbfa;
+  --bs-btn-disabled-opacity: 1;
 }
 
 .btn-outline-secondary {

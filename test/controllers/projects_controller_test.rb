@@ -46,6 +46,45 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_equal ["2627-010", "2627-009", "2627-007"], rendered_project_codes
   end
 
+  test "projects index defaults to 25 projects per page" do
+    30.times do |index|
+      Project.create!(code: "9900-%03d" % (index + 1))
+    end
+
+    get projects_path
+
+    assert_response :success
+    assert_equal 25, rendered_project_codes.size
+    assert_equal "9900-030", rendered_project_codes.first
+    assert_equal "9900-006", rendered_project_codes.last
+    assert_includes response.body, "Showing 1-25 of 30 projects"
+    assert_select "a[href='#{projects_path(sort: "code_desc", per_page: 25, page: 2)}']", text: "Next"
+  end
+
+  test "projects index can show 50 projects per page" do
+    30.times do |index|
+      Project.create!(code: "9800-%03d" % (index + 1))
+    end
+
+    get projects_path(per_page: 50)
+
+    assert_response :success
+    assert_equal 30, rendered_project_codes.size
+    assert_includes response.body, "Showing 1-30 of 30 projects"
+  end
+
+  test "projects index can move to the next page" do
+    30.times do |index|
+      Project.create!(code: "9700-%03d" % (index + 1))
+    end
+
+    get projects_path(page: 2)
+
+    assert_response :success
+    assert_equal ["9700-005", "9700-004", "9700-003", "9700-002", "9700-001"], rendered_project_codes
+    assert_includes response.body, "Showing 26-30 of 30 projects"
+  end
+
   test "project document upload uses direct upload wiring" do
     project = Project.create!(code: "DOC-UPLOAD-001", address: "1 Test Street")
 
