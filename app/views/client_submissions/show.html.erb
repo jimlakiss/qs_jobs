@@ -93,11 +93,13 @@
       <% if @client_submission.documents.attached? %>
         <div class="document-list">
           <% grouped_documents(@client_submission.documents, @documents_by_attachment_id).each do |group_name, documents| %>
-            <div class="document-group-card">
-              <div class="document-group-header">
-                <h3 class="h5 mb-0"><%= group_name %></h3>
-                <span class="text-muted small"><%= pluralize(documents.size, "file") %></span>
-              </div>
+            <details class="document-group-card">
+              <summary class="document-group-header">
+                <div>
+                  <h3 class="h5 mb-0"><%= group_name %></h3>
+                  <span class="text-muted small"><%= pluralize(documents.size, "file") %></span>
+                </div>
+              </summary>
 
               <% documents.each do |document| %>
                 <% metadata = @documents_by_attachment_id[document.id] %>
@@ -153,7 +155,7 @@
                   </div>
                 </div>
               <% end %>
-            </div>
+            </details>
           <% end %>
         </div>
       <% else %>

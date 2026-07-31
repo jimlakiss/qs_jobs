@@ -372,11 +372,39 @@ body.app-shell {
 .document-group-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
   padding: 0.8rem 1rem;
   border-bottom: 1px solid var(--qs-border);
   background: var(--qs-surface-strong);
+  cursor: pointer;
+  list-style: none;
+}
+
+.document-group-header::-webkit-details-marker {
+  display: none;
+}
+
+.document-group-header::before {
+  content: "-";
+  color: var(--qs-primary);
+  font-weight: 700;
+}
+
+.document-group-header > div:first-of-type {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.document-group-header .btn {
+  flex: 0 0 auto;
+}
+
+.document-group-card:not([open]) > .document-group-header {
+  border-bottom: 0;
+}
+
+.document-group-card:not([open]) > .document-group-header::before {
+  content: "+";
 }
 
 .document-group-card .document-row {

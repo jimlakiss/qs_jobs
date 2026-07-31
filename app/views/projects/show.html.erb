@@ -185,8 +185,8 @@
           <% if @imported_documents.any? %>
             <div class="document-list">
               <% grouped_documents(@imported_documents, @project_documents_by_attachment_id).each do |group_name, documents| %>
-                <div class="document-group-card">
-                  <div class="document-group-header">
+                <details class="document-group-card">
+                  <summary class="document-group-header">
                     <div>
                       <h3 class="h5 mb-0"><%= group_name %></h3>
                       <span class="text-muted small"><%= pluralize(documents.size, "file") %></span>
@@ -196,9 +196,10 @@
                       <%= link_to "Open Group Viewer",
                             viewer_project_document_group_path(@project, group),
                             class: "btn btn-primary btn-sm",
-                            data: { turbo: false } %>
+                            data: { turbo: false },
+                            onclick: "event.stopPropagation()" %>
                     <% end %>
-                  </div>
+                  </summary>
 
                   <% documents.each do |document| %>
                     <% extraction = @document_extractions_by_attachment_id[document.id] %>
@@ -253,7 +254,7 @@
                       </div>
                     </div>
                   <% end %>
-                </div>
+                </details>
               <% end %>
             </div>
           <% else %>
