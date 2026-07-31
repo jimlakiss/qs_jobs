@@ -31,6 +31,16 @@ class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Architectural", submission.client_submission_documents.first.document_group.name
   end
 
+  test "new submission form includes document group field for first upload" do
+    sign_in users(:client)
+
+    get new_client_submission_path
+
+    assert_response :success
+    assert_select "input[name='client_submission[document_group_name]']"
+    assert_select "label", text: "Folder / group"
+  end
+
   test "client submit sends notification emails to client and internal inbox" do
     previous_internal_email = ENV["CLIENT_SUBMISSIONS_EMAIL"]
     ENV["CLIENT_SUBMISSIONS_EMAIL"] = "iqsjobs@cdconsult.net.au"
