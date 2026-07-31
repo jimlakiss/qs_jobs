@@ -2,6 +2,12 @@ Rails.application.routes.draw do
   devise_for :users, skip: [:registrations]
 
   resources :projects do
+    resources :document_groups, only: [] do
+      member do
+        get :viewer
+      end
+    end
+
     resources :documents, only: [:create, :update, :destroy], controller: "project_documents" do
       member do
         get :viewer

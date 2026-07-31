@@ -73,11 +73,12 @@ class ProjectDocumentsController < ApplicationController
   end
 
   def document_params
-    params.fetch(:project, {}).permit(:received_at, :source, :received_from, :notes, documents: [])
+    params.fetch(:project, {}).permit(:received_at, :source, :received_from, :notes, :document_group_name, documents: [])
   end
 
   def document_metadata_params
     params.fetch(:project_document, {}).permit(:received_at, :source, :received_from, :notes)
+      .merge(document_group: document_group_from_metadata_params)
   end
 
   def document_tab_param
@@ -133,9 +134,12 @@ class ProjectDocumentsController < ApplicationController
   end
 
   def create_import_metadata(existing_attachment_ids)
+    document_group = document_group_from_upload_params
+
     new_attachments(existing_attachment_ids).find_each do |attachment|
       @project.project_documents.find_or_create_by!(active_storage_attachment_id: attachment.id) do |project_document|
         project_document.category = "imported"
+        project_document.document_group = document_group
         project_document.received_at = document_params[:received_at].presence || Time.current
         project_document.source = document_params[:source]
         project_document.received_from = document_params[:received_from]
@@ -161,5 +165,20 @@ class ProjectDocumentsController < ApplicationController
 
   def current_extraction
     @project.document_extractions.where(active_storage_attachment_id: @document.id).order(extracted_at: :desc, updated_at: :desc).first
+  end
+
+  def document_group_from_upload_params
+    find_or_create_document_group(document_params[:document_group_name])
+  end
+
+  def document_group_from_metadata_params
+    find_or_create_document_group(params.dig(:project_document, :document_group_name))
+  end
+
+  def find_or_create_document_group(name)
+    normalized_name = name.to_s.strip
+    return nil if normalized_name.blank?
+
+    @project.document_groups.where("LOWER(name) = LOWER(?)", normalized_name).first_or_create!(name: normalized_name)
   end
 end

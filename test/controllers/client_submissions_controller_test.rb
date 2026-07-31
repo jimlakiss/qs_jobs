@@ -16,6 +16,7 @@ class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
             description: "Quantity surveying services for a new home",
             required_by: Date.current + 7.days,
             notes: "Please review the architectural drawings.",
+            document_group_name: "Architectural",
             documents: [fixture_file_upload("test_document.txt", "text/plain")]
           }
         }
@@ -27,6 +28,7 @@ class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal contributors(:citywide), submission.contributor
     assert submission.documents.attached?
     assert_equal "test_document.txt", submission.client_submission_documents.first.display_name
+    assert_equal "Architectural", submission.client_submission_documents.first.document_group.name
   end
 
   test "client submit sends notification emails to client and internal inbox" do
@@ -299,6 +301,7 @@ class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
     submission.client_submission_documents.create!(
       active_storage_attachment_id: submission.documents.attachments.first.id,
       display_name: "Architectural drawings",
+      document_group: submission.document_groups.create!(name: "Architectural"),
       notes: "Use for measure."
     )
 
@@ -322,6 +325,7 @@ class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal contributors(:citywide), project.project_contributors.find_by(role: "Client").contributor
     assert project.documents.attached?
     assert_equal "Client portal", project.project_documents.first.source
+    assert_equal "Architectural", project.project_documents.first.document_group.name
   end
 
   test "admin can add submitted client submission to existing project" do

@@ -483,21 +483,30 @@ fileInput?.addEventListener("change", async (e) => {
 
 async function loadInitialProjectPdf() {
   const appDocument = window.qsJobsDocument;
-  if (!appDocument?.initialPdfUrl) return;
+  const initialPdfs = Array.isArray(appDocument?.initialPdfs) ? appDocument.initialPdfs : [];
+  if (!initialPdfs.length && !appDocument?.initialPdfUrl) return;
 
   try {
-    const response = await fetch(appDocument.initialPdfUrl);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const pdfs = initialPdfs.length ? initialPdfs : [{
+      url: appDocument.initialPdfUrl,
+      name: appDocument.initialPdfName || "project-document.pdf",
+    }];
 
-    const blob = await response.blob();
-    const file = new File([blob], appDocument.initialPdfName || "project-document.pdf", {
-      type: blob.type || "application/pdf",
-    });
+    const files = [];
+    for (const pdf of pdfs) {
+      const response = await fetch(pdf.url);
+      if (!response.ok) throw new Error(`${pdf.name || "PDF"} returned HTTP ${response.status}`);
 
-    await handleSelectedPDFs([file], "project-document");
+      const blob = await response.blob();
+      files.push(new File([blob], pdf.name || "project-document.pdf", {
+        type: blob.type || "application/pdf",
+      }));
+    }
+
+    await handleSelectedPDFs(files, files.length > 1 ? "project-document-group" : "project-document");
   } catch (err) {
-    console.error("Failed to load project PDF:", err);
-    alert(`Failed to load project PDF: ${err.message}`);
+    console.error("Failed to load project PDF(s):", err);
+    alert(`Failed to load project PDF(s): ${err.message}`);
   }
 }
 

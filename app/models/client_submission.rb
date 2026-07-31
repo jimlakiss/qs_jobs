@@ -6,6 +6,7 @@ class ClientSubmission < ApplicationRecord
   belongs_to :project, optional: true
 
   has_many :client_submission_documents, dependent: :destroy
+  has_many :document_groups, as: :groupable, dependent: :destroy
   has_many_attached :documents
 
   validates :address, :description, presence: true

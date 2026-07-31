@@ -362,6 +362,32 @@ body.app-shell {
   gap: 0.75rem;
 }
 
+.document-group-card {
+  border: 1px solid var(--qs-border);
+  border-radius: 0.75rem;
+  background: rgba(255, 253, 248, 0.7);
+  overflow: hidden;
+}
+
+.document-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--qs-border);
+  background: var(--qs-surface-strong);
+}
+
+.document-group-card .document-row {
+  border-width: 0 0 1px;
+  border-radius: 0;
+}
+
+.document-group-card .document-row:last-child {
+  border-bottom: 0;
+}
+
 .document-row {
   display: flex;
   align-items: center;

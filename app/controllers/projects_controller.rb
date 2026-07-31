@@ -66,7 +66,8 @@ class ProjectsController < ApplicationController
     @document_extractions = @project.document_extractions.order(extracted_at: :desc, updated_at: :desc)
     @project_issues = @project.project_issues.includes(:recipient_user, :contributor).latest_first
     @document_extractions_by_attachment_id = @document_extractions.index_by(&:active_storage_attachment_id)
-    @project_documents_by_attachment_id = @project.project_documents.index_by(&:active_storage_attachment_id)
+    @document_groups = @project.document_groups.alphabetical
+    @project_documents_by_attachment_id = @project.project_documents.includes(:document_group).index_by(&:active_storage_attachment_id)
     @imported_documents = @project.documents.select do |document|
       @project_documents_by_attachment_id[document.id]&.category != "extracted_document"
     end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_28_165457) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_31_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -47,10 +47,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_165457) do
     t.bigint "client_submission_id", null: false
     t.datetime "created_at", null: false
     t.string "display_name"
+    t.bigint "document_group_id"
     t.text "notes"
     t.datetime "updated_at", null: false
     t.index ["active_storage_attachment_id"], name: "index_client_submission_documents_on_attachment_id", unique: true
     t.index ["client_submission_id"], name: "index_client_submission_documents_on_client_submission_id"
+    t.index ["document_group_id"], name: "index_client_submission_documents_on_document_group_id"
   end
 
   create_table "client_submissions", force: :cascade do |t|
@@ -122,6 +124,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_165457) do
     t.index ["project_id"], name: "index_document_extractions_on_project_id"
   end
 
+  create_table "document_groups", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "groupable_id", null: false
+    t.string "groupable_type", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index "groupable_type, groupable_id, lower(btrim((name)::text))", name: "index_document_groups_on_groupable_and_normalized_name", unique: true
+    t.index ["groupable_type", "groupable_id"], name: "index_document_groups_on_groupable"
+  end
+
   create_table "project_contributors", force: :cascade do |t|
     t.bigint "contributor_id"
     t.datetime "created_at", null: false
@@ -138,6 +150,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_165457) do
     t.string "category", default: "imported", null: false
     t.datetime "created_at", null: false
     t.bigint "document_extraction_id"
+    t.bigint "document_group_id"
     t.string "export_kind"
     t.bigint "generated_from_attachment_id"
     t.text "notes"
@@ -148,6 +161,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_165457) do
     t.datetime "updated_at", null: false
     t.index ["active_storage_attachment_id"], name: "index_project_documents_on_active_storage_attachment_id", unique: true
     t.index ["document_extraction_id"], name: "index_project_documents_on_document_extraction_id"
+    t.index ["document_group_id"], name: "index_project_documents_on_document_group_id"
     t.index ["project_id", "category"], name: "index_project_documents_on_project_id_and_category"
     t.index ["project_id"], name: "index_project_documents_on_project_id"
     t.index ["received_at"], name: "index_project_documents_on_received_at"
@@ -325,6 +339,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_165457) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "client_submission_documents", "client_submissions"
+  add_foreign_key "client_submission_documents", "document_groups"
   add_foreign_key "client_submissions", "contributors"
   add_foreign_key "client_submissions", "projects"
   add_foreign_key "client_submissions", "users", column: "submitted_by_id"
@@ -334,6 +349,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_165457) do
   add_foreign_key "project_contributors", "contributors"
   add_foreign_key "project_contributors", "projects"
   add_foreign_key "project_documents", "document_extractions"
+  add_foreign_key "project_documents", "document_groups"
   add_foreign_key "project_documents", "projects"
   add_foreign_key "project_issues", "contributors"
   add_foreign_key "project_issues", "projects"

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= @document.filename %> - PDF Viewer</title>
+  <title><%= @viewer_title.presence || @document.filename %> - PDF Viewer</title>
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
   <link rel="icon" href="/pdf_viewer/favicon.png">
@@ -793,8 +793,16 @@
     projectId: <%= @project.id.to_json %>,
     documentId: <%= @document.id.to_json %>,
     projectUrl: <%= project_path(@project).to_json.html_safe %>,
+    viewerTitle: <%= (@viewer_title.presence || @document.filename.to_s).to_json.html_safe %>,
     initialPdfUrl: <%= rails_service_blob_proxy_path(@document.blob.signed_id, @document.filename).to_json.html_safe %>,
     initialPdfName: <%= @document.filename.to_s.to_json.html_safe %>,
+    initialPdfs: <%= Array(@viewer_documents.presence || [@document]).map { |document|
+      {
+        id: document.id,
+        name: document.filename.to_s,
+        url: rails_service_blob_proxy_path(document.blob.signed_id, document.filename)
+      }
+    }.to_json.html_safe %>,
     saveExtractionUrl: <%= save_extraction_project_document_path(@project, @document).to_json.html_safe %>,
     uploadExportUrl: <%= upload_export_project_document_path(@project, @document).to_json.html_safe %>,
     csrfToken: <%= form_authenticity_token.to_json.html_safe %>

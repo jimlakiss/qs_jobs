@@ -14,6 +14,7 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
         params: {
           project: {
             documents: [file],
+            document_group_name: "Architectural",
             received_at: "2026-05-28T09:30",
             source: "Email",
             received_from: "Client",
@@ -28,9 +29,40 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal "test_document.txt", document.filename.to_s
     assert_equal "imported", metadata.category
+    assert_equal "Architectural", metadata.document_group.name
     assert_equal "Email", metadata.source
     assert_equal "Client", metadata.received_from
     assert_equal "First issue", metadata.notes
+  end
+
+  test "updates document group metadata after upload" do
+    @project.documents.attach(
+      io: StringIO.new("temporary document"),
+      filename: "temporary.txt",
+      content_type: "text/plain"
+    )
+    document = @project.documents.first
+    @project.project_documents.create!(
+      active_storage_attachment_id: document.id,
+      category: "imported",
+      received_at: Time.zone.parse("2026-05-28 09:30"),
+      source: "Email"
+    )
+
+    patch project_document_path(@project, document),
+      params: {
+        tab: "imported-documents",
+        project_document: {
+          document_group_name: "Structural",
+          received_at: "2026-05-29T10:45",
+          source: "Portal"
+        }
+      }
+
+    assert_redirected_to project_path(@project, tab: "imported-documents")
+
+    metadata = @project.project_documents.find_by!(active_storage_attachment_id: document.id)
+    assert_equal "Structural", metadata.document_group.name
   end
 
   test "uploads dwg documents to a project" do
@@ -147,6 +179,50 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "window.qsJobsDocument"
     assert_includes response.body, "drawings.pdf"
     assert_includes response.body, "/rails/active_storage/blobs/proxy/"
+  end
+
+  test "opens the viewer for grouped pdf documents" do
+    group = @project.document_groups.create!(name: "Architectural")
+    2.times do |index|
+      @project.documents.attach(
+        io: StringIO.new("%PDF-1.4"),
+        filename: "A#{index + 1}.pdf",
+        content_type: "application/pdf"
+      )
+      @project.project_documents.create!(
+        active_storage_attachment_id: @project.documents.attachments.last.id,
+        category: "imported",
+        document_group: group
+      )
+    end
+
+    get viewer_project_document_group_path(@project, group)
+
+    assert_response :success
+    assert_includes response.body, "Architectural - PDF Viewer"
+    assert_includes response.body, "initialPdfs"
+    assert_includes response.body, "A1.pdf"
+    assert_includes response.body, "A2.pdf"
+    assert_includes response.body, save_extraction_project_document_path(@project, @project.documents.attachments.order(:id).first)
+  end
+
+  test "project page links grouped pdf documents to group viewer" do
+    group = @project.document_groups.create!(name: "Architectural")
+    @project.documents.attach(
+      io: StringIO.new("%PDF-1.4"),
+      filename: "A1.pdf",
+      content_type: "application/pdf"
+    )
+    @project.project_documents.create!(
+      active_storage_attachment_id: @project.documents.attachments.last.id,
+      category: "imported",
+      document_group: group
+    )
+
+    get project_path(@project)
+
+    assert_response :success
+    assert_select "a[href='#{viewer_project_document_group_path(@project, group)}']", text: "Open Group Viewer"
   end
 
   test "stores extracted document data" do

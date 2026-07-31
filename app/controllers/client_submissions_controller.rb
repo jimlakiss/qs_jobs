@@ -17,7 +17,8 @@ class ClientSubmissionsController < ApplicationController
 
   def show
     sync_document_metadata!
-    @documents_by_attachment_id = @client_submission.client_submission_documents.index_by(&:active_storage_attachment_id)
+    @document_groups = @client_submission.document_groups.alphabetical
+    @documents_by_attachment_id = @client_submission.client_submission_documents.includes(:document_group).index_by(&:active_storage_attachment_id)
     @project = Project.new(address: @client_submission.address, description: @client_submission.description)
     @existing_projects = Project.order(:code) if admin_user? && processable_by_admin?
   end
@@ -31,7 +32,7 @@ class ClientSubmissionsController < ApplicationController
     @client_submission.contributor = current_user.contributor
 
     if @client_submission.save
-      attach_documents
+      attach_documents(document_group: document_group_from_upload_params)
       redirect_to @client_submission, notice: "Submission draft created"
     else
       render :new, status: :unprocessable_entity
@@ -42,7 +43,7 @@ class ClientSubmissionsController < ApplicationController
 
   def update
     if editable_by_client? && @client_submission.update(client_submission_params)
-      attach_documents
+      attach_documents(document_group: document_group_from_upload_params)
       redirect_to @client_submission, notice: "Submission updated"
     else
       render :edit, status: :unprocessable_entity
@@ -160,18 +161,19 @@ class ClientSubmissionsController < ApplicationController
     params.require(:client_submission).permit(:project_id)
   end
 
-  def attach_documents
+  def attach_documents(document_group: nil)
     return if client_submission_params[:documents].blank?
 
     existing_attachment_ids = @client_submission.documents.attachments.ids
     @client_submission.documents.attach(client_submission_params[:documents])
-    create_document_metadata(existing_attachment_ids)
+    create_document_metadata(existing_attachment_ids, document_group: document_group)
   end
 
-  def create_document_metadata(existing_attachment_ids)
+  def create_document_metadata(existing_attachment_ids, document_group: nil)
     @client_submission.documents.attachments.where.not(id: existing_attachment_ids).find_each do |attachment|
       @client_submission.client_submission_documents.find_or_create_by!(active_storage_attachment_id: attachment.id) do |document|
         document.display_name = attachment.filename.to_s
+        document.document_group = document_group
       end
     end
   end
@@ -190,15 +192,34 @@ class ClientSubmissionsController < ApplicationController
     project.documents.attachments.where.not(id: existing_attachment_ids).each_with_index do |attachment, index|
       source_attachment = @client_submission.documents.attachments[index]
       source_metadata = @client_submission.client_submission_documents.find_by(active_storage_attachment_id: source_attachment&.id)
+      document_group = project_document_group_for(project, source_metadata&.document_group)
 
       project.project_documents.create!(
         active_storage_attachment_id: attachment.id,
         category: "imported",
+        document_group: document_group,
         received_at: @client_submission.submitted_at || @client_submission.updated_at,
         source: "Client portal",
         received_from: @client_submission.submitted_by.email,
         notes: source_metadata&.notes.presence || @client_submission.notes
       )
     end
+  end
+
+  def document_group_from_upload_params
+    find_or_create_document_group(params.dig(:client_submission, :document_group_name))
+  end
+
+  def find_or_create_document_group(name)
+    normalized_name = name.to_s.strip
+    return nil if normalized_name.blank?
+
+    @client_submission.document_groups.where("LOWER(name) = LOWER(?)", normalized_name).first_or_create!(name: normalized_name)
+  end
+
+  def project_document_group_for(project, source_group)
+    return nil unless source_group
+
+    project.document_groups.where("LOWER(name) = LOWER(?)", source_group.name).first_or_create!(name: source_group.name)
   end
 end

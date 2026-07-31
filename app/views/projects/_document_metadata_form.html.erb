@@ -14,6 +14,14 @@
             class: "form-control" %>
     </div>
     <div class="document-upload-meta">
+      <%= f.label :document_group_name, "Folder / group", class: "form-label" %>
+      <%= f.text_field :document_group_name,
+            value: metadata.document_group&.name,
+            class: "form-control",
+            placeholder: "Architectural, Structural, Survey",
+            list: "project-document-group-options" %>
+    </div>
+    <div class="document-upload-meta">
       <%= f.label :source, "Source", class: "form-label" %>
       <%= f.text_field :source, value: metadata.source, class: "form-control", placeholder: "Email, client, consultant" %>
     </div>

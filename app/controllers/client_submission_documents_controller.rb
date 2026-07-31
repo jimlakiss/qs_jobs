@@ -8,7 +8,7 @@ class ClientSubmissionDocumentsController < ApplicationController
     if document_params[:documents].present?
       existing_attachment_ids = @client_submission.documents.attachments.ids
       @client_submission.documents.attach(document_params[:documents])
-      create_document_metadata(existing_attachment_ids)
+      create_document_metadata(existing_attachment_ids, document_group: document_group_from_upload_params)
       redirect_to @client_submission, notice: "Documents uploaded"
     else
       redirect_to @client_submission, alert: "Choose at least one document to upload"
@@ -16,7 +16,7 @@ class ClientSubmissionDocumentsController < ApplicationController
   end
 
   def update
-    @document.update!(client_submission_document_params)
+    @document.update!(client_submission_document_params.merge(document_group: document_group_from_metadata_params))
     redirect_to @client_submission, notice: "Document details updated"
   end
 
@@ -52,18 +52,34 @@ class ClientSubmissionDocumentsController < ApplicationController
   end
 
   def document_params
-    params.fetch(:client_submission, {}).permit(documents: [])
+    params.fetch(:client_submission, {}).permit(:document_group_name, documents: [])
   end
 
   def client_submission_document_params
     params.require(:client_submission_document).permit(:display_name, :notes)
   end
 
-  def create_document_metadata(existing_attachment_ids)
+  def create_document_metadata(existing_attachment_ids, document_group: nil)
     @client_submission.documents.attachments.where.not(id: existing_attachment_ids).find_each do |attachment|
       @client_submission.client_submission_documents.find_or_create_by!(active_storage_attachment_id: attachment.id) do |document|
         document.display_name = attachment.filename.to_s
+        document.document_group = document_group
       end
     end
+  end
+
+  def document_group_from_upload_params
+    find_or_create_document_group(document_params[:document_group_name])
+  end
+
+  def document_group_from_metadata_params
+    find_or_create_document_group(params.dig(:client_submission_document, :document_group_name))
+  end
+
+  def find_or_create_document_group(name)
+    normalized_name = name.to_s.strip
+    return nil if normalized_name.blank?
+
+    @client_submission.document_groups.where("LOWER(name) = LOWER(?)", normalized_name).first_or_create!(name: normalized_name)
   end
 end

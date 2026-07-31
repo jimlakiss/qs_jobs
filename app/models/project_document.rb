@@ -7,6 +7,7 @@ class ProjectDocument < ApplicationRecord
     class_name: "ActiveStorage::Attachment",
     optional: true
   belongs_to :document_extraction, optional: true
+  belongs_to :document_group, optional: true
 
   validates :category, inclusion: { in: CATEGORIES }
 
