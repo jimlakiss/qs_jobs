@@ -3,10 +3,11 @@ class ProjectDocumentsController < ApplicationController
 
   before_action :require_admin!
   before_action :set_project
-  before_action :set_document, only: [:viewer, :update, :destroy, :save_extraction, :upload_export]
+  before_action :set_document, only: [:viewer, :update, :destroy, :save_extraction, :viewer_state, :upload_export]
 
   def viewer
     redirect_to @project, alert: "Only PDF documents can be opened in the viewer" unless pdf_document?
+    @viewer_state = current_viewer_state&.data || {}
   end
 
   def create
@@ -60,6 +61,17 @@ class ProjectDocumentsController < ApplicationController
     create_export_metadata(existing_attachment_ids, file)
 
     render json: { ok: true, filename: file.original_filename }
+  end
+
+  def viewer_state
+    state = current_viewer_state || @project.document_viewer_states.build(active_storage_attachment_id: @document.id)
+    state.assign_attributes(
+      data: normalize_json(params[:viewer_state], {}),
+      saved_at: Time.current
+    )
+    state.save!
+
+    render json: { ok: true, saved_at: state.saved_at.iso8601 }
   end
 
   private
@@ -165,6 +177,10 @@ class ProjectDocumentsController < ApplicationController
 
   def current_extraction
     @project.document_extractions.where(active_storage_attachment_id: @document.id).order(extracted_at: :desc, updated_at: :desc).first
+  end
+
+  def current_viewer_state
+    @current_viewer_state ||= @project.document_viewer_states.find_by(active_storage_attachment_id: @document.id)
   end
 
   def document_group_from_upload_params

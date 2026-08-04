@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_31_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_04_011500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -132,6 +132,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_31_000000) do
     t.datetime "updated_at", null: false
     t.index "groupable_type, groupable_id, lower(btrim((name)::text))", name: "index_document_groups_on_groupable_and_normalized_name", unique: true
     t.index ["groupable_type", "groupable_id"], name: "index_document_groups_on_groupable"
+  end
+
+  create_table "document_viewer_states", force: :cascade do |t|
+    t.bigint "active_storage_attachment_id", null: false
+    t.datetime "created_at", null: false
+    t.jsonb "data", default: {}, null: false
+    t.bigint "project_id", null: false
+    t.datetime "saved_at"
+    t.datetime "updated_at", null: false
+    t.index ["active_storage_attachment_id"], name: "index_document_viewer_states_on_active_storage_attachment_id"
+    t.index ["project_id", "active_storage_attachment_id"], name: "index_document_viewer_states_on_project_and_attachment", unique: true
+    t.index ["project_id"], name: "index_document_viewer_states_on_project_id"
   end
 
   create_table "project_contributors", force: :cascade do |t|
@@ -346,6 +358,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_31_000000) do
   add_foreign_key "contributor_type_assignments", "contributor_types"
   add_foreign_key "contributor_type_assignments", "contributors"
   add_foreign_key "document_extractions", "projects"
+  add_foreign_key "document_viewer_states", "projects"
   add_foreign_key "project_contributors", "contributors"
   add_foreign_key "project_contributors", "projects"
   add_foreign_key "project_documents", "document_extractions"

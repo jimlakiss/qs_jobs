@@ -12,6 +12,7 @@ Rails.application.routes.draw do
       member do
         get :viewer
         post :save_extraction
+        patch :viewer_state
         post :upload_export
       end
     end

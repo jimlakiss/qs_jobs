@@ -270,6 +270,70 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "ready", extraction.sheets.first["status"]
   end
 
+  test "stores draft viewer state for a project document" do
+    @project.documents.attach(
+      io: StringIO.new("%PDF-1.4"),
+      filename: "drawings.pdf",
+      content_type: "application/pdf"
+    )
+
+    document = @project.documents.first
+
+    assert_difference -> { @project.document_viewer_states.count }, 1 do
+      patch viewer_state_project_document_path(@project, document),
+        params: {
+          viewer_state: {
+            version: 1,
+            currentPage: 2,
+            measurementsByPage: {
+              "2" => [
+                { type: "linear", points: [{ x: 0.1, y: 0.2 }, { x: 0.3, y: 0.4 }] }
+              ]
+            },
+            scaleZonesByPage: {
+              "2" => [
+                { label: "1:100", mpp: 100, vertices: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }] }
+              ]
+            }
+          }
+        },
+        as: :json
+    end
+
+    assert_response :success
+    state = @project.document_viewer_states.last
+    assert_equal 2, state.data["currentPage"]
+    assert_equal "linear", state.data.dig("measurementsByPage", "2", 0, "type")
+    assert_equal "1:100", state.data.dig("scaleZonesByPage", "2", 0, "label")
+    assert state.saved_at.present?
+  end
+
+  test "viewer includes saved draft viewer state" do
+    @project.documents.attach(
+      io: StringIO.new("%PDF-1.4"),
+      filename: "drawings.pdf",
+      content_type: "application/pdf"
+    )
+
+    document = @project.documents.first
+    @project.document_viewer_states.create!(
+      active_storage_attachment_id: document.id,
+      data: {
+        version: 1,
+        documentDetails: { project_id: "DRAFT-001" },
+        measurementsByPage: { "1" => [{ type: "count", points: [{ x: 0.2, y: 0.4 }] }] }
+      },
+      saved_at: Time.current
+    )
+
+    get viewer_project_document_path(@project, document)
+
+    assert_response :success
+    assert_includes response.body, "viewerStateUrl"
+    assert_includes response.body, "DRAFT-001"
+    assert_includes response.body, "measurementsByPage"
+  end
+
   test "saves exported files back to project documents" do
     @project.documents.attach(
       io: StringIO.new("%PDF-1.4"),

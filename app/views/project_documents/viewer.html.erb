@@ -167,20 +167,20 @@
       stroke-width: 1.5; stroke-dasharray: 7 4;
       pointer-events: none;
     }
-    #overlay.tool-select .msr-zone-poly { pointer-events: visiblePainted; cursor: pointer; }
+    #app.mode-measure #overlay.tool-select .msr-zone-poly { pointer-events: visiblePainted; cursor: pointer; }
     .msr-zone-poly.msr-sel { fill: rgba(77,163,255,0.18); stroke-width: 2.5; }
     .msr-zone-lbl { font-size: 11px; fill: #4da3ff; font-family: sans-serif; pointer-events: none; }
     .msr-line { stroke: #f0a040; stroke-width: 2; fill: none; pointer-events: none; }
     .msr-tick { stroke: #f0a040; stroke-width: 2; pointer-events: none; }
     .msr-linear-g { pointer-events: none; }
-    #overlay.tool-select .msr-linear-g { pointer-events: visiblePainted; cursor: pointer; }
-    #overlay.tool-select .msr-linear-g circle { pointer-events: visiblePainted; cursor: grab; }
+    #app.mode-measure #overlay.tool-select .msr-linear-g { pointer-events: visiblePainted; cursor: pointer; }
+    #app.mode-measure #overlay.tool-select .msr-linear-g circle { pointer-events: visiblePainted; cursor: grab; }
     .msr-linear-g.msr-sel .msr-line,
     .msr-linear-g.msr-sel .msr-tick { stroke: #ffd080; stroke-width: 3; }
     .msr-area-poly {
       fill: rgba(240,160,64,0.12); stroke: #f0a040; stroke-width: 2; pointer-events: none;
     }
-    #overlay.tool-select .msr-area-poly { pointer-events: visiblePainted; cursor: pointer; }
+    #app.mode-measure #overlay.tool-select .msr-area-poly { pointer-events: visiblePainted; cursor: pointer; }
     .msr-area-poly.msr-sel { fill: rgba(240,160,64,0.28); stroke: #ffd080; stroke-width: 3; }
     .msr-lbl {
       font-size: 12px; fill: #f0a040; font-family: sans-serif; font-weight: 700;
@@ -190,7 +190,7 @@
     }
     .msr-lbl.msr-sel { fill: #ffd080; }
     .msr-count-dot { fill: #e74c3c; stroke: #fff; stroke-width: 1.5; pointer-events: none; }
-    #overlay.tool-select .msr-count-dot { pointer-events: visiblePainted; cursor: pointer; }
+    #app.mode-measure #overlay.tool-select .msr-count-dot { pointer-events: visiblePainted; cursor: pointer; }
     .msr-count-dot.msr-sel { fill: #ff8888; }
     .msr-count-num {
       font-size: 9px; fill: #fff; text-anchor: middle; dominant-baseline: central;
@@ -266,6 +266,10 @@
     #overlay rect[data-type="prepared_by"]    { fill: rgba(26,188,156,0.15); stroke: #1abc9c; }
     #overlay rect[data-type="project_id"]     { fill: rgba(230,126,34,0.15); stroke: #e67e22; }
     #overlay rect.selected                    { stroke-width: 3; filter: brightness(1.3); }
+    #app.mode-extract .msr-zones-g,
+    #app.mode-extract .msr-meas-g,
+    #app.mode-extract .msr-snap-pts-g         { display: none; pointer-events: none; }
+    #app.mode-measure .msr-regions-g          { display: none; pointer-events: none; }
 
     /* ── Processing overlay ─────────────────────────────── */
     #processing-overlay {
@@ -452,7 +456,15 @@
       padding: 7px 10px; font-size: 11px; font-weight: 600;
       color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;
       border-bottom: 1px solid var(--border); flex-shrink: 0;
+      display: flex; align-items: center; gap: 6px;
     }
+    .msr-pnl-head-title { flex: 1; min-width: 0; }
+    .msr-pnl-head-btn {
+      height: 22px; padding: 0 7px; border: 1px solid var(--border); border-radius: 4px;
+      background: var(--btn-bg); color: var(--text-main); font-size: 10px; cursor: pointer;
+      text-transform: none; letter-spacing: 0;
+    }
+    .msr-pnl-head-btn:hover { border-color: var(--accent); color: var(--accent); }
     #msr-pnl-list { flex: 1 1 auto; overflow-y: auto; padding: 4px 4px 8px; }
     .msr-pnl-section {
       font-size: 10px; color: var(--text-dim); text-transform: uppercase;
@@ -591,12 +603,12 @@
     <span class="toolbar-label">Measure:</span>
     <button id="tool-scale-page" class="btn btn-default btn-tool" title="Set one scale for the whole current page">▣ Scale Page</button>
     <button id="tool-scale-zone" class="btn btn-default btn-tool" title="Draw a scale zone polygon">⊞ Scale Zone</button>
-    <select id="scale-zone-shape" title="Scale zone drawing shape" style="width:92px;height:30px;font-size:11px">
+    <select id="scale-zone-shape" title="Drawing shape for scale zones and areas" style="width:92px;height:30px;font-size:11px">
       <option value="polygon">Polyline</option>
       <option value="rectangle">Rectangle</option>
     </select>
     <button id="tool-linear"     class="btn btn-default btn-tool" title="Linear distance — click 2 points">↔ Linear</button>
-    <button id="tool-area"       class="btn btn-default btn-tool" title="Measure area — click polygon, click first point to close">⬡ Area</button>
+    <button id="tool-area"       class="btn btn-default btn-tool" title="Measure area — use the shape selector for polyline or rectangle">⬡ Area</button>
     <button id="tool-count"      class="btn btn-default btn-tool" title="Count items — click to place numbered markers">⊕ Count</button>
     <div class="toolbar-sep"></div>
     <span id="active-scale-lbl" style="font-size:11px;color:var(--text-dim)">No scale set</span>
@@ -628,7 +640,10 @@
     <!-- Measurement info pane -->
     <div class="msr-pnl-resizer" id="msr-pnl-resizer"></div>
     <div id="msr-panel">
-      <div class="msr-pnl-head">Measurements</div>
+      <div class="msr-pnl-head">
+        <span class="msr-pnl-head-title">Measurements</span>
+        <button id="msr-new-group" class="msr-pnl-head-btn" title="Create a new named measurement group">+ Group</button>
+      </div>
       <div id="msr-pnl-list"></div>
     </div>
 
@@ -805,6 +820,8 @@
       }
     }.to_json.html_safe %>,
     saveExtractionUrl: <%= save_extraction_project_document_path(@project, @document).to_json.html_safe %>,
+    viewerStateUrl: <%= viewer_state_project_document_path(@project, @document).to_json.html_safe %>,
+    viewerState: <%= @viewer_state.to_json.html_safe %>,
     uploadExportUrl: <%= upload_export_project_document_path(@project, @document).to_json.html_safe %>,
     csrfToken: <%= form_authenticity_token.to_json.html_safe %>
   };

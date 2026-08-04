@@ -18,6 +18,14 @@
   let seqSeparator     = ' - '; // between sequence number and filename
   let exportBaseName   = '';
 
+  function clone(value, fallback) {
+    try {
+      return JSON.parse(JSON.stringify(value ?? fallback));
+    } catch (_) {
+      return fallback;
+    }
+  }
+
   function appConfig() {
     return window.qsJobsDocument || {};
   }
@@ -354,6 +362,8 @@
 
     const btn = document.getElementById('sp-btn-zip');
     if (btn) btn.textContent = `Download ZIP (${inc.length} files)`;
+
+    window.scheduleViewerStateSave?.('staging');
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -654,6 +664,9 @@
     document.getElementById('sp-btn-close')?.addEventListener('click', closePanel);
     document.getElementById('sp-btn-reset')?.addEventListener('click', resetOrder);
     document.getElementById('btn-split-name')?.addEventListener('click', openStagingFromExtract);
+
+    const pendingState = window.__pendingPdfViewerState;
+    if (pendingState?.staging) restoreStagingState(pendingState.staging);
   }
 
   if (document.readyState === 'loading') {
@@ -667,5 +680,44 @@
   window.closeStaging           = closePanel;
   window.exportStagingCSV       = exportCSV;
   window.exportStagingJSON      = exportJSON;
+  window.getPdfViewerStagingState = function () {
+    return {
+      stagingData: clone(stagingData, []),
+      originalOrder: clone(originalOrder, []),
+      currentFilter,
+      filenameTemplate,
+      useSeqPrefix,
+      seqSeparator,
+      exportBaseName,
+    };
+  };
+  window.restorePdfViewerStagingState = restoreStagingState;
+
+  function restoreStagingState(state) {
+    if (!state || typeof state !== 'object') return;
+
+    stagingData = clone(state.stagingData, []);
+    originalOrder = clone(state.originalOrder, stagingData.map(s => s.page));
+    currentFilter = state.currentFilter || 'all';
+    filenameTemplate = state.filenameTemplate || filenameTemplate;
+    useSeqPrefix = state.useSeqPrefix !== false;
+    seqSeparator = state.seqSeparator || seqSeparator;
+    exportBaseName = state.exportBaseName || exportBaseName;
+
+    const presetSel = document.getElementById('sp-template-select');
+    if (presetSel) presetSel.value = PRESETS.some(p => p.value === filenameTemplate) ? filenameTemplate : '__custom__';
+    const customInput = document.getElementById('sp-custom-input');
+    if (customInput) customInput.value = filenameTemplate;
+    const exportNameInput = document.getElementById('sp-export-name');
+    if (exportNameInput) exportNameInput.value = exportBaseName;
+    const seqToggle = document.getElementById('sp-seq-toggle');
+    if (seqToggle) seqToggle.checked = useSeqPrefix;
+    const seqSep = document.getElementById('sp-seq-sep');
+    if (seqSep) seqSep.value = seqSeparator;
+    const filterSel = document.getElementById('sp-filter-select');
+    if (filterSel) filterSel.value = currentFilter;
+
+    renderTable();
+  }
 
 })();
