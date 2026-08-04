@@ -93,6 +93,7 @@ let gestureAnchor = null;    // page-space point locked under the pointer for th
 let canvasPadX = 0;          // canvas-outer left/right padding (px) — set by scrollToCenter
 let canvasPadY = 0;          // canvas-outer top/bottom padding (px)
 let recenterAfterRender = false;
+let appMode = 'extract'; // 'extract' | 'measure'
 let currentTool = 'select'; // 'select' | 'scale-zone' | 'linear' | 'area' | 'count'
 const thumbnailDataCache = new Map();
 const measurementsByPage = {};  // { pageNum: [measurement, ...] }
@@ -1088,6 +1089,7 @@ function onRegionDragEnd() {
 }
 
 overlay?.addEventListener("mousedown", (e) => {
+  if (appMode !== 'extract') return;
   if (currentTool !== 'select') return;
   if (e.target?.tagName === "rect") return;
   if (isDraggingRegions) return;
@@ -1106,6 +1108,7 @@ overlay?.addEventListener("mousedown", (e) => {
 });
 
 overlay?.addEventListener("mousemove", (e) => {
+  if (appMode !== 'extract') return;
   if (currentTool !== 'select') return;
   if (isDraggingRegions) return;
   if (!isDrawing || !activeRect) return;
@@ -1119,6 +1122,7 @@ overlay?.addEventListener("mousemove", (e) => {
 });
 
 overlay?.addEventListener("mouseup", () => {
+  if (appMode !== 'extract') return;
   if (currentTool !== 'select') return;
   if (isDraggingRegions) return;
   if (!isDrawing || !activeRect) return;
@@ -1261,6 +1265,7 @@ regionsByPage[currentPage] = pageRegions.filter(r => !r.isGhost || selectedSet.h
     if (selectedRegionIds.includes(r.id)) rect.classList.add("selected");
     
     rect.addEventListener("mousedown", (e) => {
+      if (appMode !== 'extract') return;
       if (currentTool !== 'select') return;
       e.stopPropagation();
       if (e.shiftKey) {
@@ -3890,6 +3895,7 @@ function msrUpdateScaleLabel() {
 function setAppMode(mode) {
   const app = document.getElementById('app');
   if (!app) return;
+  appMode = mode === 'measure' ? 'measure' : 'extract';
   app.classList.toggle('mode-extract', mode === 'extract');
   app.classList.toggle('mode-measure', mode === 'measure');
   document.getElementById('btn-mode-extract')?.classList.toggle('is-active', mode === 'extract');
@@ -3904,7 +3910,11 @@ function setAppMode(mode) {
     if (overlay) overlay.classList.add('tool-select');
     if (hud) hud.style.display = 'none';
   } else {
-    if (overlay) overlay.classList.add('tool-select');
+    if (currentTool === 'select') {
+      msrSetTool('linear');
+    } else {
+      msrSetTool(currentTool);
+    }
     if (hud) hud.style.display = 'block';
     snapHudUpdateCount();
   }
