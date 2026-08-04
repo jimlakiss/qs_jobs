@@ -2539,6 +2539,7 @@ const msrToolEls = {
 const activeScaleLblEl = document.getElementById('active-scale-lbl');
 const clearMeasBtn     = document.getElementById('clear-measurements');
 const snapToggleBtn    = document.getElementById('tool-snap-toggle');
+const scalePageBtn     = document.getElementById('tool-scale-page');
 const scaleZoneShapeEl = document.getElementById('scale-zone-shape');
 
 // ── Tool management ──────────────────────────────────────────────────────────
@@ -2563,6 +2564,17 @@ function msrSetTool(t) {
 }
 
 Object.entries(msrToolEls).forEach(([t, btn]) => btn?.addEventListener('click', () => msrSetTool(t)));
+
+scalePageBtn?.addEventListener('click', () => {
+  if (!pdfDoc || !canvas.width || !canvas.height) {
+    alert('Load a PDF before setting the page scale.');
+    return;
+  }
+  msrSetTool('scale-zone');
+  msrSelectedId = null;
+  msrSelectedPtIdx = -1;
+  szShowDialog(msrRectVertices({ x: 0, y: 0 }, { x: 1, y: 1 }));
+});
 
 function updateSnapToggleUi() {
   snapToggleBtn?.classList.toggle('is-active', msrSnapEnabled);
