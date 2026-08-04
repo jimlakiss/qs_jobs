@@ -2481,8 +2481,6 @@ Object.defineProperty(window, 'multiPdfDocs',       { get: () => multiPdfDocs,  
 Object.defineProperty(window, 'documentDetails',    { get: () => documentDetails,    configurable: true });
 Object.defineProperty(window, 'sheetDetailsByPage', { get: () => sheetDetailsByPage, configurable: true });
 Object.defineProperty(window, 'regionTemplates',    { get: () => regionTemplates,    configurable: true });
-Object.defineProperty(window, 'getCanonicalExportData', { value: getCanonicalExportData, configurable: true });
-Object.defineProperty(window, 'normalizeSheetId', { value: normalizeSheetId, configurable: true });
 
 // ── Measurement system ───────────────────────────────────────────────────────
 
