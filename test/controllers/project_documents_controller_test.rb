@@ -287,7 +287,7 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
             currentPage: 2,
             measurementsByPage: {
               "2" => [
-                { type: "linear", points: [{ x: 0.1, y: 0.2 }, { x: 0.3, y: 0.4 }] }
+                { type: "linear", label: "FLOOR AREA", name: "Bedroom 1", points: [{ x: 0.1, y: 0.2 }, { x: 0.3, y: 0.4 }] }
               ]
             },
             scaleZonesByPage: {
@@ -304,6 +304,8 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     state = @project.document_viewer_states.last
     assert_equal 2, state.data["currentPage"]
     assert_equal "linear", state.data.dig("measurementsByPage", "2", 0, "type")
+    assert_equal "FLOOR AREA", state.data.dig("measurementsByPage", "2", 0, "label")
+    assert_equal "Bedroom 1", state.data.dig("measurementsByPage", "2", 0, "name")
     assert_equal "1:100", state.data.dig("scaleZonesByPage", "2", 0, "label")
     assert state.saved_at.present?
   end

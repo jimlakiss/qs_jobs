@@ -3208,7 +3208,7 @@ function msrFinishLinear(pts) {
   if (!measurementsByPage[currentPage]) measurementsByPage[currentPage] = [];
   saveUndoState();
   const label = msrActiveGroupLabel();
-  const measurement = { id: msrIdCounter++, type: 'linear', points: pts, label };
+  const measurement = { id: msrIdCounter++, type: 'linear', points: pts, label, name: '' };
   measurementsByPage[currentPage].push(measurement);
   if (label) msrSetSelectedMeasurement(measurement.id);
   redrawRegions();
@@ -3219,7 +3219,7 @@ function msrFinishArea(pts) {
   if (!measurementsByPage[currentPage]) measurementsByPage[currentPage] = [];
   saveUndoState();
   const label = msrActiveGroupLabel();
-  const measurement = { id: msrIdCounter++, type: 'area', points: pts, label };
+  const measurement = { id: msrIdCounter++, type: 'area', points: pts, label, name: '' };
   measurementsByPage[currentPage].push(measurement);
   if (label) msrSetSelectedMeasurement(measurement.id);
   redrawRegions();
@@ -3237,7 +3237,7 @@ function msrFinishCount(pt) {
     existing.points.push(pt);
     msrSetSelectedMeasurement(existing.id);
   } else {
-    const measurement = { id: msrIdCounter++, type: 'count', points: [pt], label };
+    const measurement = { id: msrIdCounter++, type: 'count', points: [pt], label, name: '' };
     msrs.push(measurement);
     if (label) msrSetSelectedMeasurement(measurement.id);
   }
@@ -3365,7 +3365,7 @@ function msrMoveDragEnd() {
 function msrFmtLinear(m, dims) {
   const d = msrLengthMeters(m, dims);
   if (d === null) return '? m';
-  return `${d.toFixed(3)} m`;
+  return msrValueWithDimensionName(m, `${d.toFixed(3)} m`);
 }
 
 function msrFmtArea(m, dims) {
@@ -3373,7 +3373,35 @@ function msrFmtArea(m, dims) {
   if (a === null) return '? m²';
   const p = msrPerimeterMeters(m, dims);
   const perimeter = p === null ? '' : `  P ${p.toFixed(3)} m`;
-  return `${a.toFixed(3)} m²${perimeter}`;
+  return msrValueWithDimensionName(m, `${a.toFixed(3)} m²${perimeter}`);
+}
+
+function msrDimensionName(m) {
+  return (m?.name || m?.dimensionName || '').trim();
+}
+
+function msrMeasurementTypeName(m) {
+  return m.type === 'linear' ? 'Length'
+    : m.type === 'area' ? 'Area'
+    : 'Count';
+}
+
+function msrValueWithDimensionName(m, value) {
+  const name = msrDimensionName(m);
+  return name ? `${name}  ${value}` : value;
+}
+
+function msrPromptDimensionName(m) {
+  if (!m) return;
+  const currentName = msrDimensionName(m);
+  const n = prompt('Dimension name:', currentName);
+  if (n === null) return;
+
+  const next = n.trim();
+  if (next === currentName) return;
+  saveUndoState();
+  m.name = next;
+  redrawRegions();
 }
 
 // ── SVG renderers ────────────────────────────────────────────────────────────
@@ -3513,7 +3541,7 @@ function msrRenderLinear(g, m, dims, isSel) {
   grp.addEventListener('dblclick', (e) => {
     if (currentTool !== 'select') return;
     e.stopPropagation();
-    msrPromptMeasurementGroup(m);
+    msrPromptDimensionName(m);
   });
   g.appendChild(grp);
 }
@@ -3535,7 +3563,7 @@ function msrRenderArea(g, m, dims, isSel) {
   poly.addEventListener('dblclick', (e) => {
     if (currentTool !== 'select') return;
     e.stopPropagation();
-    msrPromptMeasurementGroup(m);
+    msrPromptDimensionName(m);
   });
   g.appendChild(poly);
 
@@ -3583,7 +3611,7 @@ function msrRenderCount(g, m, isSel) {
     lbl.setAttribute('y', last.y * canvas.height);
     lbl.setAttribute('dominant-baseline', 'central');
     lbl.classList.add('msr-lbl'); if (isSel) lbl.classList.add('msr-sel');
-    lbl.textContent = `n = ${m.points.length}`;
+    lbl.textContent = msrValueWithDimensionName(m, `n = ${m.points.length}`);
     g.appendChild(lbl);
   }
 }
@@ -4127,7 +4155,7 @@ function msrMeasurementIcon(m) {
 function msrMeasurementValue(m, dims) {
   return m.type === 'linear' ? msrFmtLinear(m, dims)
        : m.type === 'area'   ? msrFmtArea(m, dims)
-       : `n = ${m.points.length}`;
+       : msrValueWithDimensionName(m, `n = ${m.points.length}`);
 }
 
 function msrGroupSummary(items, dims) {
@@ -4234,26 +4262,6 @@ function msrRenameMeasurementGroup(fromLabel, toLabel) {
   });
 }
 
-function msrPromptMeasurementGroup(m) {
-  if (!m) return;
-  const currentLabel = (m.label || '').trim();
-  const n = prompt(currentLabel ? 'Edit group name:' : 'Group name:', currentLabel);
-  if (n === null) return;
-
-  const next = n.trim();
-  if (next === currentLabel) return;
-  if (currentLabel && !next) return;
-  saveUndoState();
-
-  if (currentLabel) {
-    msrRenameMeasurementGroup(currentLabel, next);
-  } else {
-    m.label = next;
-  }
-  msrSelectedGroupLabel = next || null;
-  redrawRegions();
-}
-
 function msrPnlMeasurementChildRow(m, dims, isSel) {
   const row = document.createElement('div');
   row.className = 'msr-pnl-row msr-pnl-sub' + (isSel ? ' is-sel' : '');
@@ -4263,15 +4271,26 @@ function msrPnlMeasurementChildRow(m, dims, isSel) {
   ico.className = 'msr-pnl-icon';
   ico.textContent = msrMeasurementIcon(m);
 
-  const lbl = document.createElement('span');
-  lbl.style.cssText = 'flex:1;font-size:11px;color:var(--text-dim)';
-  lbl.textContent = m.type === 'linear' ? 'Length'
-    : m.type === 'area' ? 'Area'
-    : 'Count';
+  const name = document.createElement('input');
+  name.type = 'text';
+  name.className = 'msr-pnl-name';
+  name.placeholder = `${msrMeasurementTypeName(m)} name…`;
+  name.value = msrDimensionName(m);
+  name.addEventListener('click', e => e.stopPropagation());
+  name.addEventListener('change', () => {
+    const next = name.value.trim();
+    if (next === msrDimensionName(m)) {
+      name.value = msrDimensionName(m);
+      return;
+    }
+    saveUndoState();
+    m.name = next;
+    redrawRegions();
+  });
 
   const val = document.createElement('span');
   val.className = 'msr-pnl-val';
-  val.textContent = msrMeasurementValue({ ...m, label: '' }, dims);
+  val.textContent = msrMeasurementValue({ ...m, label: '', name: '' }, dims);
 
   const del = document.createElement('button');
   del.className = 'msr-pnl-del';
@@ -4286,7 +4305,7 @@ function msrPnlMeasurementChildRow(m, dims, isSel) {
   });
 
   row.addEventListener('click', () => { msrSetSelectedMeasurement(m.id); redrawRegions(); });
-  row.appendChild(ico); row.appendChild(lbl); row.appendChild(val); row.appendChild(del);
+  row.appendChild(ico); row.appendChild(name); row.appendChild(val); row.appendChild(del);
   return row;
 }
 
