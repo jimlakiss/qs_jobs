@@ -36,6 +36,7 @@
 
           <div class="col-md-3">
             <label class="contributor-type-option border rounded px-3 py-2 w-100">
+              <%= hidden_field_tag "portal_access[project_upload_access]", "0" %>
               <%= check_box_tag "portal_access[project_upload_access]", "1", @contributor.project_upload_access?, class: "contributor-type-option-input" %>
               <span class="contributor-type-option-label">Project upload access</span>
             </label>

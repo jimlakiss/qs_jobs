@@ -83,7 +83,7 @@ class ContributorPortalAccessController < ApplicationController
   end
 
   def portal_access_enabled?
-    ActiveModel::Type::Boolean.new.cast(portal_access_params[:project_upload_access])
+    ActiveModel::Type::Boolean.new.cast(portal_access_params.fetch(:project_upload_access, false))
   end
 
   def portal_access_error(user)

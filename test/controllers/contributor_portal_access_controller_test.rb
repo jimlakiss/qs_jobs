@@ -48,6 +48,24 @@ class ContributorPortalAccessControllerTest < ActionDispatch::IntegrationTest
     assert contributor.project_upload_access?
   end
 
+  test "missing project upload access is treated as disabled" do
+    contributor = Contributor.create!(company_name: "Unchecked Portal Pty Ltd")
+
+    assert_difference -> { User.count }, 1 do
+      post contributor_portal_access_path(contributor),
+        params: {
+          portal_access: {
+            email: "unchecked@example.com",
+            password: "password123"
+          }
+        }
+    end
+
+    assert_redirected_to contributor_path(contributor)
+    assert_equal "unchecked@example.com", contributor.reload.portal_user.email
+    assert_not contributor.project_upload_access?
+  end
+
   test "admin can remove contributor portal access" do
     contributor = contributors(:citywide)
 
