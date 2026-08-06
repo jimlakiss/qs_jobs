@@ -45,7 +45,7 @@ class ContributorPortalAccessController < ApplicationController
   end
 
   def portal_access_params
-    params.require(:portal_access).permit(:email, :password, :project_upload_access)
+    params.require(:portal_access).permit(:email, :project_upload_access)
   end
 
   def find_or_build_portal_user
@@ -62,15 +62,7 @@ class ContributorPortalAccessController < ApplicationController
     user.contributor = @contributor
     user.role = :client
 
-    if portal_access_params[:password].present?
-      user.password = portal_access_params[:password]
-      user.password_confirmation = portal_access_params[:password]
-    end
-
-    if user.new_record? && user.password.blank?
-      user.errors.add(:password, "must be set when creating a new portal user")
-      return false
-    end
+    user.invited_without_password = user.new_record?
 
     Contributor.transaction do
       user.save!
@@ -91,10 +83,12 @@ class ContributorPortalAccessController < ApplicationController
   end
 
   def should_send_access_enabled_email?(was_enabled, previous_user, user)
-    portal_access_enabled? && (!was_enabled || previous_user != user || portal_access_params[:password].present?)
+    portal_access_enabled? && (!was_enabled || previous_user != user)
   end
 
   def send_access_enabled_email(user)
-    ContributorPortalAccessMailer.access_enabled(@contributor, user).deliver_later
+    setup_token = user.send(:set_reset_password_token)
+
+    ContributorPortalAccessMailer.access_enabled(@contributor, user, setup_token).deliver_later
   end
 end

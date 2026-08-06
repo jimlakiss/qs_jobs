@@ -29,11 +29,6 @@
             <%= email_field_tag "portal_access[email]", portal_user&.email || @contributor.email, id: "portal_access_email", class: "form-control", placeholder: "client@example.com" %>
           </div>
 
-          <div class="col-md-4">
-            <%= label_tag "portal_access_password", "Password", class: "form-label" %>
-            <%= password_field_tag "portal_access[password]", nil, id: "portal_access_password", class: "form-control", placeholder: portal_user ? "Leave blank to keep existing" : "Required for new login" %>
-          </div>
-
           <div class="col-md-3">
             <label class="contributor-type-option border rounded px-3 py-2 w-100">
               <%= hidden_field_tag "portal_access[project_upload_access]", "0" %>
@@ -49,6 +44,14 @@
       <% end %>
 
       <% if portal_user %>
+        <p class="text-muted small mt-3 mb-0">
+          <% if portal_user.password_set? %>
+            This login has a password. The client can use the password reset option from the login page if needed.
+          <% else %>
+            This login is waiting for the client to set their password from the access email.
+          <% end %>
+        </p>
+
         <div class="stack-actions mt-3">
           <%= button_to "Remove Portal Access",
                 contributor_portal_access_path(@contributor),

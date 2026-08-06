@@ -7,9 +7,11 @@
   <dd><%= @user.email %></dd>
 
   <dt>Portal</dt>
-  <dd><%= link_to new_user_session_url, new_user_session_url %></dd>
+  <dd>
+    <%= link_to "Set up your password", edit_user_password_url(reset_password_token: @setup_token) %>
+  </dd>
 </dl>
 
-<p>If a temporary password has been assigned, it will be provided separately. You can also use the password reset option from the login page.</p>
+<p>Use the setup link to choose your password before signing in. If you already have a password, you can use this link to update it.</p>
 
 <p>Thanks,<br>the iQs Team</p>

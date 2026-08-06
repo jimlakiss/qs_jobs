@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  attr_accessor :invited_without_password
+
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise  :database_authenticatable, 
@@ -16,5 +18,17 @@ class User < ApplicationRecord
 
   def client_upload_access?
     client? && contributor&.project_upload_access?
+  end
+
+  def password_set?
+    encrypted_password.present?
+  end
+
+  protected
+
+  def password_required?
+    return false if invited_without_password
+
+    super
   end
 end
