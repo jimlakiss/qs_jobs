@@ -10,6 +10,8 @@ const uploadDropZone = document.getElementById("upload-drop-zone");
 const canvas = document.getElementById("pdf-canvas");
 const ctx = canvas.getContext("2d");
 const sidebar = document.getElementById("sidebar");
+const documentTree = document.getElementById("document-tree");
+const thumbnailList = document.getElementById("thumbnail-list") || sidebar;
 const prevPageBtn  = document.getElementById("prev-page");
 const nextPageBtn  = document.getElementById("next-page");
 const pageInputEl  = document.getElementById("page-input");
@@ -96,6 +98,9 @@ let recenterAfterRender = false;
 let appMode = 'extract'; // 'extract' | 'measure'
 let currentTool = 'select'; // 'select' | 'scale-zone' | 'linear' | 'area' | 'count'
 const thumbnailDataCache = new Map();
+const projectPdfFileCache = new Map();
+const PROJECT_PDF_CACHE_LIMIT = 3;
+let activeProjectDocumentId = null;
 const measurementsByPage = {};  // { pageNum: [measurement, ...] }
 const scaleZonesByPage   = {};  // { pageNum: [zone, ...] }
 const pageBaseDimsCache  = new Map(); // pageNum → { width, height } in PDF pts
@@ -108,7 +113,8 @@ let msrSnapPt        = null; // locked snap point — cursor is within snap thre
 let msrNearPt        = null; // approach point — cursor is near but not yet locked
 let msrSelectedId    = null; // selected measurement id (number) or zone id (string "z<n>")
 let msrSelectedPtIdx = -1;   // for count: which marker is selected (-1 = whole measurement)
-let msrRectDrawStart = null; // scale-zone rectangle drag start point
+let msrSelectedGroupLabel = null; // named measurement group currently receiving new measurements
+let msrRectDrawStart = null; // rectangle drag start point for scale zones and areas
 let msrSuppressNextClick = false;
 let msrDragState = null;
 let measurementUiReady = false;
@@ -180,6 +186,317 @@ function updateControls() {
     }
   }
 }
+
+let viewerStateSaveTimer = null;
+let viewerStateSaving = false;
+let viewerStateRestoreInProgress = false;
+let viewerStateLastSavedAt = null;
+let restoredViewerPage = null;
+let viewerStateRestored = false;
+
+function viewerStateConfig() {
+  return window.qsJobsDocument || {};
+}
+
+function isWorkingDocumentSession() {
+  return viewerStateConfig().documentCategory === "extracted_document";
+}
+
+function projectNavigationDocuments() {
+  const docs = viewerStateConfig().navigationDocuments;
+  return Array.isArray(docs) ? docs : [];
+}
+
+function formatBytes(bytes) {
+  const value = Number(bytes);
+  if (!Number.isFinite(value) || value <= 0) return "";
+  if (value < 1024 * 1024) return `${Math.round(value / 1024)} KB`;
+  return `${(value / (1024 * 1024)).toFixed(value >= 10 * 1024 * 1024 ? 0 : 1)} MB`;
+}
+
+function setActiveProjectDocumentConfig(item) {
+  if (!item) return;
+
+  const cfg = viewerStateConfig();
+  window.qsJobsDocument = {
+    ...cfg,
+    documentId: item.id,
+    initialPdfUrl: item.url,
+    initialPdfName: item.name,
+    saveExtractionUrl: item.saveExtractionUrl || cfg.saveExtractionUrl,
+    viewerStateUrl: item.viewerStateUrl || cfg.viewerStateUrl,
+    uploadExportUrl: item.uploadExportUrl || cfg.uploadExportUrl,
+  };
+  activeProjectDocumentId = item.id;
+}
+
+function groupedNavigationDocuments() {
+  const groups = new Map();
+  projectNavigationDocuments().forEach(item => {
+    const groupName = item.group || "Ungrouped";
+    if (!groups.has(groupName)) groups.set(groupName, []);
+    groups.get(groupName).push(item);
+  });
+  return Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b));
+}
+
+function renderDocumentTree() {
+  if (!documentTree) return;
+
+  const groups = groupedNavigationDocuments();
+  documentTree.innerHTML = "";
+
+  if (!groups.length) {
+    const empty = document.createElement("div");
+    empty.className = "document-tree-empty";
+    empty.textContent = "No working documents yet. Open an imported PDF and run Split & Name.";
+    documentTree.appendChild(empty);
+    return;
+  }
+
+  groups.forEach(([groupName, items]) => {
+    const details = document.createElement("details");
+    details.className = "document-folder";
+    details.open = items.some(item => String(item.id) === String(activeProjectDocumentId)) || groups.length === 1;
+
+    const summary = document.createElement("summary");
+    summary.append(document.createTextNode(groupName));
+    const count = document.createElement("span");
+    count.className = "document-folder-count";
+    count.textContent = `(${items.length})`;
+    summary.appendChild(count);
+    details.appendChild(summary);
+
+    items.sort((a, b) => (a.name || "").localeCompare(b.name || "")).forEach(item => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "document-tree-file";
+      button.dataset.documentId = item.id;
+      if (String(item.id) === String(activeProjectDocumentId)) button.classList.add("is-active");
+
+      const name = document.createElement("span");
+      name.className = "document-tree-file-name";
+      name.textContent = item.name || "Untitled PDF";
+      button.appendChild(name);
+
+      const meta = document.createElement("span");
+      meta.className = "document-tree-file-meta";
+      meta.textContent = formatBytes(item.size);
+      if (meta.textContent) button.appendChild(meta);
+
+      button.addEventListener("click", () => {
+        loadProjectDocument(item).catch(err => {
+          console.error("Failed to open project document:", err);
+          alert(`Failed to open ${item.name || "PDF"}: ${err.message}`);
+        });
+      });
+
+      details.appendChild(button);
+    });
+
+    documentTree.appendChild(details);
+  });
+}
+
+function rememberProjectPdfFile(item, file) {
+  const key = String(item.id);
+  if (projectPdfFileCache.has(key)) projectPdfFileCache.delete(key);
+  projectPdfFileCache.set(key, file);
+
+  while (projectPdfFileCache.size > PROJECT_PDF_CACHE_LIMIT) {
+    const oldestKey = projectPdfFileCache.keys().next().value;
+    projectPdfFileCache.delete(oldestKey);
+  }
+}
+
+async function fetchProjectPdfFile(item) {
+  const key = String(item.id);
+  if (projectPdfFileCache.has(key)) {
+    const cached = projectPdfFileCache.get(key);
+    projectPdfFileCache.delete(key);
+    projectPdfFileCache.set(key, cached);
+    return cached;
+  }
+
+  const response = await fetch(item.url);
+  if (!response.ok) throw new Error(`${item.name || "PDF"} returned HTTP ${response.status}`);
+
+  const blob = await response.blob();
+  const file = new File([blob], item.name || "project-document.pdf", {
+    type: blob.type || "application/pdf",
+  });
+  rememberProjectPdfFile(item, file);
+  return file;
+}
+
+async function fetchProjectViewerState(item) {
+  if (!item?.viewerStateUrl) return {};
+
+  const response = await fetch(item.viewerStateUrl, {
+    headers: { "Accept": "application/json" },
+  });
+  if (!response.ok) throw new Error(`Viewer state returned HTTP ${response.status}`);
+
+  const payload = await response.json();
+  return payload.viewer_state || {};
+}
+
+async function restoreProjectViewerStateForItem(item) {
+  const state = await fetchProjectViewerState(item);
+  viewerStateRestored = false;
+  window.__pendingPdfViewerState = state;
+  restoreViewerState(state);
+  if (state.staging && window.restorePdfViewerStagingState) {
+    window.restorePdfViewerStagingState(state.staging);
+  }
+  viewerStateRestored = true;
+
+  if (restoredViewerPage && pdfDoc && restoredViewerPage >= 1 && restoredViewerPage <= pdfDoc.numPages && restoredViewerPage !== currentPage) {
+    await renderPage(restoredViewerPage);
+  } else {
+    redrawRegions();
+    msrUpdateInfoPane();
+  }
+}
+
+function jsonClone(value, fallback) {
+  try {
+    return JSON.parse(JSON.stringify(value ?? fallback));
+  } catch (_) {
+    return fallback;
+  }
+}
+
+function serializeGhostExclusions() {
+  const serialized = {};
+  Object.entries(ghostExclusions).forEach(([pageNum, exclusions]) => {
+    serialized[pageNum] = Array.from(exclusions || []);
+  });
+  return serialized;
+}
+
+function restorePlainObject(target, value) {
+  Object.keys(target).forEach(k => delete target[k]);
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    Object.assign(target, jsonClone(value, {}));
+  }
+}
+
+function restoreGhostExclusions(value) {
+  Object.keys(ghostExclusions).forEach(k => delete ghostExclusions[k]);
+  if (!value || typeof value !== 'object') return;
+
+  Object.entries(value).forEach(([pageNum, exclusions]) => {
+    ghostExclusions[pageNum] = new Set(Array.isArray(exclusions) ? exclusions : []);
+  });
+}
+
+function buildViewerState() {
+  syncDocumentDetailsFromInputs();
+  const pageBaseDimsByPage = {};
+  pageBaseDimsCache.forEach((dims, pageNum) => {
+    pageBaseDimsByPage[pageNum] = jsonClone(dims, {});
+  });
+
+  return {
+    version: 1,
+    currentPage,
+    documentDetails: jsonClone(documentDetails, {}),
+    sheetDetailsByPage: jsonClone(sheetDetailsByPage, {}),
+    regionsByPage: jsonClone(regionsByPage, {}),
+    regionTemplates: jsonClone(regionTemplates, {}),
+    ghostExclusions: serializeGhostExclusions(),
+    staging: window.getPdfViewerStagingState ? window.getPdfViewerStagingState() : {},
+    measurementsByPage: jsonClone(measurementsByPage, {}),
+    scaleZonesByPage: jsonClone(scaleZonesByPage, {}),
+    pageBaseDimsByPage,
+  };
+}
+
+function restoreViewerState(state) {
+  if (!state || typeof state !== 'object') return;
+
+  viewerStateRestoreInProgress = true;
+  try {
+    restorePlainObject(documentDetails, state.documentDetails);
+    restorePlainObject(sheetDetailsByPage, state.sheetDetailsByPage);
+    restorePlainObject(regionsByPage, state.regionsByPage);
+    restorePlainObject(regionTemplates, state.regionTemplates);
+    restorePlainObject(measurementsByPage, state.measurementsByPage);
+    restorePlainObject(scaleZonesByPage, state.scaleZonesByPage);
+    restoreGhostExclusions(state.ghostExclusions);
+    pageBaseDimsCache.clear();
+    Object.entries(state.pageBaseDimsByPage || {}).forEach(([pageNum, dims]) => {
+      if (dims && typeof dims === 'object') pageBaseDimsCache.set(parseInt(pageNum, 10), jsonClone(dims, {}));
+    });
+
+    if (preparedByInput) preparedByInput.value = documentDetails.prepared_by || "";
+    if (projectIdInput) projectIdInput.value = documentDetails.project_id || "";
+
+    const savedPage = parseInt(state.currentPage, 10);
+    restoredViewerPage = Number.isFinite(savedPage) && savedPage > 0 ? savedPage : null;
+  } finally {
+    viewerStateRestoreInProgress = false;
+  }
+}
+
+function restoreInitialViewerState() {
+  if (viewerStateRestored) return;
+  const state = viewerStateConfig().viewerState;
+  if (!state || typeof state !== 'object') return;
+
+  window.__pendingPdfViewerState = state;
+  restoreViewerState(state);
+  if (state.staging && window.restorePdfViewerStagingState) {
+    window.restorePdfViewerStagingState(state.staging);
+  }
+  viewerStateRestored = true;
+}
+
+function csrfHeaders() {
+  const token = viewerStateConfig().csrfToken || document.querySelector('meta[name="csrf-token"]')?.content;
+  return token ? { 'X-CSRF-Token': token } : {};
+}
+
+function scheduleViewerStateSave(reason = 'change') {
+  const url = viewerStateConfig().viewerStateUrl;
+  if (!url || viewerStateRestoreInProgress) return;
+
+  clearTimeout(viewerStateSaveTimer);
+  viewerStateSaveTimer = setTimeout(() => {
+    saveViewerState(reason);
+  }, 1200);
+}
+
+async function saveViewerState(reason = 'change') {
+  const url = viewerStateConfig().viewerStateUrl;
+  if (!url || viewerStateSaving || viewerStateRestoreInProgress) return;
+
+  viewerStateSaving = true;
+  try {
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...csrfHeaders(),
+      },
+      body: JSON.stringify({ viewer_state: buildViewerState(), reason }),
+      keepalive: true,
+    });
+    if (!response.ok) throw new Error(`Viewer state save failed (${response.status})`);
+    const result = await response.json().catch(() => ({}));
+    viewerStateLastSavedAt = result.saved_at || new Date().toISOString();
+  } catch (err) {
+    console.warn('Viewer state autosave failed:', err);
+  } finally {
+    viewerStateSaving = false;
+  }
+}
+
+window.scheduleViewerStateSave = scheduleViewerStateSave;
+window.saveViewerState = saveViewerState;
+window.buildViewerState = buildViewerState;
 
 // ghostExclusions variable
 const ghostExclusions = {}; // { pageNum: Set(['sheet_id', ...]) }
@@ -402,6 +719,8 @@ async function handleSelectedPDFs(selectedFiles, source = "picker") {
   isMultiPdfMode = false;
   currentPage = 1;
   scale = ACTUAL_SIZE_SCALE;
+  thumbnailDataCache.clear();
+  pageBaseDimsCache.clear();
   selectedRegionIds = [];
   selectedRegionId = null;
   regionIdCounter = 1;
@@ -414,68 +733,74 @@ async function handleSelectedPDFs(selectedFiles, source = "picker") {
   if (preparedByInput) preparedByInput.value = "";
   if (projectIdInput) projectIdInput.value = "";
 
-  const reader = new FileReader();
-  reader.onload = async () => {
-    try {
-      const data = new Uint8Array(reader.result);
-      pdfRawBytes = data.slice(); // copy before PDF.js transfers the ArrayBuffer to its worker
-      console.log('📂 Loading PDF document...');
-
-      const loadingTask = requirePdfjsLib().getDocument({
-        data: data,
-        cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
-        cMapPacked: true,
-        disableAutoFetch: true,
-        disableStream: false,
-        disableFontFace: false,
-        useSystemFonts: false,
-        standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/',
-      });
-      
-      pdfDoc = await loadingTask.promise;
-      snapPointsByPage.clear(); // invalidate snap cache for previous PDF
-      snapSegmentsByPage.clear();
-      const pageCount = pdfDoc.numPages;
-      console.log(`✅ PDF loaded: ${pageCount} pages (${fileSizeMB.toFixed(1)} MB)`);
-      
-      if (pageCount === 0) {
-        throw new Error('PDF has 0 pages');
-      }
-      
+  await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
       try {
-        const testPage = await pdfDoc.getPage(1);
-        console.log(`📄 Page 1 dimensions: ${testPage.view[2]} x ${testPage.view[3]}`);
-        testPage.cleanup();
+        const data = new Uint8Array(reader.result);
+        pdfRawBytes = data.slice(); // copy before PDF.js transfers the ArrayBuffer to its worker
+        console.log('📂 Loading PDF document...');
+
+        const loadingTask = requirePdfjsLib().getDocument({
+          data: data,
+          cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
+          cMapPacked: true,
+          disableAutoFetch: true,
+          disableStream: false,
+          disableFontFace: false,
+          useSystemFonts: false,
+          standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/',
+        });
+
+        pdfDoc = await loadingTask.promise;
+        snapPointsByPage.clear(); // invalidate snap cache for previous PDF
+        snapSegmentsByPage.clear();
+        const pageCount = pdfDoc.numPages;
+        console.log(`✅ PDF loaded: ${pageCount} pages (${fileSizeMB.toFixed(1)} MB)`);
+
+        if (pageCount === 0) {
+          throw new Error('PDF has 0 pages');
+        }
+
+        try {
+          const testPage = await pdfDoc.getPage(1);
+          console.log(`📄 Page 1 dimensions: ${testPage.view[2]} x ${testPage.view[3]}`);
+          testPage.cleanup();
+        } catch (err) {
+          console.error('❌ Cannot read first page:', err);
+          throw new Error('PDF appears corrupted');
+        }
+
+        if (pageCount === 1 && file.size > 1000000) {
+          console.warn('⚠️ Large file but only 1 page detected');
+        }
+
+        console.log(`🖼️ Starting thumbnail build for ${pageCount} pages...`);
+        await buildThumbnails();
+        console.log('📄 Rendering first page...');
+        autoFitScale();
+        recenterAfterRender = true;
+        await renderPage(1);
+        console.log('✅ PDF ready');
+        resolve();
       } catch (err) {
-        console.error('❌ Cannot read first page:', err);
-        throw new Error('PDF appears corrupted');
+        console.error('❌ Error loading PDF:', err);
+        alert(`Failed to load PDF: ${err.message}`);
+        if (fileInput) fileInput.value = '';
+        reject(err);
       }
-      
-      if (pageCount === 1 && file.size > 1000000) {
-        console.warn('⚠️ Large file but only 1 page detected');
-      }
-      
-      console.log(`🖼️ Starting thumbnail build for ${pageCount} pages...`);
-      await buildThumbnails();
-      console.log('📄 Rendering first page...');
-      autoFitScale();
-      recenterAfterRender = true;
-      await renderPage(1);
-      console.log('✅ PDF ready');
-    } catch (err) {
-      console.error('❌ Error loading PDF:', err);
-      alert(`Failed to load PDF: ${err.message}`);
+    };
+
+    reader.onerror = () => {
+      const err = new Error('Failed to read the PDF file');
+      console.error('❌ Error reading file');
+      alert(err.message);
       if (fileInput) fileInput.value = '';
-    }
-  };
-  
-  reader.onerror = () => {
-    console.error('❌ Error reading file');
-    alert('Failed to read the PDF file');
-    if (fileInput) fileInput.value = '';
-  };
-  
-  reader.readAsArrayBuffer(file);
+      reject(err);
+    };
+
+    reader.readAsArrayBuffer(file);
+  });
 }
 
 fileInput?.addEventListener("change", async (e) => {
@@ -484,6 +809,15 @@ fileInput?.addEventListener("change", async (e) => {
 
 async function loadInitialProjectPdf() {
   const appDocument = window.qsJobsDocument;
+  renderDocumentTree();
+
+  const navigationDocuments = projectNavigationDocuments();
+  if (navigationDocuments.length && appDocument?.documentCategory === "extracted_document") {
+    const initialItem = navigationDocuments.find(item => String(item.id) === String(appDocument?.documentId)) || navigationDocuments[0];
+    await loadProjectDocument(initialItem);
+    return;
+  }
+
   const initialPdfs = Array.isArray(appDocument?.initialPdfs) ? appDocument.initialPdfs : [];
   if (!initialPdfs.length && !appDocument?.initialPdfUrl) return;
 
@@ -505,6 +839,12 @@ async function loadInitialProjectPdf() {
     }
 
     await handleSelectedPDFs(files, files.length > 1 ? "project-document-group" : "project-document");
+    restoreInitialViewerState();
+    if (restoredViewerPage && pdfDoc && restoredViewerPage >= 1 && restoredViewerPage <= pdfDoc.numPages && restoredViewerPage !== currentPage) {
+      await renderPage(restoredViewerPage);
+    } else {
+      redrawRegions();
+    }
   } catch (err) {
     console.error("Failed to load project PDF(s):", err);
     alert(`Failed to load project PDF(s): ${err.message}`);
@@ -512,6 +852,24 @@ async function loadInitialProjectPdf() {
 }
 
 setTimeout(loadInitialProjectPdf, 0);
+
+async function loadProjectDocument(item) {
+  if (!item?.url) return;
+
+  if (activeProjectDocumentId && String(activeProjectDocumentId) !== String(item.id) && viewerStateSaveTimer) {
+    clearTimeout(viewerStateSaveTimer);
+    viewerStateSaveTimer = null;
+    await saveViewerState('switch_document');
+  }
+
+  setActiveProjectDocumentConfig(item);
+  renderDocumentTree();
+
+  const file = await fetchProjectPdfFile(item);
+  await handleSelectedPDFs([file], "project-document");
+  await restoreProjectViewerStateForItem(item);
+  renderDocumentTree();
+}
 
 function setUploadDragActive(active) {
   uploadDropZone?.classList.toggle("is-drag-over", active);
@@ -547,6 +905,8 @@ async function loadMultiplePDFs(files) {
   isMultiPdfMode = true;
   currentPage = 1;
   scale = ACTUAL_SIZE_SCALE;
+  thumbnailDataCache.clear();
+  pageBaseDimsCache.clear();
   selectedRegionIds = [];
   selectedRegionId = null;
   regionIdCounter = 1;
@@ -631,10 +991,12 @@ async function loadMultiplePDFs(files) {
 
 preparedByInput?.addEventListener("input", () => {
   documentDetails.prepared_by = preparedByInput.value || "";
+  scheduleViewerStateSave('document_detail');
 });
 
 projectIdInput?.addEventListener("input", () => {
   documentDetails.project_id = projectIdInput.value || "";
+  scheduleViewerStateSave('document_detail');
 });
 
 function autoFitScale() {
@@ -660,6 +1022,7 @@ async function renderPage(pageNum) {
     msrNearPt        = null;
     msrSelectedId    = null;
     msrSelectedPtIdx = -1;
+    msrSelectedGroupLabel = null;
     szRefState       = null;
   }
 
@@ -849,15 +1212,15 @@ zoomInputEl?.addEventListener("keydown", (e) => {
 zoomInputEl?.addEventListener("blur", commitZoomInput);
 
 async function buildThumbnails() {
-  if (!pdfDoc || !sidebar) {
-    console.error('❌ buildThumbnails: pdfDoc or sidebar is null!');
+  if (!pdfDoc || !thumbnailList) {
+    console.error('❌ buildThumbnails: pdfDoc or thumbnail list is null!');
     return;
   }
 
   const numPages = pdfDoc.numPages;
   console.log(`🖼️ Building thumbnails for ${numPages} pages...`);
 
-  sidebar.innerHTML = "";
+  thumbnailList.innerHTML = "";
   
   for (let i = 1; i <= numPages; i++) {
     const placeholder = document.createElement("div");
@@ -874,10 +1237,10 @@ async function buildThumbnails() {
       recenterAfterRender = true;
       renderPage(i);
     });
-    sidebar.appendChild(placeholder);
+    thumbnailList.appendChild(placeholder);
   }
   
-  const placeholderCount = sidebar.querySelectorAll('.thumb').length;
+  const placeholderCount = thumbnailList.querySelectorAll('.thumb').length;
   console.log(`✅ Created ${placeholderCount} placeholder thumbnails`);
   
   if (placeholderCount !== numPages) {
@@ -931,7 +1294,7 @@ async function loadThumbnail(pageNum) {
     const dataUrl = tempCanvas.toDataURL('image/jpeg', 0.7);
     thumbnailDataCache.set(pageNum, dataUrl);
     
-    const placeholder = sidebar.querySelector(`div.thumb[data-page-num="${pageNum}"]`);
+    const placeholder = thumbnailList.querySelector(`div.thumb[data-page-num="${pageNum}"]`);
     if (placeholder) {
       const img = document.createElement('img');
       img.src = dataUrl;
@@ -953,7 +1316,7 @@ async function loadThumbnail(pageNum) {
 }
 
 function highlightActiveThumb() {
-  const thumbs = sidebar.querySelectorAll(".thumb");
+  const thumbs = thumbnailList.querySelectorAll(".thumb");
   thumbs.forEach((t, i) => {
     const isActive = (i + 1) === currentPage;
     if (isActive) {
@@ -1298,6 +1661,8 @@ regionsByPage[currentPage] = pageRegions.filter(r => !r.isGhost || selectedSet.h
     msrUpdateScaleLabel();
     msrUpdateInfoPane();
   }
+
+  scheduleViewerStateSave('redraw');
 }
 
 function syncLegacySelectedId() {
@@ -1333,7 +1698,7 @@ function isEditableTarget(el) {
 function msrUndoActiveDrawPoint() {
   if (!msrActiveDrawPts.length) return false;
   msrActiveDrawPts.pop();
-  if (currentTool === 'scale-zone' && msrScaleZoneShape() === 'rectangle') {
+  if (msrUsesRectangleDrag()) {
     msrRectDrawStart = null;
   }
   msrPreviewPt = null;
@@ -2008,6 +2373,7 @@ async function applyTemplatesToAllPages(logProgress = false, force = false) {
   }
 
   console.log("✅ Templates applied to all pages");
+  scheduleViewerStateSave('sheet_extraction');
 }
 
 window.applyTemplatesToAllPages = applyTemplatesToAllPages;
@@ -2056,6 +2422,7 @@ async function extractDocumentDetails(logProgress = true, force = false) {
   if (logProgress) {
     console.log("✅ Document fields extracted");
   }
+  scheduleViewerStateSave('document_extraction');
 }
 
 async function extractAll() {
@@ -2539,6 +2906,7 @@ const clearMeasBtn     = document.getElementById('clear-measurements');
 const snapToggleBtn    = document.getElementById('tool-snap-toggle');
 const scalePageBtn     = document.getElementById('tool-scale-page');
 const scaleZoneShapeEl = document.getElementById('scale-zone-shape');
+const newGroupBtn      = document.getElementById('msr-new-group');
 
 // ── Tool management ──────────────────────────────────────────────────────────
 
@@ -2563,6 +2931,21 @@ function msrSetTool(t) {
 
 Object.entries(msrToolEls).forEach(([t, btn]) => btn?.addEventListener('click', () => msrSetTool(t)));
 
+scaleZoneShapeEl?.addEventListener('change', () => {
+  msrActiveDrawPts = [];
+  msrPreviewPt = null;
+  msrRectDrawStart = null;
+  msrRedrawOnly();
+});
+
+newGroupBtn?.addEventListener('click', () => {
+  const name = prompt('New measurement group name:', '');
+  const label = (name || '').trim();
+  if (!label) return;
+  msrSetSelectedGroup(label);
+  redrawRegions();
+});
+
 scalePageBtn?.addEventListener('click', () => {
   if (!pdfDoc || !canvas.width || !canvas.height) {
     alert('Load a PDF before setting the page scale.');
@@ -2571,6 +2954,7 @@ scalePageBtn?.addEventListener('click', () => {
   msrSetTool('scale-zone');
   msrSelectedId = null;
   msrSelectedPtIdx = -1;
+  msrSelectedGroupLabel = null;
   szShowDialog(msrRectVertices({ x: 0, y: 0 }, { x: 1, y: 1 }));
 });
 
@@ -2609,6 +2993,7 @@ clearMeasBtn?.addEventListener('click', () => {
   msrActiveDrawPts = [];
   msrPreviewPt     = null;
   msrSelectedId    = null;
+  msrSelectedGroupLabel = null;
   redrawRegions();
 });
 
@@ -2632,6 +3017,71 @@ function msrNormToSqMeters(pts, pw, ph, mpp) {
   }
   const paperM2 = Math.abs(area) / 2 / (72 * 72) * (0.0254 * 0.0254);
   return paperM2 * mpp * mpp;
+}
+
+function msrActiveGroupLabel() {
+  if (typeof msrSelectedGroupLabel === 'string' && msrSelectedGroupLabel.trim()) {
+    return msrSelectedGroupLabel.trim();
+  }
+  const selected = (measurementsByPage[currentPage] || []).find(m => m.id === msrSelectedId);
+  return selected?.label?.trim() || '';
+}
+
+function msrSetSelectedMeasurement(id, pointIdx = -1) {
+  msrSelectedId = id;
+  msrSelectedPtIdx = pointIdx;
+  const selected = (measurementsByPage[currentPage] || []).find(m => m.id === id);
+  msrSelectedGroupLabel = pointIdx === -1 ? (selected?.label?.trim() || null) : null;
+}
+
+function msrSetSelectedGroup(label) {
+  const cleanLabel = (label || '').trim();
+  if (!cleanLabel) return;
+  const first = (measurementsByPage[currentPage] || []).find(m => (m.label || '').trim() === cleanLabel);
+  msrSelectedGroupLabel = cleanLabel;
+  msrSelectedId = first?.id ?? null;
+  msrSelectedPtIdx = -1;
+}
+
+function msrLengthMeters(m, dims) {
+  if (!dims || !m.points || m.points.length < 2) return null;
+  const zone = msrFindZone(m.points[0].x, m.points[0].y, currentPage);
+  if (!zone) return null;
+
+  let d = 0;
+  for (let i = 1; i < m.points.length; i++) {
+    d += msrNormToMeters(
+      m.points[i - 1].x, m.points[i - 1].y,
+      m.points[i].x, m.points[i].y,
+      dims.width, dims.height, zone.mpp
+    );
+  }
+  return d;
+}
+
+function msrAreaSqMeters(m, dims) {
+  if (!dims || !m.points || m.points.length < 3) return null;
+  const cx = m.points.reduce((s, p) => s + p.x, 0) / m.points.length;
+  const cy = m.points.reduce((s, p) => s + p.y, 0) / m.points.length;
+  const zone = msrFindZone(cx, cy, currentPage);
+  if (!zone) return null;
+  return msrNormToSqMeters(m.points, dims.width, dims.height, zone.mpp);
+}
+
+function msrPerimeterMeters(m, dims) {
+  if (!dims || !m.points || m.points.length < 3) return null;
+  const cx = m.points.reduce((s, p) => s + p.x, 0) / m.points.length;
+  const cy = m.points.reduce((s, p) => s + p.y, 0) / m.points.length;
+  const zone = msrFindZone(cx, cy, currentPage);
+  if (!zone) return null;
+
+  let d = 0;
+  for (let i = 0; i < m.points.length; i++) {
+    const a = m.points[i];
+    const b = m.points[(i + 1) % m.points.length];
+    d += msrNormToMeters(a.x, a.y, b.x, b.y, dims.width, dims.height, zone.mpp);
+  }
+  return d;
 }
 
 function msrPointInPoly(x, y, verts) {
@@ -2670,6 +3120,13 @@ function msrRectVertices(a, b) {
 
 function msrScaleZoneShape() {
   return scaleZoneShapeEl?.value === 'rectangle' ? 'rectangle' : 'polygon';
+}
+
+function msrUsesRectangleDrag() {
+  return (
+    (currentTool === 'scale-zone' && msrScaleZoneShape() === 'rectangle') ||
+    (currentTool === 'area' && msrScaleZoneShape() === 'rectangle')
+  );
 }
 
 function msrTranslatePoints(points, dx, dy) {
@@ -2837,7 +3294,7 @@ overlay?.addEventListener('mouseleave', () => {
 });
 
 overlay?.addEventListener('mousedown', (e) => {
-  if (currentTool !== 'scale-zone' || msrScaleZoneShape() !== 'rectangle') return;
+  if (!msrUsesRectangleDrag()) return;
   if (szDialogEl && !szDialogEl.hidden) return;
   const raw = msrOverlayNorm(e);
   const pt = msrFindSnapPt(raw.x, raw.y) || raw;
@@ -2850,14 +3307,19 @@ overlay?.addEventListener('mousedown', (e) => {
 }, true);
 
 window.addEventListener('mouseup', (e) => {
-  if (!msrRectDrawStart || currentTool !== 'scale-zone') return;
+  if (!msrRectDrawStart || !msrUsesRectangleDrag()) return;
   const raw = msrOverlayNorm(e);
   const end = msrFindSnapPt(raw.x, raw.y) || raw;
   const dx = Math.abs((end.x - msrRectDrawStart.x) * canvas.width);
   const dy = Math.abs((end.y - msrRectDrawStart.y) * canvas.height);
   msrSuppressNextClick = true;
   if (dx >= 3 && dy >= 3) {
-    szShowDialog(msrRectVertices(msrRectDrawStart, end));
+    const vertices = msrRectVertices(msrRectDrawStart, end);
+    if (currentTool === 'area') {
+      msrFinishArea(vertices);
+    } else {
+      szShowDialog(vertices);
+    }
   }
   msrRectDrawStart = null;
   msrActiveDrawPts = [];
@@ -2915,6 +3377,7 @@ overlay?.addEventListener('click', (e) => {
     case 'area':
     case 'scale-zone':
       if (currentTool === 'scale-zone' && msrScaleZoneShape() === 'rectangle') return;
+      if (currentTool === 'area' && msrScaleZoneShape() === 'rectangle') return;
       if (msrActiveDrawPts.length >= 3 && msrSnapPxDist(pt) < 15) {
         if (currentTool === 'area') {
           msrFinishArea([...msrActiveDrawPts]);
@@ -2950,7 +3413,10 @@ overlay?.addEventListener('contextmenu', (e) => {
 function msrFinishLinear(pts) {
   if (!measurementsByPage[currentPage]) measurementsByPage[currentPage] = [];
   saveUndoState();
-  measurementsByPage[currentPage].push({ id: msrIdCounter++, type: 'linear', points: pts, label: '' });
+  const label = msrActiveGroupLabel();
+  const measurement = { id: msrIdCounter++, type: 'linear', points: pts, label, name: '' };
+  measurementsByPage[currentPage].push(measurement);
+  if (label) msrSetSelectedMeasurement(measurement.id);
   redrawRegions();
 }
 
@@ -2958,19 +3424,28 @@ function msrFinishArea(pts) {
   if (pts.length < 3) return;
   if (!measurementsByPage[currentPage]) measurementsByPage[currentPage] = [];
   saveUndoState();
-  measurementsByPage[currentPage].push({ id: msrIdCounter++, type: 'area', points: pts, label: '' });
+  const label = msrActiveGroupLabel();
+  const measurement = { id: msrIdCounter++, type: 'area', points: pts, label, name: '' };
+  measurementsByPage[currentPage].push(measurement);
+  if (label) msrSetSelectedMeasurement(measurement.id);
   redrawRegions();
 }
 
 function msrFinishCount(pt) {
   const msrs = measurementsByPage[currentPage] || (measurementsByPage[currentPage] = []);
   saveUndoState();
-  // Add to the last open count group on this page, or start a new one
-  const existing = [...msrs].reverse().find(m => m.type === 'count');
+  const label = msrActiveGroupLabel();
+  // Add to the selected named count group, or keep the original open-count behaviour.
+  const existing = label
+    ? [...msrs].reverse().find(m => m.type === 'count' && (m.label || '').trim() === label)
+    : [...msrs].reverse().find(m => m.type === 'count');
   if (existing) {
     existing.points.push(pt);
+    msrSetSelectedMeasurement(existing.id);
   } else {
-    msrs.push({ id: msrIdCounter++, type: 'count', points: [pt], label: '' });
+    const measurement = { id: msrIdCounter++, type: 'count', points: [pt], label, name: '' };
+    msrs.push(measurement);
+    if (label) msrSetSelectedMeasurement(measurement.id);
   }
   redrawRegions();
 }
@@ -2982,6 +3457,7 @@ function msrDeleteSelected() {
   const idx = msrSelectedPtIdx;
   msrSelectedId    = null;
   msrSelectedPtIdx = -1;
+  msrSelectedGroupLabel = null;
 
   // Count marker point deletion
   if (idx >= 0) {
@@ -3032,11 +3508,17 @@ function msrSnapshotSelectedMove() {
 }
 
 function msrBeginMoveDrag(evt, id, pointIdx = -1) {
+  if (appMode !== 'measure') return;
   if (currentTool !== 'select') return;
   evt.preventDefault();
   evt.stopPropagation();
-  msrSelectedId = id;
-  msrSelectedPtIdx = pointIdx;
+  if (typeof id === 'number') {
+    msrSetSelectedMeasurement(id, pointIdx);
+  } else {
+    msrSelectedId = id;
+    msrSelectedPtIdx = pointIdx;
+    msrSelectedGroupLabel = null;
+  }
   const start = msrOverlayNorm(evt);
   const snapshot = msrSnapshotSelectedMove();
   if (!snapshot) return;
@@ -3087,28 +3569,45 @@ function msrMoveDragEnd() {
 // ── Value formatters ─────────────────────────────────────────────────────────
 
 function msrFmtLinear(m, dims) {
-  if (!dims) return '? m';
-  const zone = msrFindZone(m.points[0].x, m.points[0].y, currentPage);
-  if (!zone) return '? m';
-  let d = 0;
-  for (let i = 1; i < m.points.length; i++) {
-    d += msrNormToMeters(
-      m.points[i - 1].x, m.points[i - 1].y,
-      m.points[i].x, m.points[i].y,
-      dims.width, dims.height, zone.mpp
-    );
-  }
-  return `${d.toFixed(3)} m${m.label ? '  ' + m.label : ''}`;
+  const d = msrLengthMeters(m, dims);
+  if (d === null) return '? m';
+  return msrValueWithDimensionName(m, `${d.toFixed(3)} m`);
 }
 
 function msrFmtArea(m, dims) {
-  if (!dims) return '? m²';
-  const cx = m.points.reduce((s, p) => s + p.x, 0) / m.points.length;
-  const cy = m.points.reduce((s, p) => s + p.y, 0) / m.points.length;
-  const zone = msrFindZone(cx, cy, currentPage);
-  if (!zone) return '? m²';
-  const a = msrNormToSqMeters(m.points, dims.width, dims.height, zone.mpp);
-  return `${a.toFixed(3)} m²${m.label ? '  ' + m.label : ''}`;
+  const a = msrAreaSqMeters(m, dims);
+  if (a === null) return '? m²';
+  const p = msrPerimeterMeters(m, dims);
+  const perimeter = p === null ? '' : `  P ${p.toFixed(3)} m`;
+  return msrValueWithDimensionName(m, `${a.toFixed(3)} m²${perimeter}`);
+}
+
+function msrDimensionName(m) {
+  return (m?.name || m?.dimensionName || '').trim();
+}
+
+function msrMeasurementTypeName(m) {
+  return m.type === 'linear' ? 'Length'
+    : m.type === 'area' ? 'Area'
+    : 'Count';
+}
+
+function msrValueWithDimensionName(m, value) {
+  const name = msrDimensionName(m);
+  return name ? `${name}  ${value}` : value;
+}
+
+function msrPromptDimensionName(m) {
+  if (!m) return;
+  const currentName = msrDimensionName(m);
+  const n = prompt('Dimension name:', currentName);
+  if (n === null) return;
+
+  const next = n.trim();
+  if (next === currentName) return;
+  saveUndoState();
+  m.name = next;
+  redrawRegions();
 }
 
 // ── SVG renderers ────────────────────────────────────────────────────────────
@@ -3133,6 +3632,7 @@ function msrRenderZones(g) {
       e.stopPropagation();
       msrSelectedId = `z${zone.id}`;
       msrSelectedPtIdx = -1;
+      msrSelectedGroupLabel = null;
       redrawRegions();
     });
     poly.addEventListener('dblclick', (e) => {
@@ -3211,8 +3711,7 @@ function msrRenderLinear(g, m, dims, isSel) {
       if (currentTool !== 'select') return;
       if (msrSuppressNextClick) { msrSuppressNextClick = false; e.stopPropagation(); return; }
       e.stopPropagation();
-      msrSelectedId = m.id;
-      msrSelectedPtIdx = i;
+      msrSetSelectedMeasurement(m.id, i);
       redrawRegions();
     });
     grp.appendChild(handle);
@@ -3243,12 +3742,12 @@ function msrRenderLinear(g, m, dims, isSel) {
   grp.addEventListener('click', (e) => {
     if (currentTool !== 'select') return;
     if (msrSuppressNextClick) { msrSuppressNextClick = false; e.stopPropagation(); return; }
-    e.stopPropagation(); msrSelectedId = m.id; msrSelectedPtIdx = -1; redrawRegions();
+    e.stopPropagation(); msrSetSelectedMeasurement(m.id); redrawRegions();
   });
   grp.addEventListener('dblclick', (e) => {
     if (currentTool !== 'select') return;
     e.stopPropagation();
-    const n = prompt('Edit label:', m.label); if (n !== null) { m.label = n; redrawRegions(); }
+    msrPromptDimensionName(m);
   });
   g.appendChild(grp);
 }
@@ -3265,12 +3764,12 @@ function msrRenderArea(g, m, dims, isSel) {
   poly.addEventListener('click', (e) => {
     if (currentTool !== 'select') return;
     if (msrSuppressNextClick) { msrSuppressNextClick = false; e.stopPropagation(); return; }
-    e.stopPropagation(); msrSelectedId = m.id; msrSelectedPtIdx = -1; redrawRegions();
+    e.stopPropagation(); msrSetSelectedMeasurement(m.id); redrawRegions();
   });
   poly.addEventListener('dblclick', (e) => {
     if (currentTool !== 'select') return;
     e.stopPropagation();
-    const n = prompt('Edit label:', m.label); if (n !== null) { m.label = n; redrawRegions(); }
+    msrPromptDimensionName(m);
   });
   g.appendChild(poly);
 
@@ -3300,8 +3799,7 @@ function msrRenderCount(g, m, isSel) {
       if (currentTool !== 'select') return;
       if (msrSuppressNextClick) { msrSuppressNextClick = false; e.stopPropagation(); return; }
       e.stopPropagation();
-      msrSelectedId    = m.id;
-      msrSelectedPtIdx = i;
+      msrSetSelectedMeasurement(m.id, i);
       redrawRegions();
     });
     g.appendChild(c);
@@ -3319,7 +3817,7 @@ function msrRenderCount(g, m, isSel) {
     lbl.setAttribute('y', last.y * canvas.height);
     lbl.setAttribute('dominant-baseline', 'central');
     lbl.classList.add('msr-lbl'); if (isSel) lbl.classList.add('msr-sel');
-    lbl.textContent = `n = ${m.points.length}${m.label ? '  ' + m.label : ''}`;
+    lbl.textContent = msrValueWithDimensionName(m, `n = ${m.points.length}`);
     g.appendChild(lbl);
   }
 }
@@ -3389,12 +3887,16 @@ function msrRenderPreview(g, dims) {
 
   const all = [...pts, ...(prev ? [prev] : [])];
 
-  if (tool === 'scale-zone' && msrScaleZoneShape() === 'rectangle' && all.length >= 2) {
+  if (
+    ((tool === 'scale-zone' && msrScaleZoneShape() === 'rectangle') ||
+      (tool === 'area' && msrScaleZoneShape() === 'rectangle')) &&
+    all.length >= 2
+  ) {
     const rectPts = msrRectVertices(all[0], all[1]);
     const polyEl = document.createElementNS(MSR_SVG_NS, 'polygon');
     polyEl.setAttribute('points', rectPts.map(p => `${p.x * canvas.width},${p.y * canvas.height}`).join(' '));
     polyEl.classList.add('msr-preview');
-    polyEl.style.stroke = '#4da3ff';
+    if (tool === 'scale-zone') polyEl.style.stroke = '#4da3ff';
     g.appendChild(polyEl);
     return;
   }
@@ -3777,7 +4279,7 @@ function msrUpdateInfoPane() {
   const zones = scaleZonesByPage[currentPage]   || [];
   const msrs  = measurementsByPage[currentPage] || [];
 
-  if (!zones.length && !msrs.length) {
+  if (!zones.length && !msrs.length && !msrSelectedGroupLabel) {
     const empty = document.createElement('div');
     empty.className = 'msr-pnl-empty';
     empty.textContent = 'No measurements on this page.\nUse the toolbar above to start measuring.';
@@ -3792,7 +4294,7 @@ function msrUpdateInfoPane() {
     zones.forEach(zone => {
       const isSel = msrSelectedId === `z${zone.id}`;
       const row = msrPnlRow('⊞', zone, zone.label, null, isSel,
-        () => { msrSelectedId = `z${zone.id}`; msrSelectedPtIdx = -1; redrawRegions(); },
+        () => { msrSelectedId = `z${zone.id}`; msrSelectedPtIdx = -1; msrSelectedGroupLabel = null; redrawRegions(); },
         () => {
           saveUndoState();
           scaleZonesByPage[currentPage] = scaleZonesByPage[currentPage].filter(z => z.id !== zone.id);
@@ -3805,58 +4307,243 @@ function msrUpdateInfoPane() {
   }
 
   // ── Measurements ──
-  if (msrs.length) {
+  if (msrs.length || msrSelectedGroupLabel) {
     listEl.appendChild(msrPnlSection('Measurements'));
+
+    const grouped = new Map();
+    const ungrouped = [];
     msrs.forEach(m => {
-      const icon  = m.type === 'linear' ? '↔' : m.type === 'area' ? '⬡' : '⊕';
-      const value = m.type === 'linear' ? msrFmtLinear(m, dims)
-                  : m.type === 'area'   ? msrFmtArea(m, dims)
-                  : `n = ${m.points.length}`;
+      const label = (m.label || '').trim();
+      if (label) {
+        if (!grouped.has(label)) grouped.set(label, []);
+        grouped.get(label).push(m);
+      } else {
+        ungrouped.push(m);
+      }
+    });
+    if (msrSelectedGroupLabel && !grouped.has(msrSelectedGroupLabel)) grouped.set(msrSelectedGroupLabel, []);
+
+    grouped.forEach((items, label) => {
+      const isGroupSel = msrSelectedGroupLabel === label || items.some(m => msrSelectedId === m.id && msrSelectedPtIdx === -1);
+      listEl.appendChild(msrPnlGroupRow(label, items, dims, isGroupSel));
+
+      items.forEach(m => {
+        const isSel = msrSelectedId === m.id && msrSelectedPtIdx === -1;
+        listEl.appendChild(msrPnlMeasurementChildRow(m, dims, isSel));
+        if (m.type === 'count') msrAppendCountMarkerRows(listEl, m);
+      });
+    });
+
+    ungrouped.forEach(m => {
+      const icon  = msrMeasurementIcon(m);
+      const value = msrMeasurementValue(m, dims);
       const isSel = msrSelectedId === m.id && msrSelectedPtIdx === -1;
       const row = msrPnlRow(icon, m, null, value, isSel,
-        () => { msrSelectedId = m.id; msrSelectedPtIdx = -1; redrawRegions(); },
+        () => { msrSetSelectedMeasurement(m.id); redrawRegions(); },
         () => {
           saveUndoState();
           measurementsByPage[currentPage] = measurementsByPage[currentPage].filter(x => x.id !== m.id);
-          if (msrSelectedId === m.id) { msrSelectedId = null; msrSelectedPtIdx = -1; }
+          if (msrSelectedId === m.id) { msrSelectedId = null; msrSelectedPtIdx = -1; msrSelectedGroupLabel = null; }
           redrawRegions();
         }
       );
       listEl.appendChild(row);
 
-      // Count sub-rows (individual markers)
-      if (m.type === 'count') {
-        m.points.forEach((_, i) => {
-          const isPtSel = msrSelectedId === m.id && msrSelectedPtIdx === i;
-          const sub = document.createElement('div');
-          sub.className = 'msr-pnl-row msr-pnl-sub' + (isPtSel ? ' is-sel' : '');
-          sub.title = `Marker ${i + 1}`;
-
-          const ico = document.createElement('span');
-          ico.className = 'msr-pnl-icon'; ico.style.color = '#e74c3c'; ico.textContent = `${i+1}`;
-
-          const lbl = document.createElement('span');
-          lbl.style.cssText = 'flex:1;font-size:11px;color:var(--text-dim)';
-          lbl.textContent = `Marker ${i + 1}`;
-
-          const del = document.createElement('button');
-          del.className = 'msr-pnl-del'; del.textContent = '×'; del.title = 'Delete this marker';
-          del.addEventListener('click', e => {
-            e.stopPropagation();
-            saveUndoState();
-            m.points.splice(i, 1);
-            if (!m.points.length) measurementsByPage[currentPage] = measurementsByPage[currentPage].filter(x => x.id !== m.id);
-            if (msrSelectedId === m.id) { msrSelectedPtIdx = -1; }
-            redrawRegions();
-          });
-
-          sub.addEventListener('click', () => { msrSelectedId = m.id; msrSelectedPtIdx = i; redrawRegions(); });
-          sub.appendChild(ico); sub.appendChild(lbl); sub.appendChild(del);
-          listEl.appendChild(sub);
-        });
-      }
+      if (m.type === 'count') msrAppendCountMarkerRows(listEl, m);
     });
   }
+}
+
+function msrMeasurementIcon(m) {
+  return m.type === 'linear' ? '↔' : m.type === 'area' ? '⬡' : '⊕';
+}
+
+function msrMeasurementValue(m, dims) {
+  return m.type === 'linear' ? msrFmtLinear(m, dims)
+       : m.type === 'area'   ? msrFmtArea(m, dims)
+       : msrValueWithDimensionName(m, `n = ${m.points.length}`);
+}
+
+function msrGroupSummary(items, dims) {
+  if (!items.length) return 'New group';
+
+  let count = 0;
+  let length = 0;
+  let area = 0;
+  let perimeter = 0;
+  let hasLength = false;
+  let hasArea = false;
+  let hasPerimeter = false;
+  let unknownLength = false;
+  let unknownArea = false;
+  let unknownPerimeter = false;
+
+  items.forEach(m => {
+    if (m.type === 'count') count += m.points?.length || 0;
+    if (m.type === 'linear') {
+      const d = msrLengthMeters(m, dims);
+      if (d === null) unknownLength = true;
+      else { hasLength = true; length += d; }
+    }
+    if (m.type === 'area') {
+      const a = msrAreaSqMeters(m, dims);
+      const p = msrPerimeterMeters(m, dims);
+      if (a === null) unknownArea = true;
+      else { hasArea = true; area += a; }
+      if (p === null) unknownPerimeter = true;
+      else { hasPerimeter = true; perimeter += p; }
+    }
+  });
+
+  const parts = [];
+  if (count) parts.push(`Count ${count} no`);
+  if (hasArea || unknownArea) parts.push(`Area ${unknownArea ? '?' : area.toFixed(3)} m²`);
+  if (hasPerimeter || unknownPerimeter) parts.push(`Perim ${unknownPerimeter ? '?' : perimeter.toFixed(3)} m`);
+  if (hasLength || unknownLength) parts.push(`Length ${unknownLength ? '?' : length.toFixed(3)} m`);
+  return parts.join(' | ') || `${items.length} item${items.length === 1 ? '' : 's'}`;
+}
+
+function msrPnlGroupRow(label, items, dims, isSel) {
+  const row = document.createElement('div');
+  row.className = 'msr-pnl-row' + (isSel ? ' is-sel' : '');
+  row.title = 'Select this named measurement group';
+
+  const ico = document.createElement('span');
+  ico.className = 'msr-pnl-icon';
+  ico.textContent = '▦';
+
+  const name = document.createElement('input');
+  name.type = 'text';
+  name.className = 'msr-pnl-name';
+  name.placeholder = 'Name…';
+  name.value = label;
+  name.addEventListener('click', e => e.stopPropagation());
+  name.addEventListener('change', () => {
+    const next = name.value.trim();
+    if (!next || next === label) {
+      name.value = label;
+      return;
+    }
+    saveUndoState();
+    msrRenameMeasurementGroup(label, next);
+    msrSelectedGroupLabel = next;
+    redrawRegions();
+  });
+
+  const val = document.createElement('span');
+  val.className = 'msr-pnl-val';
+  val.textContent = msrGroupSummary(items, dims);
+
+  const del = document.createElement('button');
+  del.className = 'msr-pnl-del';
+  del.textContent = '×';
+  del.title = items.length ? 'Delete this group' : 'Clear this group target';
+  del.addEventListener('click', e => {
+    e.stopPropagation();
+    if (!items.length) {
+      if (msrSelectedGroupLabel === label) msrSelectedGroupLabel = null;
+      redrawRegions();
+      return;
+    }
+    if (!confirm(`Delete all measurements named "${label}"?`)) return;
+    saveUndoState();
+    const ids = new Set(items.map(m => m.id));
+    measurementsByPage[currentPage] = (measurementsByPage[currentPage] || []).filter(m => !ids.has(m.id));
+    if (ids.has(msrSelectedId)) { msrSelectedId = null; msrSelectedPtIdx = -1; }
+    if (msrSelectedGroupLabel === label) msrSelectedGroupLabel = null;
+    redrawRegions();
+  });
+
+  row.addEventListener('click', () => { msrSetSelectedGroup(label); redrawRegions(); });
+  row.appendChild(ico); row.appendChild(name); row.appendChild(val); row.appendChild(del);
+  return row;
+}
+
+function msrRenameMeasurementGroup(fromLabel, toLabel) {
+  const from = (fromLabel || '').trim();
+  const to = (toLabel || '').trim();
+  if (!from || !to) return;
+  (measurementsByPage[currentPage] || []).forEach(m => {
+    if ((m.label || '').trim() === from) m.label = to;
+  });
+}
+
+function msrPnlMeasurementChildRow(m, dims, isSel) {
+  const row = document.createElement('div');
+  row.className = 'msr-pnl-row msr-pnl-sub' + (isSel ? ' is-sel' : '');
+  row.title = 'Select this measurement';
+
+  const ico = document.createElement('span');
+  ico.className = 'msr-pnl-icon';
+  ico.textContent = msrMeasurementIcon(m);
+
+  const name = document.createElement('input');
+  name.type = 'text';
+  name.className = 'msr-pnl-name';
+  name.placeholder = `${msrMeasurementTypeName(m)} name…`;
+  name.value = msrDimensionName(m);
+  name.addEventListener('click', e => e.stopPropagation());
+  name.addEventListener('change', () => {
+    const next = name.value.trim();
+    if (next === msrDimensionName(m)) {
+      name.value = msrDimensionName(m);
+      return;
+    }
+    saveUndoState();
+    m.name = next;
+    redrawRegions();
+  });
+
+  const val = document.createElement('span');
+  val.className = 'msr-pnl-val';
+  val.textContent = msrMeasurementValue({ ...m, label: '', name: '' }, dims);
+
+  const del = document.createElement('button');
+  del.className = 'msr-pnl-del';
+  del.textContent = '×';
+  del.title = 'Delete this measurement';
+  del.addEventListener('click', e => {
+    e.stopPropagation();
+    saveUndoState();
+    measurementsByPage[currentPage] = measurementsByPage[currentPage].filter(x => x.id !== m.id);
+    if (msrSelectedId === m.id) { msrSelectedId = null; msrSelectedPtIdx = -1; }
+    redrawRegions();
+  });
+
+  row.addEventListener('click', () => { msrSetSelectedMeasurement(m.id); redrawRegions(); });
+  row.appendChild(ico); row.appendChild(name); row.appendChild(val); row.appendChild(del);
+  return row;
+}
+
+function msrAppendCountMarkerRows(listEl, m) {
+  m.points.forEach((_, i) => {
+    const isPtSel = msrSelectedId === m.id && msrSelectedPtIdx === i;
+    const sub = document.createElement('div');
+    sub.className = 'msr-pnl-row msr-pnl-sub' + (isPtSel ? ' is-sel' : '');
+    sub.title = `Marker ${i + 1}`;
+
+    const ico = document.createElement('span');
+    ico.className = 'msr-pnl-icon'; ico.style.color = '#e74c3c'; ico.textContent = `${i+1}`;
+
+    const lbl = document.createElement('span');
+    lbl.style.cssText = 'flex:1;font-size:11px;color:var(--text-dim)';
+    lbl.textContent = `Marker ${i + 1}`;
+
+    const del = document.createElement('button');
+    del.className = 'msr-pnl-del'; del.textContent = '×'; del.title = 'Delete this marker';
+    del.addEventListener('click', e => {
+      e.stopPropagation();
+      saveUndoState();
+      m.points.splice(i, 1);
+      if (!m.points.length) measurementsByPage[currentPage] = measurementsByPage[currentPage].filter(x => x.id !== m.id);
+      if (msrSelectedId === m.id) { msrSelectedPtIdx = -1; }
+      redrawRegions();
+    });
+
+    sub.addEventListener('click', () => { msrSetSelectedMeasurement(m.id, i); redrawRegions(); });
+    sub.appendChild(ico); sub.appendChild(lbl); sub.appendChild(del);
+    listEl.appendChild(sub);
+  });
 }
 
 function msrPnlSection(title) {
@@ -3875,10 +4562,15 @@ function msrPnlRow(icon, obj, fallbackVal, valueStr, isSel, onSelect, onDelete) 
 
   const name = document.createElement('input');
   name.type = 'text'; name.className = 'msr-pnl-name';
-  name.placeholder = 'Name…';
+  name.placeholder = obj.type ? 'Group…' : 'Name…';
   name.value = obj.label || '';
   name.addEventListener('click', e => e.stopPropagation());
-  name.addEventListener('input', () => { obj.label = name.value; msrRedrawOnly(); });
+  name.addEventListener('change', () => {
+    saveUndoState();
+    obj.label = name.value;
+    if (obj.type) msrSelectedGroupLabel = obj.label.trim() || null;
+    redrawRegions();
+  });
 
   const val = document.createElement('span');
   val.className = 'msr-pnl-val';
@@ -3905,16 +4597,20 @@ function msrUpdateScaleLabel() {
 function setAppMode(mode) {
   const app = document.getElementById('app');
   if (!app) return;
-  appMode = mode === 'measure' ? 'measure' : 'extract';
-  app.classList.toggle('mode-extract', mode === 'extract');
-  app.classList.toggle('mode-measure', mode === 'measure');
-  document.getElementById('btn-mode-extract')?.classList.toggle('is-active', mode === 'extract');
-  document.getElementById('btn-mode-measure')?.classList.toggle('is-active', mode === 'measure');
+  appMode = mode === 'measure' && isWorkingDocumentSession() ? 'measure' : 'extract';
+  app.classList.toggle('mode-extract', appMode === 'extract');
+  app.classList.toggle('mode-measure', appMode === 'measure');
+  document.getElementById('btn-mode-extract')?.classList.toggle('is-active', appMode === 'extract');
+  document.getElementById('btn-mode-measure')?.classList.toggle('is-active', appMode === 'measure');
   const hud = document.getElementById('snap-hud');
-  if (mode === 'extract') {
+  isDrawing = false;
+  activeRect?.remove();
+  activeRect = null;
+  msrActiveDrawPts = [];
+  msrPreviewPt = null;
+  msrRectDrawStart = null;
+  if (appMode === 'extract') {
     currentTool = 'select';
-    msrActiveDrawPts = [];
-    msrPreviewPt = null;
     document.querySelectorAll('.btn-tool').forEach(b => b.classList.remove('is-active'));
     document.getElementById('tool-select')?.classList.add('is-active');
     if (overlay) overlay.classList.add('tool-select');
@@ -3928,9 +4624,38 @@ function setAppMode(mode) {
     if (hud) hud.style.display = 'block';
     snapHudUpdateCount();
   }
+  redrawRegions();
 }
 document.getElementById('btn-mode-extract')?.addEventListener('click', () => setAppMode('extract'));
 document.getElementById('btn-mode-measure')?.addEventListener('click', () => setAppMode('measure'));
+
+(function initDocumentModeAvailability() {
+  const extractBtn = document.getElementById('btn-mode-extract');
+  const measureBtn = document.getElementById('btn-mode-measure');
+
+  if (isWorkingDocumentSession()) {
+    if (extractBtn) {
+      extractBtn.hidden = true;
+      extractBtn.disabled = true;
+    }
+    setAppMode('measure');
+    return;
+  }
+
+  if (measureBtn) {
+    measureBtn.hidden = true;
+    measureBtn.disabled = true;
+  }
+  setAppMode('extract');
+})();
+
+window.addEventListener('beforeunload', () => {
+  if (viewerStateSaveTimer) {
+    clearTimeout(viewerStateSaveTimer);
+    viewerStateSaveTimer = null;
+  }
+  saveViewerState('beforeunload');
+});
 
 // ── Measurement panel resize handle ─────────────────────────────────────────
 (function initMsrPanelResizer() {

@@ -1,0 +1,35 @@
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note">Account setup</span>
+      <h1 class="page-title">Set up your password</h1>
+      <p class="page-subtitle">Choose a password for your iQs Jobs portal login.</p>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-body">
+      <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }) do |f| %>
+        <%= render "devise/shared/error_messages", resource: resource %>
+        <%= f.hidden_field :reset_password_token %>
+
+        <div class="mb-3">
+          <%= f.label :password, "New password", class: "form-label" %>
+          <%= f.password_field :password, autofocus: true, autocomplete: "new-password", class: "form-control" %>
+          <% if @minimum_password_length %>
+            <div class="form-text"><%= @minimum_password_length %> characters minimum.</div>
+          <% end %>
+        </div>
+
+        <div class="mb-3">
+          <%= f.label :password_confirmation, "Confirm new password", class: "form-label" %>
+          <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-control" %>
+        </div>
+
+        <div class="stack-actions">
+          <%= f.submit "Set Password", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>

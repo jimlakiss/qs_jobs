@@ -1,4 +1,5 @@
-<% active_document_tab = params[:tab].presence_in(%w[imported-documents extracted-data extracted-documents]) || "imported-documents" %>
+<% active_document_tab = params[:tab].presence_in(%w[imported-documents extracted-data measured-dimensions working-documents extracted-documents]) || "imported-documents" %>
+<% active_document_tab = "working-documents" if active_document_tab == "extracted-documents" %>
 
 <section class="app-page">
   <div class="page-header">
@@ -130,8 +131,13 @@
           </button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link <%= "active" if active_document_tab == "extracted-documents" %>" id="extracted-documents-tab" data-bs-toggle="tab" data-bs-target="#extracted-documents-panel" type="button" role="tab" aria-controls="extracted-documents-panel" aria-selected="<%= active_document_tab == "extracted-documents" %>">
-            Extracted Documents
+          <button class="nav-link <%= "active" if active_document_tab == "measured-dimensions" %>" id="measured-dimensions-tab" data-bs-toggle="tab" data-bs-target="#measured-dimensions-panel" type="button" role="tab" aria-controls="measured-dimensions-panel" aria-selected="<%= active_document_tab == "measured-dimensions" %>">
+            Measured Dimensions
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link <%= "active" if active_document_tab == "working-documents" %>" id="working-documents-tab" data-bs-toggle="tab" data-bs-target="#working-documents-panel" type="button" role="tab" aria-controls="working-documents-panel" aria-selected="<%= active_document_tab == "working-documents" %>">
+            Working Documents
           </button>
         </li>
       </ul>
@@ -158,7 +164,7 @@
                     placeholder: "Architectural, Structural, Survey",
                     list: "project-document-group-options" %>
               <datalist id="project-document-group-options">
-                <% @document_groups.each do |group| %>
+                <% @imported_document_groups.each do |group| %>
                   <option value="<%= group.name %>"></option>
                 <% end %>
               </datalist>
@@ -193,7 +199,7 @@
                     </div>
                     <% group = @project_documents_by_attachment_id[documents.first.id]&.document_group %>
                     <% if group && documents.any? { |document| document.content_type == "application/pdf" || document.filename.extension.to_s.casecmp("pdf").zero? } %>
-                      <%= link_to "Open Group Viewer",
+                      <%= link_to "Open for Extraction",
                             viewer_project_document_group_path(@project, group),
                             class: "btn btn-primary btn-sm",
                             data: { turbo: false },
@@ -230,7 +236,7 @@
                               project: @project,
                               document: document,
                               metadata: metadata,
-                              document_groups: @document_groups,
+                              document_groups: @imported_document_groups,
                               tab: "imported-documents" %>
                         <% if extraction %>
                           <div class="text-muted small">
@@ -243,7 +249,7 @@
 
                       <div class="stack-actions">
                         <% if document.content_type == "application/pdf" || document.filename.extension.to_s.casecmp("pdf").zero? %>
-                          <%= link_to "Open Viewer", viewer_project_document_path(@project, document), class: "btn btn-primary btn-sm", data: { turbo: false } %>
+                          <%= link_to "Open for Extraction", viewer_project_document_path(@project, document), class: "btn btn-primary btn-sm", data: { turbo: false } %>
                         <% end %>
                         <%= link_to "Download", rails_blob_path(document, disposition: "attachment"), class: "btn btn-outline-secondary btn-sm" %>
                         <%= button_to "Remove",
@@ -351,58 +357,194 @@
           <% end %>
         </div>
 
-        <div class="tab-pane fade <%= "show active" if active_document_tab == "extracted-documents" %>" id="extracted-documents-panel" role="tabpanel" aria-labelledby="extracted-documents-tab" tabindex="0">
+        <div class="tab-pane fade <%= "show active" if active_document_tab == "measured-dimensions" %>" id="measured-dimensions-panel" role="tabpanel" aria-labelledby="measured-dimensions-tab" tabindex="0">
           <div class="section-title">
             <div>
-              <h2 class="h4">Extracted Documents</h2>
-              <p class="page-subtitle mb-0">Curated outputs generated from the PDF viewer, including manifests and drawing exports.</p>
+              <h2 class="h4">Measured Dimensions</h2>
+              <p class="page-subtitle mb-0">Raw takeoff rows saved from the PDF viewer measurement tools.</p>
             </div>
           </div>
 
-          <% if @extracted_documents.any? %>
-            <div class="document-list">
-              <% @extracted_documents.each do |document| %>
-                <% metadata = @project_documents_by_attachment_id[document.id] %>
-                <div class="document-row">
-                  <div class="document-row-main">
-                    <div class="fw-semibold"><%= document.filename.to_s %></div>
-                    <div class="text-muted small">
-                      <%= document.blob.content_type.presence || "Unknown type" %>
-                      ·
-                      <%= number_to_human_size(document.byte_size) %>
-                      ·
-                      Generated <%= sydney_datetime(metadata&.received_at || document.created_at) %>
+          <% if @measured_dimension_rows.any? %>
+            <div class="extraction-list">
+              <% @measured_dimension_groups.each do |group_name, rows| %>
+                <% total_area = measured_dimension_total(rows, :area_m2) %>
+                <% total_perimeter = measured_dimension_total(rows, :perimeter_m) %>
+                <% total_length = measured_dimension_total(rows, :length_m) %>
+                <% total_count = measured_dimension_total(rows, :count) %>
+
+                <div class="extraction-block">
+                  <div class="extraction-header">
+                    <div>
+                      <h3 class="h5 mb-1"><%= group_name %></h3>
+                      <div class="text-muted small">
+                        <%= pluralize(rows.size, "dimension") %>
+                        <% if total_count %>
+                          · Count <%= total_count %> no
+                        <% end %>
+                        <% if total_area %>
+                          · Area <%= measured_dimension_value(total_area, unit: "m²") %>
+                        <% end %>
+                        <% if total_perimeter %>
+                          · Perim <%= measured_dimension_value(total_perimeter, unit: "m") %>
+                        <% end %>
+                        <% if total_length %>
+                          · Length <%= measured_dimension_value(total_length, unit: "m") %>
+                        <% end %>
+                      </div>
                     </div>
-                    <div class="text-muted small">
-                      <%= metadata&.export_kind.to_s.humanize.presence || "Viewer export" %>
-                      <% if metadata&.generated_from_attachment %>
-                        · From <%= metadata.generated_from_attachment.filename %>
-                      <% end %>
-                    </div>
-                    <% if metadata&.notes.present? %>
-                      <div class="text-muted small"><%= metadata.notes %></div>
-                    <% end %>
-                    <%= render "document_metadata_form",
-                          project: @project,
-                          document: document,
-                          metadata: metadata,
-                          document_groups: @document_groups,
-                          tab: "extracted-documents" %>
                   </div>
 
-                  <div class="stack-actions">
-                    <%= link_to "Download", rails_blob_path(document, disposition: "attachment"), class: "btn btn-outline-secondary btn-sm" %>
-                    <%= button_to "Remove",
-                          project_document_path(@project, document),
-                          method: :delete,
-                          form: { data: { turbo_confirm: "Remove #{document.filename}?" } },
-                          class: "btn btn-outline-danger btn-sm" %>
+                  <div class="table-responsive extraction-table-shell">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th>Dimension</th>
+                          <th>Type</th>
+                          <th>Sheet</th>
+                          <th>Page</th>
+                          <th>Drawing</th>
+                          <th class="text-end">Count</th>
+                          <th class="text-end">Area</th>
+                          <th class="text-end">Perim</th>
+                          <th class="text-end">Length</th>
+                          <th>Scale</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% rows.each do |row| %>
+                          <tr>
+                            <td><%= row[:name].presence || "—" %></td>
+                            <td><%= row[:type].presence&.humanize || "—" %></td>
+                            <td><%= row[:sheet_id].presence || "—" %></td>
+                            <td><%= row[:page].presence || "—" %></td>
+                            <td><%= row[:document_filename] %></td>
+                            <td class="text-end"><%= row[:count].presence || "—" %></td>
+                            <td class="text-end"><%= measured_dimension_value(row[:area_m2], unit: "m²") %></td>
+                            <td class="text-end"><%= measured_dimension_value(row[:perimeter_m], unit: "m") %></td>
+                            <td class="text-end"><%= measured_dimension_value(row[:length_m], unit: "m") %></td>
+                            <td><%= row[:scale_label].presence || "—" %></td>
+                            <td class="text-end">
+                              <% if row[:attachment_id] %>
+                                <%= link_to "Open",
+                                      viewer_project_document_path(@project, row[:attachment_id]),
+                                      class: "btn btn-outline-secondary btn-sm",
+                                      data: { turbo: false } %>
+                              <% end %>
+                            </td>
+                          </tr>
+                        <% end %>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               <% end %>
             </div>
           <% else %>
-            <p class="text-muted mb-0">No extracted documents have been generated for this project yet.</p>
+            <div class="empty-state">
+              <h2 class="h4 mb-2">No measured dimensions yet</h2>
+              <p class="mb-0">Open a working document in the viewer, set a scale, measure areas, lengths, or counts, and the saved rows will appear here.</p>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="tab-pane fade <%= "show active" if active_document_tab == "working-documents" %>" id="working-documents-panel" role="tabpanel" aria-labelledby="working-documents-tab" tabindex="0">
+          <div class="section-title">
+            <div>
+              <h2 class="h4">Working Documents</h2>
+              <p class="page-subtitle mb-0">Processed project documents used for measuring, markup, takeoff, and folder downloads.</p>
+            </div>
+          </div>
+
+          <% if @working_documents.any? %>
+            <div class="document-list">
+              <% grouped_documents(@working_documents, @project_documents_by_attachment_id).each do |group_name, documents| %>
+                <% group = @project_documents_by_attachment_id[documents.first.id]&.document_group %>
+                <details class="document-group-card" open>
+                  <summary class="document-group-header">
+                    <div>
+                      <h3 class="h5 mb-0"><%= group_name %></h3>
+                      <span class="text-muted small"><%= pluralize(documents.size, "file") %></span>
+                    </div>
+                    <div class="document-group-actions">
+                      <%= link_to "Open Viewer",
+                            viewer_project_document_path(@project, documents.first),
+                            class: "btn btn-primary btn-sm",
+                            data: { turbo: false },
+                            onclick: "event.stopPropagation()" %>
+                    <% if group %>
+                      <%= link_to "Download Folder",
+                            download_working_documents_project_document_group_path(@project, group),
+                            class: "btn btn-outline-secondary btn-sm",
+                            onclick: "event.stopPropagation()" %>
+                    <% end %>
+                    </div>
+                  </summary>
+
+                  <% if group %>
+                    <div class="document-folder-tools">
+                      <%= form_with model: group,
+                            url: project_document_group_path(@project, group, tab: "working-documents"),
+                            method: :patch,
+                            local: true,
+                            class: "document-folder-rename-form" do |f| %>
+                        <div class="document-folder-name-field">
+                          <%= f.label :name, "Folder name", class: "form-label" %>
+                          <div class="document-folder-name-control">
+                            <%= f.text_field :name, class: "form-control", placeholder: "Architectural, Structural, Survey" %>
+                            <%= f.submit "Rename folder", class: "btn btn-primary btn-sm" %>
+                          </div>
+                        </div>
+                      <% end %>
+                    </div>
+                  <% end %>
+
+                  <% documents.each do |document| %>
+                    <% metadata = @project_documents_by_attachment_id[document.id] %>
+                    <div class="document-row">
+                      <div class="document-row-main">
+                        <div class="fw-semibold"><%= document.filename.to_s %></div>
+                        <div class="text-muted small">
+                          <%= document.blob.content_type.presence || "Unknown type" %>
+                          ·
+                          <%= number_to_human_size(document.byte_size) %>
+                          ·
+                          Generated <%= sydney_datetime(metadata&.received_at || document.created_at) %>
+                        </div>
+                        <div class="text-muted small">
+                          <%= metadata&.export_kind.to_s.humanize.presence || "Viewer export" %>
+                          <% if metadata&.generated_from_attachment %>
+                            · From <%= metadata.generated_from_attachment.filename %>
+                          <% end %>
+                        </div>
+                        <% if metadata&.notes.present? %>
+                          <div class="text-muted small"><%= metadata.notes %></div>
+                        <% end %>
+                        <%= render "document_metadata_form",
+                              project: @project,
+                              document: document,
+                              metadata: metadata,
+                              document_groups: @working_document_groups,
+                              tab: "working-documents" %>
+                      </div>
+
+                      <div class="stack-actions">
+                        <%= link_to "Open Viewer", viewer_project_document_path(@project, document), class: "btn btn-primary btn-sm", data: { turbo: false } %>
+                        <%= link_to "Download", rails_blob_path(document, disposition: "attachment"), class: "btn btn-outline-secondary btn-sm" %>
+                        <%= button_to "Remove",
+                              project_document_path(@project, document),
+                              method: :delete,
+                              form: { data: { turbo_confirm: "Remove #{document.filename}?" } },
+                              class: "btn btn-outline-danger btn-sm" %>
+                      </div>
+                    </div>
+                  <% end %>
+                </details>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-muted mb-0">No working documents yet. Open an imported PDF and run Split &amp; Name to create the working set.</p>
           <% end %>
         </div>
       </div>

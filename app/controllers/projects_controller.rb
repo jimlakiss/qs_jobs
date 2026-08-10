@@ -67,13 +67,20 @@ class ProjectsController < ApplicationController
     @project_issues = @project.project_issues.includes(:recipient_user, :contributor).latest_first
     @document_extractions_by_attachment_id = @document_extractions.index_by(&:active_storage_attachment_id)
     @document_groups = @project.document_groups.alphabetical
+    @imported_document_groups = @project.document_groups.imported.alphabetical
+    @working_document_groups = @project.document_groups.working.alphabetical
     @project_documents_by_attachment_id = @project.project_documents.includes(:document_group).index_by(&:active_storage_attachment_id)
     @imported_documents = @project.documents.select do |document|
       @project_documents_by_attachment_id[document.id]&.category != "extracted_document"
     end
-    @extracted_documents = @project.documents.select do |document|
+    generated_documents = @project.documents.select do |document|
       @project_documents_by_attachment_id[document.id]&.category == "extracted_document"
     end
+    @working_documents = generated_documents.select do |document|
+      pdf_attachment?(document)
+    end
+    @measured_dimension_rows = MeasuredDimensionsBuilder.new(@project).rows
+    @measured_dimension_groups = @measured_dimension_rows.group_by { |row| row[:group] }
   end
 
   def new
@@ -134,6 +141,10 @@ class ProjectsController < ApplicationController
         @contributors_by_type[type.id] << contributor
       end
     end
+  end
+
+  def pdf_attachment?(attachment)
+    attachment.content_type == "application/pdf" || attachment.filename.extension.to_s.casecmp("pdf").zero?
   end
 
   # ✅ THIS is the “save dropdown into DB” wiring

@@ -18,6 +18,14 @@
   let seqSeparator     = ' - '; // between sequence number and filename
   let exportBaseName   = '';
 
+  function clone(value, fallback) {
+    try {
+      return JSON.parse(JSON.stringify(value ?? fallback));
+    } catch (_) {
+      return fallback;
+    }
+  }
+
   function appConfig() {
     return window.qsJobsDocument || {};
   }
@@ -60,6 +68,7 @@
 
     const form = new FormData();
     form.append('kind', kind);
+    form.append('document_group_name', getExportBaseName());
     form.append('file', blob, filename);
 
     const response = await fetch(cfg.uploadExportUrl, {
@@ -109,6 +118,9 @@
   }
 
   function defaultExportBaseName() {
+    const cfg = appConfig();
+    if (cfg.documentGroupName) return sanitize(cfg.documentGroupName);
+
     const doc = window.documentDetails || {};
     return todayYYMMDD() + '_' + sanitize(doc.project_id || 'drawings');
   }
@@ -354,6 +366,10 @@
 
     const btn = document.getElementById('sp-btn-zip');
     if (btn) btn.textContent = `Download ZIP (${inc.length} files)`;
+    const workingBtn = document.getElementById('sp-btn-working');
+    if (workingBtn) workingBtn.textContent = `Create Working Docs (${inc.length} files)`;
+
+    window.scheduleViewerStateSave?.('staging');
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -416,13 +432,98 @@
   }
 
   // ─────────────────────────────────────────────────────────────────────
-  // PDF SPLIT + ZIP DOWNLOAD
+  // PDF SPLIT / WORKING DOCUMENTS / ZIP DOWNLOAD
   // ─────────────────────────────────────────────────────────────────────
 
-  async function downloadZip() {
+  async function splitIncludedSheets(showP) {
     const included = stagingData.filter(s => s.included);
-    if (!included.length) { alert('No sheets selected.'); return; }
+    if (!included.length) throw new Error('No sheets selected.');
 
+    const isMulti   = window.isMultiPdfMode;
+    const multiDocs = window.multiPdfDocs || [];
+    const rawBytes  = window.pdfRawBytes;
+    const loosePdfs = [];
+
+    for (let i = 0; i < included.length; i++) {
+      const sheet = included[i];
+      showP?.(`Splitting sheet ${i + 1} / ${included.length}: ${sheet.filename}`);
+
+      let pageBytes;
+
+      if (isMulti) {
+        let found = false;
+        for (const pdf of multiDocs) {
+          const localPage = sheet.page - pdf.pageOffset;
+          if (localPage >= 1 && localPage <= pdf.pageCount) {
+            if (pdf.pageCount === 1) {
+              pageBytes = pdf.rawBytes; // single-page source — copy unchanged, no re-encoding
+            } else {
+              const { PDFDocument } = PDFLib;
+              const srcDoc = await PDFDocument.load(pdf.rawBytes);
+              const newDoc = await PDFDocument.create();
+              const [pg]   = await newDoc.copyPages(srcDoc, [localPage - 1]);
+              newDoc.addPage(pg);
+              pageBytes = await newDoc.save();
+            }
+            found = true;
+            break;
+          }
+        }
+        if (!found) { console.warn(`⚠ Page ${sheet.page} not found in source.`); continue; }
+      } else {
+        const { PDFDocument } = PDFLib;
+        const srcDoc = await PDFDocument.load(rawBytes);
+        const newDoc = await PDFDocument.create();
+        const [pg]   = await newDoc.copyPages(srcDoc, [sheet.page - 1]);
+        newDoc.addPage(pg);
+        pageBytes = await newDoc.save();
+      }
+
+      loosePdfs.push({ filename: sheet.filename, bytes: pageBytes });
+      if (i % 5 === 4) await new Promise(r => setTimeout(r, 0)); // stay responsive
+    }
+
+    return loosePdfs;
+  }
+
+  async function buildWorkingDocuments() {
+    if (!appConfig().uploadExportUrl) {
+      alert('This viewer is not connected to project exports.');
+      return;
+    }
+
+    const showP = window.showProcessing || (m => console.log(m));
+    const hideP = window.hideProcessing || (() => {});
+
+    showP('Preparing working documents…');
+
+    try {
+      const loosePdfs = await splitIncludedSheets(showP);
+      if (!loosePdfs.length) throw new Error('No sheets were created.');
+
+      showP('Saving working documents to project…');
+      await saveExtractionToApp('working_documents');
+
+      for (let i = 0; i < loosePdfs.length; i++) {
+        const sheetPdf = loosePdfs[i];
+        showP(`Saving sheet ${i + 1} / ${loosePdfs.length}: ${sheetPdf.filename}`);
+        await uploadExportToApp(
+          new Blob([sheetPdf.bytes], { type: 'application/pdf' }),
+          sheetPdf.filename,
+          'working_document_pdf'
+        );
+      }
+
+      alert(`Created ${loosePdfs.length} working document${loosePdfs.length === 1 ? '' : 's'}.`);
+    } catch (err) {
+      console.error('working document creation error:', err);
+      alert('Error creating working documents: ' + err.message);
+    } finally {
+      hideP();
+    }
+  }
+
+  async function downloadZip() {
     const showP = window.showProcessing || (m => console.log(m));
     const hideP = window.hideProcessing || (() => {});
     const dlB   = window.downloadBlob;
@@ -430,52 +531,12 @@
     showP('Preparing ZIP…');
 
     try {
-      const zip       = new JSZip();
-      const isMulti   = window.isMultiPdfMode;
-      const multiDocs = window.multiPdfDocs || [];
-      const rawBytes  = window.pdfRawBytes;
-
-      for (let i = 0; i < included.length; i++) {
-        const sheet = included[i];
-        showP(`Splitting sheet ${i + 1} / ${included.length}: ${sheet.filename}`);
-
-        let pageBytes;
-
-        if (isMulti) {
-          let found = false;
-          for (const pdf of multiDocs) {
-            const localPage = sheet.page - pdf.pageOffset;
-            if (localPage >= 1 && localPage <= pdf.pageCount) {
-              if (pdf.pageCount === 1) {
-                pageBytes = pdf.rawBytes; // single-page source — copy unchanged, no re-encoding
-              } else {
-                const { PDFDocument } = PDFLib;
-                const srcDoc = await PDFDocument.load(pdf.rawBytes);
-                const newDoc = await PDFDocument.create();
-                const [pg]   = await newDoc.copyPages(srcDoc, [localPage - 1]);
-                newDoc.addPage(pg);
-                pageBytes = await newDoc.save();
-              }
-              found = true;
-              break;
-            }
-          }
-          if (!found) { console.warn(`⚠ Page ${sheet.page} not found in source.`); continue; }
-        } else {
-          const { PDFDocument } = PDFLib;
-          const srcDoc = await PDFDocument.load(rawBytes);
-          const newDoc = await PDFDocument.create();
-          const [pg]   = await newDoc.copyPages(srcDoc, [sheet.page - 1]);
-          newDoc.addPage(pg);
-          pageBytes = await newDoc.save();
-        }
-
-        zip.file(sheet.filename, pageBytes);
-        if (i % 5 === 4) await new Promise(r => setTimeout(r, 0)); // stay responsive
-      }
+      const loosePdfs = await splitIncludedSheets(showP);
+      if (!loosePdfs.length) throw new Error('No sheets were created.');
+      const zip = new JSZip();
+      loosePdfs.forEach(sheetPdf => zip.file(sheetPdf.filename, sheetPdf.bytes));
 
       showP('Compressing ZIP…');
-
       const blob = await zip.generateAsync({
         type: 'blob',
         compression: 'DEFLATE',
@@ -491,13 +552,6 @@
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       }
-
-      if (appConfig().uploadExportUrl) {
-        showP('Saving exported drawings to project…');
-        await uploadExportToApp(blob, name, 'exported_drawings_zip');
-        await saveExtractionToApp('zip_export');
-      }
-
     } catch (err) {
       console.error('ZIP error:', err);
       alert('Error creating ZIP: ' + err.message);
@@ -648,12 +702,16 @@
     document.getElementById('sp-select-all')?.addEventListener('change', e => toggleSelectAll(e.target.checked));
 
     // Action buttons
+    document.getElementById('sp-btn-working')?.addEventListener('click', buildWorkingDocuments);
     document.getElementById('sp-btn-zip')?.addEventListener('click', downloadZip);
     document.getElementById('sp-btn-csv')?.addEventListener('click', exportCSV);
     document.getElementById('sp-btn-json')?.addEventListener('click', exportJSON);
     document.getElementById('sp-btn-close')?.addEventListener('click', closePanel);
     document.getElementById('sp-btn-reset')?.addEventListener('click', resetOrder);
     document.getElementById('btn-split-name')?.addEventListener('click', openStagingFromExtract);
+
+    const pendingState = window.__pendingPdfViewerState;
+    if (pendingState?.staging) restoreStagingState(pendingState.staging);
   }
 
   if (document.readyState === 'loading') {
@@ -667,5 +725,44 @@
   window.closeStaging           = closePanel;
   window.exportStagingCSV       = exportCSV;
   window.exportStagingJSON      = exportJSON;
+  window.getPdfViewerStagingState = function () {
+    return {
+      stagingData: clone(stagingData, []),
+      originalOrder: clone(originalOrder, []),
+      currentFilter,
+      filenameTemplate,
+      useSeqPrefix,
+      seqSeparator,
+      exportBaseName,
+    };
+  };
+  window.restorePdfViewerStagingState = restoreStagingState;
+
+  function restoreStagingState(state) {
+    if (!state || typeof state !== 'object') return;
+
+    stagingData = clone(state.stagingData, []);
+    originalOrder = clone(state.originalOrder, stagingData.map(s => s.page));
+    currentFilter = state.currentFilter || 'all';
+    filenameTemplate = state.filenameTemplate || filenameTemplate;
+    useSeqPrefix = state.useSeqPrefix !== false;
+    seqSeparator = state.seqSeparator || seqSeparator;
+    exportBaseName = state.exportBaseName || exportBaseName;
+
+    const presetSel = document.getElementById('sp-template-select');
+    if (presetSel) presetSel.value = PRESETS.some(p => p.value === filenameTemplate) ? filenameTemplate : '__custom__';
+    const customInput = document.getElementById('sp-custom-input');
+    if (customInput) customInput.value = filenameTemplate;
+    const exportNameInput = document.getElementById('sp-export-name');
+    if (exportNameInput) exportNameInput.value = exportBaseName;
+    const seqToggle = document.getElementById('sp-seq-toggle');
+    if (seqToggle) seqToggle.checked = useSeqPrefix;
+    const seqSep = document.getElementById('sp-seq-sep');
+    if (seqSep) seqSep.value = seqSeparator;
+    const filterSel = document.getElementById('sp-filter-select');
+    if (filterSel) filterSel.value = currentFilter;
+
+    renderTable();
+  }
 
 })();
