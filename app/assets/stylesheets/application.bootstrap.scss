@@ -399,6 +399,13 @@ body.app-shell {
   flex: 0 0 auto;
 }
 
+.document-group-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
 .document-group-card:not([open]) > .document-group-header {
   border-bottom: 0;
 }
@@ -414,6 +421,46 @@ body.app-shell {
 
 .document-group-card .document-row:last-child {
   border-bottom: 0;
+}
+
+.document-folder-tools {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--qs-border);
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.document-folder-rename-form {
+  display: block;
+}
+
+.document-folder-name-field {
+  width: 100%;
+}
+
+.document-folder-rename-form .form-label {
+  margin-bottom: 0.25rem;
+}
+
+.document-folder-rename-form .form-control {
+  width: 100%;
+}
+
+.document-folder-name-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.document-folder-name-control .btn {
+  white-space: nowrap;
+  align-self: end;
+}
+
+@media (max-width: 640px) {
+  .document-folder-name-control {
+    grid-template-columns: 1fr;
+  }
 }
 
 .document-row {

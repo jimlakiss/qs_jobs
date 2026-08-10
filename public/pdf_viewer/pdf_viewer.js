@@ -10,6 +10,8 @@ const uploadDropZone = document.getElementById("upload-drop-zone");
 const canvas = document.getElementById("pdf-canvas");
 const ctx = canvas.getContext("2d");
 const sidebar = document.getElementById("sidebar");
+const documentTree = document.getElementById("document-tree");
+const thumbnailList = document.getElementById("thumbnail-list") || sidebar;
 const prevPageBtn  = document.getElementById("prev-page");
 const nextPageBtn  = document.getElementById("next-page");
 const pageInputEl  = document.getElementById("page-input");
@@ -96,6 +98,9 @@ let recenterAfterRender = false;
 let appMode = 'extract'; // 'extract' | 'measure'
 let currentTool = 'select'; // 'select' | 'scale-zone' | 'linear' | 'area' | 'count'
 const thumbnailDataCache = new Map();
+const projectPdfFileCache = new Map();
+const PROJECT_PDF_CACHE_LIMIT = 3;
+let activeProjectDocumentId = null;
 const measurementsByPage = {};  // { pageNum: [measurement, ...] }
 const scaleZonesByPage   = {};  // { pageNum: [zone, ...] }
 const pageBaseDimsCache  = new Map(); // pageNum → { width, height } in PDF pts
@@ -193,6 +198,167 @@ function viewerStateConfig() {
   return window.qsJobsDocument || {};
 }
 
+function isWorkingDocumentSession() {
+  return viewerStateConfig().documentCategory === "extracted_document";
+}
+
+function projectNavigationDocuments() {
+  const docs = viewerStateConfig().navigationDocuments;
+  return Array.isArray(docs) ? docs : [];
+}
+
+function formatBytes(bytes) {
+  const value = Number(bytes);
+  if (!Number.isFinite(value) || value <= 0) return "";
+  if (value < 1024 * 1024) return `${Math.round(value / 1024)} KB`;
+  return `${(value / (1024 * 1024)).toFixed(value >= 10 * 1024 * 1024 ? 0 : 1)} MB`;
+}
+
+function setActiveProjectDocumentConfig(item) {
+  if (!item) return;
+
+  const cfg = viewerStateConfig();
+  window.qsJobsDocument = {
+    ...cfg,
+    documentId: item.id,
+    initialPdfUrl: item.url,
+    initialPdfName: item.name,
+    saveExtractionUrl: item.saveExtractionUrl || cfg.saveExtractionUrl,
+    viewerStateUrl: item.viewerStateUrl || cfg.viewerStateUrl,
+    uploadExportUrl: item.uploadExportUrl || cfg.uploadExportUrl,
+  };
+  activeProjectDocumentId = item.id;
+}
+
+function groupedNavigationDocuments() {
+  const groups = new Map();
+  projectNavigationDocuments().forEach(item => {
+    const groupName = item.group || "Ungrouped";
+    if (!groups.has(groupName)) groups.set(groupName, []);
+    groups.get(groupName).push(item);
+  });
+  return Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b));
+}
+
+function renderDocumentTree() {
+  if (!documentTree) return;
+
+  const groups = groupedNavigationDocuments();
+  documentTree.innerHTML = "";
+
+  if (!groups.length) {
+    const empty = document.createElement("div");
+    empty.className = "document-tree-empty";
+    empty.textContent = "No working documents yet. Open an imported PDF and run Split & Name.";
+    documentTree.appendChild(empty);
+    return;
+  }
+
+  groups.forEach(([groupName, items]) => {
+    const details = document.createElement("details");
+    details.className = "document-folder";
+    details.open = items.some(item => String(item.id) === String(activeProjectDocumentId)) || groups.length === 1;
+
+    const summary = document.createElement("summary");
+    summary.append(document.createTextNode(groupName));
+    const count = document.createElement("span");
+    count.className = "document-folder-count";
+    count.textContent = `(${items.length})`;
+    summary.appendChild(count);
+    details.appendChild(summary);
+
+    items.sort((a, b) => (a.name || "").localeCompare(b.name || "")).forEach(item => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "document-tree-file";
+      button.dataset.documentId = item.id;
+      if (String(item.id) === String(activeProjectDocumentId)) button.classList.add("is-active");
+
+      const name = document.createElement("span");
+      name.className = "document-tree-file-name";
+      name.textContent = item.name || "Untitled PDF";
+      button.appendChild(name);
+
+      const meta = document.createElement("span");
+      meta.className = "document-tree-file-meta";
+      meta.textContent = formatBytes(item.size);
+      if (meta.textContent) button.appendChild(meta);
+
+      button.addEventListener("click", () => {
+        loadProjectDocument(item).catch(err => {
+          console.error("Failed to open project document:", err);
+          alert(`Failed to open ${item.name || "PDF"}: ${err.message}`);
+        });
+      });
+
+      details.appendChild(button);
+    });
+
+    documentTree.appendChild(details);
+  });
+}
+
+function rememberProjectPdfFile(item, file) {
+  const key = String(item.id);
+  if (projectPdfFileCache.has(key)) projectPdfFileCache.delete(key);
+  projectPdfFileCache.set(key, file);
+
+  while (projectPdfFileCache.size > PROJECT_PDF_CACHE_LIMIT) {
+    const oldestKey = projectPdfFileCache.keys().next().value;
+    projectPdfFileCache.delete(oldestKey);
+  }
+}
+
+async function fetchProjectPdfFile(item) {
+  const key = String(item.id);
+  if (projectPdfFileCache.has(key)) {
+    const cached = projectPdfFileCache.get(key);
+    projectPdfFileCache.delete(key);
+    projectPdfFileCache.set(key, cached);
+    return cached;
+  }
+
+  const response = await fetch(item.url);
+  if (!response.ok) throw new Error(`${item.name || "PDF"} returned HTTP ${response.status}`);
+
+  const blob = await response.blob();
+  const file = new File([blob], item.name || "project-document.pdf", {
+    type: blob.type || "application/pdf",
+  });
+  rememberProjectPdfFile(item, file);
+  return file;
+}
+
+async function fetchProjectViewerState(item) {
+  if (!item?.viewerStateUrl) return {};
+
+  const response = await fetch(item.viewerStateUrl, {
+    headers: { "Accept": "application/json" },
+  });
+  if (!response.ok) throw new Error(`Viewer state returned HTTP ${response.status}`);
+
+  const payload = await response.json();
+  return payload.viewer_state || {};
+}
+
+async function restoreProjectViewerStateForItem(item) {
+  const state = await fetchProjectViewerState(item);
+  viewerStateRestored = false;
+  window.__pendingPdfViewerState = state;
+  restoreViewerState(state);
+  if (state.staging && window.restorePdfViewerStagingState) {
+    window.restorePdfViewerStagingState(state.staging);
+  }
+  viewerStateRestored = true;
+
+  if (restoredViewerPage && pdfDoc && restoredViewerPage >= 1 && restoredViewerPage <= pdfDoc.numPages && restoredViewerPage !== currentPage) {
+    await renderPage(restoredViewerPage);
+  } else {
+    redrawRegions();
+    msrUpdateInfoPane();
+  }
+}
+
 function jsonClone(value, fallback) {
   try {
     return JSON.parse(JSON.stringify(value ?? fallback));
@@ -227,6 +393,10 @@ function restoreGhostExclusions(value) {
 
 function buildViewerState() {
   syncDocumentDetailsFromInputs();
+  const pageBaseDimsByPage = {};
+  pageBaseDimsCache.forEach((dims, pageNum) => {
+    pageBaseDimsByPage[pageNum] = jsonClone(dims, {});
+  });
 
   return {
     version: 1,
@@ -239,6 +409,7 @@ function buildViewerState() {
     staging: window.getPdfViewerStagingState ? window.getPdfViewerStagingState() : {},
     measurementsByPage: jsonClone(measurementsByPage, {}),
     scaleZonesByPage: jsonClone(scaleZonesByPage, {}),
+    pageBaseDimsByPage,
   };
 }
 
@@ -254,6 +425,10 @@ function restoreViewerState(state) {
     restorePlainObject(measurementsByPage, state.measurementsByPage);
     restorePlainObject(scaleZonesByPage, state.scaleZonesByPage);
     restoreGhostExclusions(state.ghostExclusions);
+    pageBaseDimsCache.clear();
+    Object.entries(state.pageBaseDimsByPage || {}).forEach(([pageNum, dims]) => {
+      if (dims && typeof dims === 'object') pageBaseDimsCache.set(parseInt(pageNum, 10), jsonClone(dims, {}));
+    });
 
     if (preparedByInput) preparedByInput.value = documentDetails.prepared_by || "";
     if (projectIdInput) projectIdInput.value = documentDetails.project_id || "";
@@ -544,6 +719,8 @@ async function handleSelectedPDFs(selectedFiles, source = "picker") {
   isMultiPdfMode = false;
   currentPage = 1;
   scale = ACTUAL_SIZE_SCALE;
+  thumbnailDataCache.clear();
+  pageBaseDimsCache.clear();
   selectedRegionIds = [];
   selectedRegionId = null;
   regionIdCounter = 1;
@@ -632,6 +809,15 @@ fileInput?.addEventListener("change", async (e) => {
 
 async function loadInitialProjectPdf() {
   const appDocument = window.qsJobsDocument;
+  renderDocumentTree();
+
+  const navigationDocuments = projectNavigationDocuments();
+  if (navigationDocuments.length && appDocument?.documentCategory === "extracted_document") {
+    const initialItem = navigationDocuments.find(item => String(item.id) === String(appDocument?.documentId)) || navigationDocuments[0];
+    await loadProjectDocument(initialItem);
+    return;
+  }
+
   const initialPdfs = Array.isArray(appDocument?.initialPdfs) ? appDocument.initialPdfs : [];
   if (!initialPdfs.length && !appDocument?.initialPdfUrl) return;
 
@@ -667,6 +853,24 @@ async function loadInitialProjectPdf() {
 
 setTimeout(loadInitialProjectPdf, 0);
 
+async function loadProjectDocument(item) {
+  if (!item?.url) return;
+
+  if (activeProjectDocumentId && String(activeProjectDocumentId) !== String(item.id) && viewerStateSaveTimer) {
+    clearTimeout(viewerStateSaveTimer);
+    viewerStateSaveTimer = null;
+    await saveViewerState('switch_document');
+  }
+
+  setActiveProjectDocumentConfig(item);
+  renderDocumentTree();
+
+  const file = await fetchProjectPdfFile(item);
+  await handleSelectedPDFs([file], "project-document");
+  await restoreProjectViewerStateForItem(item);
+  renderDocumentTree();
+}
+
 function setUploadDragActive(active) {
   uploadDropZone?.classList.toggle("is-drag-over", active);
 }
@@ -701,6 +905,8 @@ async function loadMultiplePDFs(files) {
   isMultiPdfMode = true;
   currentPage = 1;
   scale = ACTUAL_SIZE_SCALE;
+  thumbnailDataCache.clear();
+  pageBaseDimsCache.clear();
   selectedRegionIds = [];
   selectedRegionId = null;
   regionIdCounter = 1;
@@ -1006,15 +1212,15 @@ zoomInputEl?.addEventListener("keydown", (e) => {
 zoomInputEl?.addEventListener("blur", commitZoomInput);
 
 async function buildThumbnails() {
-  if (!pdfDoc || !sidebar) {
-    console.error('❌ buildThumbnails: pdfDoc or sidebar is null!');
+  if (!pdfDoc || !thumbnailList) {
+    console.error('❌ buildThumbnails: pdfDoc or thumbnail list is null!');
     return;
   }
 
   const numPages = pdfDoc.numPages;
   console.log(`🖼️ Building thumbnails for ${numPages} pages...`);
 
-  sidebar.innerHTML = "";
+  thumbnailList.innerHTML = "";
   
   for (let i = 1; i <= numPages; i++) {
     const placeholder = document.createElement("div");
@@ -1031,10 +1237,10 @@ async function buildThumbnails() {
       recenterAfterRender = true;
       renderPage(i);
     });
-    sidebar.appendChild(placeholder);
+    thumbnailList.appendChild(placeholder);
   }
   
-  const placeholderCount = sidebar.querySelectorAll('.thumb').length;
+  const placeholderCount = thumbnailList.querySelectorAll('.thumb').length;
   console.log(`✅ Created ${placeholderCount} placeholder thumbnails`);
   
   if (placeholderCount !== numPages) {
@@ -1088,7 +1294,7 @@ async function loadThumbnail(pageNum) {
     const dataUrl = tempCanvas.toDataURL('image/jpeg', 0.7);
     thumbnailDataCache.set(pageNum, dataUrl);
     
-    const placeholder = sidebar.querySelector(`div.thumb[data-page-num="${pageNum}"]`);
+    const placeholder = thumbnailList.querySelector(`div.thumb[data-page-num="${pageNum}"]`);
     if (placeholder) {
       const img = document.createElement('img');
       img.src = dataUrl;
@@ -1110,7 +1316,7 @@ async function loadThumbnail(pageNum) {
 }
 
 function highlightActiveThumb() {
-  const thumbs = sidebar.querySelectorAll(".thumb");
+  const thumbs = thumbnailList.querySelectorAll(".thumb");
   thumbs.forEach((t, i) => {
     const isActive = (i + 1) === currentPage;
     if (isActive) {
@@ -4391,7 +4597,7 @@ function msrUpdateScaleLabel() {
 function setAppMode(mode) {
   const app = document.getElementById('app');
   if (!app) return;
-  appMode = mode === 'measure' ? 'measure' : 'extract';
+  appMode = mode === 'measure' && isWorkingDocumentSession() ? 'measure' : 'extract';
   app.classList.toggle('mode-extract', appMode === 'extract');
   app.classList.toggle('mode-measure', appMode === 'measure');
   document.getElementById('btn-mode-extract')?.classList.toggle('is-active', appMode === 'extract');
@@ -4422,6 +4628,26 @@ function setAppMode(mode) {
 }
 document.getElementById('btn-mode-extract')?.addEventListener('click', () => setAppMode('extract'));
 document.getElementById('btn-mode-measure')?.addEventListener('click', () => setAppMode('measure'));
+
+(function initDocumentModeAvailability() {
+  const extractBtn = document.getElementById('btn-mode-extract');
+  const measureBtn = document.getElementById('btn-mode-measure');
+
+  if (isWorkingDocumentSession()) {
+    if (extractBtn) {
+      extractBtn.hidden = true;
+      extractBtn.disabled = true;
+    }
+    setAppMode('measure');
+    return;
+  }
+
+  if (measureBtn) {
+    measureBtn.hidden = true;
+    measureBtn.disabled = true;
+  }
+  setAppMode('extract');
+})();
 
 window.addEventListener('beforeunload', () => {
   if (viewerStateSaveTimer) {

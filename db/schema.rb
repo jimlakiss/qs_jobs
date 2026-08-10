@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_04_011500) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_10_022000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -125,12 +125,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_04_011500) do
   end
 
   create_table "document_groups", force: :cascade do |t|
+    t.string "category", default: "imported", null: false
     t.datetime "created_at", null: false
     t.bigint "groupable_id", null: false
     t.string "groupable_type", null: false
     t.string "name", null: false
     t.datetime "updated_at", null: false
-    t.index "groupable_type, groupable_id, lower(btrim((name)::text))", name: "index_document_groups_on_groupable_and_normalized_name", unique: true
+    t.index "groupable_type, groupable_id, category, lower(btrim((name)::text))", name: "index_document_groups_on_groupable_category_and_name", unique: true
     t.index ["groupable_type", "groupable_id"], name: "index_document_groups_on_groupable"
   end
 

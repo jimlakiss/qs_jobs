@@ -21,4 +21,16 @@ module ApplicationHelper
       [group_name == "Ungrouped Documents" ? 1 : 0, group_name.downcase]
     end
   end
+
+  def measured_dimension_value(value, unit: nil, precision: 3)
+    return "—" if value.nil?
+
+    formatted = number_with_precision(value, precision: precision, strip_insignificant_zeros: true)
+    unit.present? ? "#{formatted} #{unit}" : formatted
+  end
+
+  def measured_dimension_total(rows, key)
+    values = rows.filter_map { |row| row[key] }
+    values.any? ? values.sum : nil
+  end
 end

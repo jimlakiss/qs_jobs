@@ -223,7 +223,7 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     get project_path(@project)
 
     assert_response :success
-    assert_select "a[href='#{viewer_project_document_group_path(@project, group)}']", text: "Open Group Viewer"
+    assert_select "a[href='#{viewer_project_document_group_path(@project, group)}']", text: "Open for Extraction"
   end
 
   test "stores extracted document data" do
@@ -336,6 +336,69 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "measurementsByPage"
   end
 
+  test "viewer navigation includes only working pdf drawings" do
+    source_group = @project.document_groups.create!(name: "Architectural")
+    working_group = @project.document_groups.create!(name: "Architectural", category: "working")
+    @project.documents.attach(
+      io: StringIO.new("%PDF-1.4"),
+      filename: "source-package.pdf",
+      content_type: "application/pdf"
+    )
+    source_document = @project.documents.attachments.last
+    @project.project_documents.create!(
+      active_storage_attachment_id: source_document.id,
+      category: "imported",
+      document_group: source_group
+    )
+
+    @project.documents.attach(
+      io: StringIO.new("%PDF-1.4"),
+      filename: "A001 - Site Plan.pdf",
+      content_type: "application/pdf"
+    )
+    extracted_document = @project.documents.attachments.last
+    @project.project_documents.create!(
+      active_storage_attachment_id: extracted_document.id,
+      category: "extracted_document",
+      document_group: working_group,
+      generated_from_attachment_id: source_document.id,
+      export_kind: "working_document_pdf"
+    )
+
+    get viewer_project_document_path(@project, source_document)
+
+    assert_response :success
+    assert_includes response.body, "navigationDocuments"
+    assert_includes response.body, "A001 - Site Plan.pdf"
+    assert_includes response.body, "working_document_pdf"
+    assert_not_includes response.body, "source-package.pdf&quot;,&quot;group&quot;"
+  end
+
+  test "returns saved draft viewer state as json" do
+    @project.documents.attach(
+      io: StringIO.new("%PDF-1.4"),
+      filename: "drawings.pdf",
+      content_type: "application/pdf"
+    )
+
+    document = @project.documents.first
+    @project.document_viewer_states.create!(
+      active_storage_attachment_id: document.id,
+      data: {
+        version: 1,
+        currentPage: 3,
+        documentDetails: { project_id: "DRAFT-JSON" }
+      },
+      saved_at: Time.current
+    )
+
+    get viewer_state_project_document_path(@project, document), as: :json
+
+    assert_response :success
+    assert_equal 3, response.parsed_body.dig("viewer_state", "currentPage")
+    assert_equal "DRAFT-JSON", response.parsed_body.dig("viewer_state", "documentDetails", "project_id")
+  end
+
   test "saves exported files back to project documents" do
     @project.documents.attach(
       io: StringIO.new("%PDF-1.4"),
@@ -366,5 +429,31 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "extraction_csv", metadata.export_kind
     assert_equal source_document.id, metadata.generated_from_attachment_id
     assert_equal extraction.id, metadata.document_extraction_id
+  end
+
+  test "saves exported sheet pdfs into named working document folder" do
+    @project.documents.attach(
+      io: StringIO.new("%PDF-1.4"),
+      filename: "source.pdf",
+      content_type: "application/pdf"
+    )
+    source_document = @project.documents.first
+    export = fixture_file_upload("test_document.txt", "application/pdf")
+
+    assert_difference -> { @project.document_groups.count }, 1 do
+      post upload_export_project_document_path(@project, source_document),
+        params: {
+          file: export,
+          kind: "working_document_pdf",
+          document_group_name: "Architectural Set"
+        }
+    end
+
+    assert_response :success
+    metadata = @project.project_documents.find_by!(active_storage_attachment_id: @project.reload.documents.last.id)
+    assert_equal "extracted_document", metadata.category
+    assert_equal "working_document_pdf", metadata.export_kind
+    assert_equal "Architectural Set", metadata.document_group.name
+    assert_equal "working", metadata.document_group.category
   end
 end

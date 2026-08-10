@@ -95,6 +95,67 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "data-direct-upload-status"
   end
 
+  test "project page renders saved measured dimensions" do
+    project = Project.create!(code: "MEASURED-001", address: "1 Test Street")
+    project.documents.attach(
+      io: StringIO.new("%PDF-1.4"),
+      filename: "areas.pdf",
+      content_type: "application/pdf"
+    )
+    document = project.documents.first
+    project.document_viewer_states.create!(
+      active_storage_attachment_id: document.id,
+      saved_at: Time.current,
+      data: {
+        pageBaseDimsByPage: {
+          "1" => { width: 720, height: 720 }
+        },
+        sheetDetailsByPage: {
+          "1" => { sheet_id: "A101" }
+        },
+        scaleZonesByPage: {
+          "1" => [
+            {
+              label: "1:100",
+              mpp: 100,
+              vertices: [
+                { x: 0, y: 0 },
+                { x: 1, y: 0 },
+                { x: 1, y: 1 },
+                { x: 0, y: 1 }
+              ]
+            }
+          ]
+        },
+        measurementsByPage: {
+          "1" => [
+            {
+              type: "area",
+              label: "FLOOR AREA",
+              name: "Bedroom 1",
+              points: [
+                { x: 0, y: 0 },
+                { x: 0.1, y: 0 },
+                { x: 0.1, y: 0.1 },
+                { x: 0, y: 0.1 }
+              ]
+            }
+          ]
+        }
+      }
+    )
+
+    get project_path(project, tab: "measured-dimensions")
+
+    assert_response :success
+    assert_includes response.body, "Measured Dimensions"
+    assert_includes response.body, "FLOOR AREA"
+    assert_includes response.body, "Bedroom 1"
+    assert_includes response.body, "A101"
+    assert_includes response.body, "6.452 m²"
+    assert_includes response.body, "10.16 m"
+  end
+
   test "deleting project unlinks converted client submission without removing client upload" do
     project = Project.create!(code: "CLIENT-LINK-001", address: "1 Test Street")
     submission = users(:client).client_submissions.create!(

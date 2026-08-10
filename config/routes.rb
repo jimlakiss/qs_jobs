@@ -2,9 +2,10 @@ Rails.application.routes.draw do
   devise_for :users, skip: [:registrations]
 
   resources :projects do
-    resources :document_groups, only: [] do
+    resources :document_groups, only: [:update] do
       member do
         get :viewer
+        get :download_working_documents
       end
     end
 
@@ -12,6 +13,7 @@ Rails.application.routes.draw do
       member do
         get :viewer
         post :save_extraction
+        get :viewer_state
         patch :viewer_state
         post :upload_export
       end
