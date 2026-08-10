@@ -45,6 +45,9 @@ gem "image_processing", "~> 1.2"
 # Store Active Storage uploads on S3-compatible object storage in production
 gem "aws-sdk-s3", require: false
 
+# Build working-document folder ZIP downloads.
+gem "rubyzip", require: false
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
