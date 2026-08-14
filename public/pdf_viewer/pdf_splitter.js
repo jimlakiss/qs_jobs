@@ -35,6 +35,36 @@
     return token ? { 'X-CSRF-Token': token } : {};
   }
 
+  function normalizeRotation(degrees) {
+    const n = Number(degrees) || 0;
+    return ((Math.round(n / 90) * 90) % 360 + 360) % 360;
+  }
+
+  function pageExtraRotation(pageNum) {
+    if (typeof window.getPdfViewerPageRotation === 'function') {
+      return normalizeRotation(window.getPdfViewerPageRotation(pageNum));
+    }
+    return normalizeRotation(window.pageRotations?.[pageNum] || 0);
+  }
+
+  function applyPageExtraRotation(pdfPage, sourcePageNum) {
+    const extra = pageExtraRotation(sourcePageNum);
+    if (!extra) return;
+
+    const current = normalizeRotation(pdfPage.getRotation?.().angle || 0);
+    pdfPage.setRotation(PDFLib.degrees(normalizeRotation(current + extra)));
+  }
+
+  async function copySinglePagePdf(sourceBytes, pageIndex, sourcePageNum) {
+    const { PDFDocument } = PDFLib;
+    const srcDoc = await PDFDocument.load(sourceBytes);
+    const newDoc = await PDFDocument.create();
+    const [pg] = await newDoc.copyPages(srcDoc, [pageIndex]);
+    applyPageExtraRotation(pg, sourcePageNum);
+    newDoc.addPage(pg);
+    return await newDoc.save();
+  }
+
   async function saveExtractionToApp(source) {
     const cfg = appConfig();
     if (!cfg.saveExtractionUrl || !window.getCanonicalExportData) return;
@@ -455,15 +485,10 @@
         for (const pdf of multiDocs) {
           const localPage = sheet.page - pdf.pageOffset;
           if (localPage >= 1 && localPage <= pdf.pageCount) {
-            if (pdf.pageCount === 1) {
+            if (pdf.pageCount === 1 && !pageExtraRotation(sheet.page)) {
               pageBytes = pdf.rawBytes; // single-page source — copy unchanged, no re-encoding
             } else {
-              const { PDFDocument } = PDFLib;
-              const srcDoc = await PDFDocument.load(pdf.rawBytes);
-              const newDoc = await PDFDocument.create();
-              const [pg]   = await newDoc.copyPages(srcDoc, [localPage - 1]);
-              newDoc.addPage(pg);
-              pageBytes = await newDoc.save();
+              pageBytes = await copySinglePagePdf(pdf.rawBytes, localPage - 1, sheet.page);
             }
             found = true;
             break;
@@ -471,12 +496,7 @@
         }
         if (!found) { console.warn(`⚠ Page ${sheet.page} not found in source.`); continue; }
       } else {
-        const { PDFDocument } = PDFLib;
-        const srcDoc = await PDFDocument.load(rawBytes);
-        const newDoc = await PDFDocument.create();
-        const [pg]   = await newDoc.copyPages(srcDoc, [sheet.page - 1]);
-        newDoc.addPage(pg);
-        pageBytes = await newDoc.save();
+        pageBytes = await copySinglePagePdf(rawBytes, sheet.page - 1, sheet.page);
       }
 
       loosePdfs.push({ filename: sheet.filename, bytes: pageBytes });

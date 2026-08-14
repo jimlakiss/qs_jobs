@@ -20,6 +20,9 @@ const zoomInputEl  = document.getElementById("zoom-input");
 const zoomInBtn    = document.getElementById("zoom-in");
 const zoomOutBtn   = document.getElementById("zoom-out");
 const fitWidthBtn  = document.getElementById("fit-width");
+const rotateLeftBtn = document.getElementById("rotate-left");
+const rotateRightBtn = document.getElementById("rotate-right");
+const rotateAllBtn = document.getElementById("rotate-all");
 const pdfScroll   = document.getElementById("pdf-scroll");
 const canvasOuter = document.getElementById("canvas-outer");
 const overlay     = document.getElementById("overlay");
@@ -64,6 +67,7 @@ const documentDetails = { prepared_by: "", project_id: "" };
 const sheetDetailsByPage = {};
 const regionsByPage = {};
 const regionTemplates = {};
+const pageRotations = {}; // pageNum -> extra clockwise degrees, relative to the PDF's own rotation
 
 let selectedRegionIds = [];
 let selectedRegionId = null;
@@ -171,16 +175,40 @@ function applyScreenDPI(dpi) {
 const pageSizeLblEl = document.getElementById('page-size-lbl');
 const MM_PER_POINT  = 25.4 / 72;
 
+function normalizeRotation(degrees) {
+  const n = Number(degrees) || 0;
+  return ((Math.round(n / 90) * 90) % 360 + 360) % 360;
+}
+
+function getPageExtraRotation(pageNum) {
+  return normalizeRotation(pageRotations[pageNum] || 0);
+}
+
+function getEffectivePageRotation(page, pageNum) {
+  return normalizeRotation((page?.rotate || 0) + getPageExtraRotation(pageNum));
+}
+
+function getPageViewport(page, pageNum, viewportScale) {
+  return page.getViewport({
+    scale: viewportScale,
+    rotation: getEffectivePageRotation(page, pageNum),
+  });
+}
+
 function updateControls() {
   if (pageInputEl) pageInputEl.value = pdfDoc ? currentPage : '—';
   if (pageTotalEl) pageTotalEl.textContent = pdfDoc ? pdfDoc.numPages : '—';
   if (zoomInputEl) zoomInputEl.value = pdfDoc ? `${Math.round(scale / ACTUAL_SIZE_SCALE * 100)}%` : '—';
+  if (rotateLeftBtn) rotateLeftBtn.disabled = !pdfDoc;
+  if (rotateRightBtn) rotateRightBtn.disabled = !pdfDoc;
+  if (rotateAllBtn) rotateAllBtn.disabled = !pdfDoc;
   if (pageSizeLblEl) {
     const dims = pageBaseDimsCache.get(currentPage);
     if (dims) {
       const w = Math.round(dims.width  * MM_PER_POINT);
       const h = Math.round(dims.height * MM_PER_POINT);
-      pageSizeLblEl.textContent = `${w} × ${h} mm`;
+      const rotation = getPageExtraRotation(currentPage);
+      pageSizeLblEl.textContent = rotation ? `${w} × ${h} mm · R${rotation}` : `${w} × ${h} mm`;
     } else {
       pageSizeLblEl.textContent = '';
     }
@@ -405,6 +433,7 @@ function buildViewerState() {
     sheetDetailsByPage: jsonClone(sheetDetailsByPage, {}),
     regionsByPage: jsonClone(regionsByPage, {}),
     regionTemplates: jsonClone(regionTemplates, {}),
+    pageRotations: jsonClone(pageRotations, {}),
     ghostExclusions: serializeGhostExclusions(),
     staging: window.getPdfViewerStagingState ? window.getPdfViewerStagingState() : {},
     measurementsByPage: jsonClone(measurementsByPage, {}),
@@ -422,6 +451,7 @@ function restoreViewerState(state) {
     restorePlainObject(sheetDetailsByPage, state.sheetDetailsByPage);
     restorePlainObject(regionsByPage, state.regionsByPage);
     restorePlainObject(regionTemplates, state.regionTemplates);
+    restorePlainObject(pageRotations, state.pageRotations);
     restorePlainObject(measurementsByPage, state.measurementsByPage);
     restorePlainObject(scaleZonesByPage, state.scaleZonesByPage);
     restoreGhostExclusions(state.ghostExclusions);
@@ -510,6 +540,7 @@ function buildUndoState() {
     regionsByPage: JSON.parse(JSON.stringify(regionsByPage)),
     sheetDetailsByPage: JSON.parse(JSON.stringify(sheetDetailsByPage)),
     regionTemplates: JSON.parse(JSON.stringify(regionTemplates)),
+    pageRotations: JSON.parse(JSON.stringify(pageRotations)),
     measurementsByPage: JSON.parse(JSON.stringify(measurementsByPage)),
     scaleZonesByPage: JSON.parse(JSON.stringify(scaleZonesByPage)),
     selectedRegionIds: [...selectedRegionIds],
@@ -528,6 +559,9 @@ function restoreUndoState(state) {
 
   Object.keys(regionTemplates).forEach(k => delete regionTemplates[k]);
   Object.assign(regionTemplates, state.regionTemplates || {});
+
+  Object.keys(pageRotations).forEach(k => delete pageRotations[k]);
+  Object.assign(pageRotations, state.pageRotations || {});
 
   Object.keys(measurementsByPage).forEach(k => delete measurementsByPage[k]);
   Object.assign(measurementsByPage, state.measurementsByPage || {});
@@ -729,6 +763,7 @@ async function handleSelectedPDFs(selectedFiles, source = "picker") {
   for (const k of Object.keys(sheetDetailsByPage)) delete sheetDetailsByPage[k];
   for (const k of Object.keys(regionsByPage)) delete regionsByPage[k];
   for (const k of Object.keys(regionTemplates)) delete regionTemplates[k];
+  for (const k of Object.keys(pageRotations)) delete pageRotations[k];
 
   if (preparedByInput) preparedByInput.value = "";
   if (projectIdInput) projectIdInput.value = "";
@@ -915,6 +950,7 @@ async function loadMultiplePDFs(files) {
   for (const k of Object.keys(sheetDetailsByPage)) delete sheetDetailsByPage[k];
   for (const k of Object.keys(regionsByPage)) delete regionsByPage[k];
   for (const k of Object.keys(regionTemplates)) delete regionTemplates[k];
+  for (const k of Object.keys(pageRotations)) delete pageRotations[k];
 
   if (preparedByInput) preparedByInput.value = "";
   if (projectIdInput) projectIdInput.value = "";
@@ -1036,7 +1072,7 @@ async function renderPage(pageNum) {
 
   let effectiveScale = scale;
 
-  const baseViewport = page.getViewport({ scale: 1.0 });
+  const baseViewport = getPageViewport(page, pageNum, 1.0);
   pageBaseDimsCache.set(pageNum, { width: baseViewport.width, height: baseViewport.height });
   const targetWidth  = baseViewport.width  * scale;
   const targetHeight = baseViewport.height * scale;
@@ -1050,7 +1086,7 @@ async function renderPage(pageNum) {
     scale = effectiveScale;
   }
 
-  const viewport = page.getViewport({ scale: effectiveScale });
+  const viewport = getPageViewport(page, pageNum, effectiveScale);
 
   // Render into a hidden offscreen canvas so the visible canvas
   // never shows a blank/loading state — swap happens atomically.
@@ -1156,7 +1192,7 @@ async function zoomToCenter(newScale) {
 fitWidthBtn?.addEventListener("click", async () => {
   if (!pdfDoc) return;
   const page = await pdfDoc.getPage(currentPage);
-  const baseViewport = page.getViewport({ scale: 1.0 });
+  const baseViewport = getPageViewport(page, currentPage, 1.0);
   page.cleanup();
   scale = pdfScroll.clientWidth / baseViewport.width;
   scale = Math.min(Math.max(scale, 0.01), 20.0);
@@ -1274,7 +1310,7 @@ async function loadThumbnail(pageNum) {
   try {
     const page = await pdfDoc.getPage(pageNum);
     const THUMB_SCALE = 0.12;
-    const viewport = page.getViewport({ scale: THUMB_SCALE });
+    const viewport = getPageViewport(page, pageNum, THUMB_SCALE);
 
     const tempCanvas = document.createElement("canvas");
     const maxWidth = 360;
@@ -1286,7 +1322,7 @@ async function loadThumbnail(pageNum) {
 
     await page.render({ 
       canvasContext: tempCtx, 
-      viewport: page.getViewport({ scale: tempCanvas.width / page.getViewport({ scale: 1 }).width }),
+      viewport: getPageViewport(page, pageNum, tempCanvas.width / getPageViewport(page, pageNum, 1).width),
       intent: 'display',
       renderInteractiveForms: false,
     }).promise;
@@ -1794,6 +1830,47 @@ function invalidatePageFields(pageNum, types) {
   });
 }
 
+function invalidateRotationDependentCaches(pageNum) {
+  thumbnailDataCache.delete(pageNum);
+  snapPointsByPage.delete(pageNum);
+  snapSegmentsByPage.delete(pageNum);
+  invalidatePageFields(pageNum, REGION_TYPES);
+}
+
+async function rotatePage(pageNum, deltaDegrees) {
+  if (!pdfDoc || !Number.isFinite(pageNum)) return;
+  saveUndoState();
+  const next = normalizeRotation(getPageExtraRotation(pageNum) + deltaDegrees);
+  if (next) pageRotations[pageNum] = next;
+  else delete pageRotations[pageNum];
+  invalidateRotationDependentCaches(pageNum);
+  scheduleViewerStateSave('page_rotation');
+  recenterAfterRender = true;
+  await renderPage(pageNum);
+  loadThumbnail(pageNum);
+}
+
+async function rotateAllPagesToCurrent() {
+  if (!pdfDoc) return;
+  const rotation = getPageExtraRotation(currentPage);
+  if (!rotation && !confirm('Reset rotation for all pages?')) return;
+
+  saveUndoState();
+  for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+    if (rotation) pageRotations[pageNum] = rotation;
+    else delete pageRotations[pageNum];
+    invalidateRotationDependentCaches(pageNum);
+  }
+  scheduleViewerStateSave('all_page_rotation');
+  recenterAfterRender = true;
+  await renderPage(currentPage);
+  buildThumbnails();
+}
+
+rotateLeftBtn?.addEventListener('click', () => rotatePage(currentPage, -90));
+rotateRightBtn?.addEventListener('click', () => rotatePage(currentPage, 90));
+rotateAllBtn?.addEventListener('click', () => rotateAllPagesToCurrent());
+
 function pasteClipboardToCurrentPageAtPointer() {
   if (!clipboardRegions.length || !clipboardBase) return false;
   if (!lastPointerNorm) return pasteClipboardToCurrentPage();
@@ -2159,7 +2236,7 @@ async function ocrRecognizeMultiPass(worker, blob, field) {
 
 async function extractVectorTextFromRegion(pageNum, region) {
   const page = await pdfDoc.getPage(pageNum);
-  const viewport = page.getViewport({ scale });
+  const viewport = getPageViewport(page, pageNum, scale);
   const textContent = await page.getTextContent();
 
   const xMin = region.x * viewport.width;
@@ -2221,7 +2298,7 @@ async function extractOCRFromRegion(pageNum, region) {
     OCR_SCALE = 2.5;
   }
   
-  const viewport = page.getViewport({ scale: OCR_SCALE });
+  const viewport = getPageViewport(page, pageNum, OCR_SCALE);
   const offCanvas = document.createElement("canvas");
   
   const cropW = Math.max(1, Math.round(region.w * viewport.width));
@@ -2848,6 +2925,8 @@ Object.defineProperty(window, 'multiPdfDocs',       { get: () => multiPdfDocs,  
 Object.defineProperty(window, 'documentDetails',    { get: () => documentDetails,    configurable: true });
 Object.defineProperty(window, 'sheetDetailsByPage', { get: () => sheetDetailsByPage, configurable: true });
 Object.defineProperty(window, 'regionTemplates',    { get: () => regionTemplates,    configurable: true });
+Object.defineProperty(window, 'pageRotations',      { get: () => pageRotations,      configurable: true });
+window.getPdfViewerPageRotation = (pageNum) => getPageExtraRotation(pageNum);
 
 // ── Measurement system ───────────────────────────────────────────────────────
 
@@ -4076,7 +4155,7 @@ async function msrBuildSnapCache(pageNum) {
   let page;
   try { page = await pdfDoc.getPage(pageNum); } catch { return; }
 
-  const vp  = page.getViewport({ scale: 1.0 });
+  const vp  = getPageViewport(page, pageNum, 1.0);
   const [ta, tb, tc, td, te, tf] = vp.transform;
 
   let ops;
