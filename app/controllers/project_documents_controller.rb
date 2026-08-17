@@ -9,7 +9,7 @@ class ProjectDocumentsController < ApplicationController
     redirect_to @project, alert: "Only PDF documents can be opened in the viewer" unless pdf_document?
     @viewer_state = current_viewer_state&.data || {}
     @viewer_document_metadata = @project.project_documents.find_by(active_storage_attachment_id: @document.id)
-    @viewer_navigation_documents = viewer_navigation_documents
+    @viewer_navigation_documents = working_document_session? ? viewer_navigation_documents : []
   end
 
   def create
@@ -233,6 +233,10 @@ class ProjectDocumentsController < ApplicationController
 
   def current_document_metadata
     @current_document_metadata ||= @project.project_documents.find_by(active_storage_attachment_id: @document.id)
+  end
+
+  def working_document_session?
+    @viewer_document_metadata&.category == "extracted_document"
   end
 
   def current_extraction

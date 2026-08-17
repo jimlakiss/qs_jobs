@@ -17,7 +17,7 @@ class DocumentGroupsController < ApplicationController
 
     @document = @viewer_documents.first
     @viewer_title = @document_group.name
-    @viewer_navigation_documents = viewer_navigation_documents
+    @viewer_navigation_documents = []
     render "project_documents/viewer"
   end
 

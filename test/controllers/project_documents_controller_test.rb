@@ -336,7 +336,7 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "measurementsByPage"
   end
 
-  test "viewer navigation includes only working pdf drawings" do
+  test "imported viewer does not include working pdf navigation" do
     source_group = @project.document_groups.create!(name: "Architectural")
     working_group = @project.document_groups.create!(name: "Architectural", category: "working")
     @project.documents.attach(
@@ -366,6 +366,44 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     )
 
     get viewer_project_document_path(@project, source_document)
+
+    assert_response :success
+    assert_includes response.body, "navigationDocuments"
+    assert_not_includes response.body, "A001 - Site Plan.pdf"
+    assert_not_includes response.body, "working_document_pdf"
+    assert_not_includes response.body, "source-package.pdf&quot;,&quot;group&quot;"
+  end
+
+  test "working viewer includes working pdf navigation" do
+    source_group = @project.document_groups.create!(name: "Architectural")
+    working_group = @project.document_groups.create!(name: "Architectural", category: "working")
+    @project.documents.attach(
+      io: StringIO.new("%PDF-1.4"),
+      filename: "source-package.pdf",
+      content_type: "application/pdf"
+    )
+    source_document = @project.documents.attachments.last
+    @project.project_documents.create!(
+      active_storage_attachment_id: source_document.id,
+      category: "imported",
+      document_group: source_group
+    )
+
+    @project.documents.attach(
+      io: StringIO.new("%PDF-1.4"),
+      filename: "A001 - Site Plan.pdf",
+      content_type: "application/pdf"
+    )
+    extracted_document = @project.documents.attachments.last
+    @project.project_documents.create!(
+      active_storage_attachment_id: extracted_document.id,
+      category: "extracted_document",
+      document_group: working_group,
+      generated_from_attachment_id: source_document.id,
+      export_kind: "working_document_pdf"
+    )
+
+    get viewer_project_document_path(@project, extracted_document)
 
     assert_response :success
     assert_includes response.body, "navigationDocuments"
