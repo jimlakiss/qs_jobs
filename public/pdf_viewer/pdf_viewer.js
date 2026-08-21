@@ -103,7 +103,9 @@ let appMode = 'extract'; // 'extract' | 'measure'
 let currentTool = 'select'; // 'select' | 'scale-zone' | 'linear' | 'area' | 'count'
 const thumbnailDataCache = new Map();
 const projectPdfFileCache = new Map();
-const PROJECT_PDF_CACHE_LIMIT = 3;
+const projectPdfSessionCache = new Map();
+const PROJECT_PDF_CACHE_LIMIT = 5;
+const PROJECT_PDF_SESSION_CACHE_LIMIT = 5;
 let activeProjectDocumentId = null;
 const measurementsByPage = {};  // { pageNum: [measurement, ...] }
 const scaleZonesByPage   = {};  // { pageNum: [zone, ...] }
@@ -258,6 +260,86 @@ function setActiveProjectDocumentConfig(item) {
   activeProjectDocumentId = item.id;
 }
 
+function resetSinglePdfViewerState(fileName) {
+  pdfFileBaseName = (fileName || "pdf_extracted_data").replace(/\.[^.]+$/, "") || "pdf_extracted_data";
+  pdfDoc = null;
+  pdfRawBytes = null;
+  multiPdfDocs = [];
+  isMultiPdfMode = false;
+  currentPage = 1;
+  scale = ACTUAL_SIZE_SCALE;
+  thumbnailDataCache.clear();
+  pageBaseDimsCache.clear();
+  snapPointsByPage.clear();
+  snapSegmentsByPage.clear();
+  selectedRegionIds = [];
+  selectedRegionId = null;
+  regionIdCounter = 1;
+
+  for (const k of Object.keys(documentDetails)) documentDetails[k] = "";
+  for (const k of Object.keys(sheetDetailsByPage)) delete sheetDetailsByPage[k];
+  for (const k of Object.keys(regionsByPage)) delete regionsByPage[k];
+  for (const k of Object.keys(regionTemplates)) delete regionTemplates[k];
+  for (const k of Object.keys(pageRotations)) delete pageRotations[k];
+
+  if (preparedByInput) preparedByInput.value = "";
+  if (projectIdInput) projectIdInput.value = "";
+}
+
+function destroyCachedProjectPdfSession(session) {
+  if (!session?.pdfDoc || session.pdfDoc === pdfDoc) return;
+
+  try {
+    session.pdfDoc.destroy?.();
+  } catch (err) {
+    console.warn("Failed to destroy cached PDF session:", err);
+  }
+}
+
+function rememberProjectPdfSession(item, session) {
+  const key = String(item.id);
+  const existing = projectPdfSessionCache.get(key);
+  if (existing && existing !== session) destroyCachedProjectPdfSession(existing);
+
+  projectPdfSessionCache.delete(key);
+  projectPdfSessionCache.set(key, session);
+
+  while (projectPdfSessionCache.size > PROJECT_PDF_SESSION_CACHE_LIMIT) {
+    const oldestKey = projectPdfSessionCache.keys().next().value;
+    const oldest = projectPdfSessionCache.get(oldestKey);
+    projectPdfSessionCache.delete(oldestKey);
+    destroyCachedProjectPdfSession(oldest);
+  }
+}
+
+function touchProjectPdfSession(item) {
+  const key = String(item.id);
+  const session = projectPdfSessionCache.get(key);
+  if (!session) return null;
+
+  projectPdfSessionCache.delete(key);
+  projectPdfSessionCache.set(key, session);
+  return session;
+}
+
+function syncActiveProjectPdfSessionThumbnails() {
+  if (!activeProjectDocumentId) return;
+
+  const session = projectPdfSessionCache.get(String(activeProjectDocumentId));
+  if (session) session.thumbnailData = new Map(thumbnailDataCache);
+}
+
+function restoreProjectPdfSession(session) {
+  resetSinglePdfViewerState(session.fileName);
+  pdfDoc = session.pdfDoc;
+  pdfRawBytes = session.rawBytes;
+  pdfFileBaseName = session.baseName || pdfFileBaseName;
+  thumbnailDataCache.clear();
+  (session.thumbnailData || new Map()).forEach((value, key) => {
+    thumbnailDataCache.set(Number(key), value);
+  });
+}
+
 function groupedNavigationDocuments() {
   const groups = new Map();
   projectNavigationDocuments().forEach(item => {
@@ -385,6 +467,68 @@ async function restoreProjectViewerStateForItem(item) {
     redrawRegions();
     msrUpdateInfoPane();
   }
+}
+
+async function loadProjectPdfSession(item) {
+  const cached = touchProjectPdfSession(item);
+  if (cached) {
+    console.log(`⚡ Reusing cached PDF session: ${item.name || item.id}`);
+    restoreProjectPdfSession(cached);
+    await buildThumbnails();
+    autoFitScale();
+    recenterAfterRender = true;
+    await renderPage(1);
+    return;
+  }
+
+  const file = await fetchProjectPdfFile(item);
+  const fileSizeMB = file.size / (1024 * 1024);
+  resetSinglePdfViewerState(file.name);
+
+  const data = new Uint8Array(await file.arrayBuffer());
+  pdfRawBytes = data.slice(); // copy before PDF.js transfers the ArrayBuffer to its worker
+  console.log(`📂 Loading project PDF document: ${file.name}`);
+
+  const loadingTask = requirePdfjsLib().getDocument({
+    data,
+    cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
+    cMapPacked: true,
+    disableAutoFetch: true,
+    disableStream: false,
+    disableFontFace: false,
+    useSystemFonts: false,
+    standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/',
+  });
+
+  pdfDoc = await loadingTask.promise;
+  const pageCount = pdfDoc.numPages;
+  console.log(`✅ Project PDF loaded: ${pageCount} pages (${fileSizeMB.toFixed(1)} MB)`);
+
+  if (pageCount === 0) throw new Error('PDF has 0 pages');
+
+  try {
+    const testPage = await pdfDoc.getPage(1);
+    console.log(`📄 Page 1 dimensions: ${testPage.view[2]} x ${testPage.view[3]}`);
+    testPage.cleanup();
+  } catch (err) {
+    console.error('❌ Cannot read first page:', err);
+    throw new Error('PDF appears corrupted');
+  }
+
+  console.log(`🖼️ Starting thumbnail build for ${pageCount} pages...`);
+  await buildThumbnails();
+  autoFitScale();
+  recenterAfterRender = true;
+  await renderPage(1);
+
+  rememberProjectPdfSession(item, {
+    pdfDoc,
+    rawBytes: pdfRawBytes,
+    fileName: file.name,
+    baseName: pdfFileBaseName,
+    thumbnailData: new Map(thumbnailDataCache),
+  });
+  console.log(`✅ Project PDF ready and cached: ${file.name}`);
 }
 
 function jsonClone(value, fallback) {
@@ -746,27 +890,7 @@ async function handleSelectedPDFs(selectedFiles, source = "picker") {
     }
   }
 
-  pdfFileBaseName = (file.name || "pdf_extracted_data").replace(/\.[^.]+$/, "") || "pdf_extracted_data";
-
-  pdfDoc = null;
-  multiPdfDocs = [];
-  isMultiPdfMode = false;
-  currentPage = 1;
-  scale = ACTUAL_SIZE_SCALE;
-  thumbnailDataCache.clear();
-  pageBaseDimsCache.clear();
-  selectedRegionIds = [];
-  selectedRegionId = null;
-  regionIdCounter = 1;
-
-  for (const k of Object.keys(documentDetails)) documentDetails[k] = "";
-  for (const k of Object.keys(sheetDetailsByPage)) delete sheetDetailsByPage[k];
-  for (const k of Object.keys(regionsByPage)) delete regionsByPage[k];
-  for (const k of Object.keys(regionTemplates)) delete regionTemplates[k];
-  for (const k of Object.keys(pageRotations)) delete pageRotations[k];
-
-  if (preparedByInput) preparedByInput.value = "";
-  if (projectIdInput) projectIdInput.value = "";
+  resetSinglePdfViewerState(file.name);
 
   await new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -891,6 +1015,8 @@ setTimeout(loadInitialProjectPdf, 0);
 async function loadProjectDocument(item) {
   if (!item?.url) return;
 
+  syncActiveProjectPdfSessionThumbnails();
+
   if (activeProjectDocumentId && String(activeProjectDocumentId) !== String(item.id) && viewerStateSaveTimer) {
     clearTimeout(viewerStateSaveTimer);
     viewerStateSaveTimer = null;
@@ -900,8 +1026,7 @@ async function loadProjectDocument(item) {
   setActiveProjectDocumentConfig(item);
   renderDocumentTree();
 
-  const file = await fetchProjectPdfFile(item);
-  await handleSelectedPDFs([file], "project-document");
+  await loadProjectPdfSession(item);
   await restoreProjectViewerStateForItem(item);
   renderDocumentTree();
 }
@@ -1304,8 +1429,24 @@ async function buildThumbnails() {
   console.log('✅ All thumbnails loaded');
 }
 
+function renderCachedThumbnail(pageNum) {
+  const dataUrl = thumbnailDataCache.get(pageNum);
+  if (!dataUrl) return false;
+
+  const placeholder = thumbnailList?.querySelector(`div.thumb[data-page-num="${pageNum}"]`);
+  if (!placeholder) return true;
+
+  const img = document.createElement('img');
+  img.src = dataUrl;
+  img.style.cssText = 'width: 100%; height: auto; display: block;';
+  placeholder.innerHTML = '';
+  placeholder.appendChild(img);
+  placeholder.style.background = '#444';
+  return true;
+}
+
 async function loadThumbnail(pageNum) {
-  if (thumbnailDataCache.has(pageNum)) return;
+  if (renderCachedThumbnail(pageNum)) return;
   
   try {
     const page = await pdfDoc.getPage(pageNum);
@@ -1329,16 +1470,12 @@ async function loadThumbnail(pageNum) {
 
     const dataUrl = tempCanvas.toDataURL('image/jpeg', 0.7);
     thumbnailDataCache.set(pageNum, dataUrl);
+    if (activeProjectDocumentId) {
+      const session = projectPdfSessionCache.get(String(activeProjectDocumentId));
+      if (session) session.thumbnailData.set(pageNum, dataUrl);
+    }
     
-    const placeholder = thumbnailList.querySelector(`div.thumb[data-page-num="${pageNum}"]`);
-    if (placeholder) {
-      const img = document.createElement('img');
-      img.src = dataUrl;
-      img.style.cssText = 'width: 100%; height: auto; display: block;';
-      placeholder.innerHTML = '';
-      placeholder.appendChild(img);
-      placeholder.style.background = '#444';
-    } else {
+    if (!renderCachedThumbnail(pageNum)) {
       console.warn(`Could not find placeholder for page ${pageNum}`);
     }
     
@@ -1832,6 +1969,10 @@ function invalidatePageFields(pageNum, types) {
 
 function invalidateRotationDependentCaches(pageNum) {
   thumbnailDataCache.delete(pageNum);
+  if (activeProjectDocumentId) {
+    const session = projectPdfSessionCache.get(String(activeProjectDocumentId));
+    session?.thumbnailData?.delete(pageNum);
+  }
   snapPointsByPage.delete(pageNum);
   snapSegmentsByPage.delete(pageNum);
   invalidatePageFields(pageNum, REGION_TYPES);
