@@ -5,6 +5,34 @@ class ContributorsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:one)
   end
 
+  test "admin can create contributor with contributor type" do
+    assert_difference("Contributor.count", 1) do
+      post contributors_path, params: {
+        contributor: {
+          company_name: "Northside Engineers Pty Ltd",
+          key_contact: "Nadia",
+          email: "nadia@example.com",
+          phone_number: "02 9000 0000",
+          contributor_type_ids: [contributor_types(:two).id]
+        }
+      }
+    end
+
+    contributor = Contributor.find_by!(company_name: "Northside Engineers Pty Ltd")
+    assert_redirected_to contributor_path(contributor)
+    assert_equal ["Structural Engineer"], contributor.contributor_type_names
+  end
+
+  test "new contributor form shows validation errors" do
+    assert_no_difference("Contributor.count") do
+      post contributors_path, params: { contributor: { company_name: "" } }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select ".alert-danger", text: /Contributor could not be saved/
+    assert_select ".alert-danger li", text: /Company name can't be blank/
+  end
+
   test "associated projects are sorted newest to oldest by code" do
     contributor = Contributor.create!(company_name: "Sorted Project Contributor Pty Ltd")
     older_code = Project.create!(code: "2627-007", date: Date.current)

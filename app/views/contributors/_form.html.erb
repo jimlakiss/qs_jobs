@@ -1,6 +1,17 @@
 <div class="app-card form-shell">
   <div class="app-card-body">
     <%= form_with model: @contributor do |f| %>
+      <% if @contributor.errors.any? %>
+        <div class="alert alert-danger">
+          <p class="fw-semibold mb-2">Contributor could not be saved:</p>
+          <ul class="mb-0">
+            <% @contributor.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
       <div class="row g-3">
         <div class="col-12">
           <%= f.label :contributor_type_ids, "Contributor Types", class: "form-label" %>
