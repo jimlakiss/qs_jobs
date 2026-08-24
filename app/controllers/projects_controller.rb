@@ -133,11 +133,10 @@ class ProjectsController < ApplicationController
   def load_contributors
     @contributor_types = ContributorType.order(:name)
     @contributors_by_type = Hash.new { |hash, key| hash[key] = [] }
-    @contributors = Contributor
-      .includes(:contributor_types)
-      .order(Arel.sql("LOWER(company_name), company_name"))
 
-    @contributors.each do |contributor|
+    Contributor.includes(:contributor_types)
+               .order(Arel.sql("LOWER(company_name), company_name"))
+               .each do |contributor|
       contributor.contributor_types.each do |type|
         @contributors_by_type[type.id] << contributor
       end

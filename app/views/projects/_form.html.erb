@@ -56,17 +56,13 @@
       <div class="role-grid">
         <% @contributor_types.each do |type| %>
           <% options = @contributors_by_type[type.id] || [] %>
-          <% other_options = @contributors - options %>
           <% selected = @project.project_contributors.find { |pc| pc.role == type.name }&.contributor_id %>
-          <% grouped_options = {} %>
-          <% grouped_options[type.name] = options.map { |contributor| [contributor.company_name, contributor.id] } if options.any? %>
-          <% grouped_options["Other contributors"] = other_options.map { |contributor| [contributor.company_name, contributor.id] } if other_options.any? %>
 
           <div class="role-card">
             <label class="form-label"><%= type.name %></label>
             <%= select_tag(
               "contributors[#{type.id}]",
-              grouped_options_for_select(grouped_options, selected),
+              options_from_collection_for_select(options, :id, :company_name, selected),
               include_blank: "No contributor selected",
               class: "form-select"
             ) %>

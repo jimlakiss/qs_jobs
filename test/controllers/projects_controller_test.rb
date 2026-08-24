@@ -95,19 +95,19 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "data-direct-upload-status"
   end
 
-  test "project form includes untyped contributors in role dropdowns" do
+  test "project form only includes contributors for the matching role dropdown" do
     contributor = Contributor.create!(company_name: "Zimmerman Engineers")
     structural_engineer = contributor_types(:two)
 
     get new_project_path
 
     assert_response :success
-    assert_select "select[name='contributors[#{structural_engineer.id}]'] optgroup[label='Other contributors'] option[value='#{contributor.id}']",
-      text: "Zimmerman Engineers"
+    assert_select "select[name='contributors[#{structural_engineer.id}]'] option[value='#{contributor.id}']", false
   end
 
-  test "project can assign contributor that does not have matching contributor type" do
+  test "project can assign contributor that has matching contributor type" do
     contributor = Contributor.create!(company_name: "Zimmerman Engineers")
+    contributor.contributor_types << contributor_types(:two)
 
     assert_difference("ProjectContributor.count", 1) do
       post projects_path, params: {
