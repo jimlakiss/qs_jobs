@@ -95,6 +95,38 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "data-direct-upload-status"
   end
 
+  test "project form includes untyped contributors in role dropdowns" do
+    contributor = Contributor.create!(company_name: "Zimmerman Engineers")
+    structural_engineer = contributor_types(:two)
+
+    get new_project_path
+
+    assert_response :success
+    assert_select "select[name='contributors[#{structural_engineer.id}]'] optgroup[label='Other contributors'] option[value='#{contributor.id}']",
+      text: "Zimmerman Engineers"
+  end
+
+  test "project can assign contributor that does not have matching contributor type" do
+    contributor = Contributor.create!(company_name: "Zimmerman Engineers")
+
+    assert_difference("ProjectContributor.count", 1) do
+      post projects_path, params: {
+        project: {
+          code: "ZIMM-001",
+          date: Date.current,
+          address: "1 Engineering Way"
+        },
+        contributors: {
+          contributor_types(:two).id => contributor.id
+        }
+      }
+    end
+
+    project = Project.find_by!(code: "ZIMM-001")
+    assert_redirected_to project_path(project)
+    assert_equal contributor, project.project_contributors.find_by!(role: "Structural Engineer").contributor
+  end
+
   test "project page renders saved measured dimensions" do
     project = Project.create!(code: "MEASURED-001", address: "1 Test Street")
     project.documents.attach(
