@@ -1225,10 +1225,8 @@ async function renderPage(pageNum) {
   offscreen.height = viewport.height;
 
   try {
-    if (shouldShowImmediateLoadingState(isPageChange)) {
-      showPdfLoadingState(pageNum, viewport);
-      await waitForBrowserPaint();
-    }
+    showPdfLoadingState(pageNum, viewport);
+    await waitForBrowserPaint();
 
     currentRenderTask = page.render({
       canvasContext: offscreen.getContext('2d'),
@@ -1297,10 +1295,6 @@ function waitForBrowserPaint() {
   return new Promise(resolve => {
     requestAnimationFrame(() => requestAnimationFrame(resolve));
   });
-}
-
-function shouldShowImmediateLoadingState(isPageChange) {
-  return isPageChange || canvas.width === 0 || canvas.height === 0;
 }
 
 async function waitForPdfLoad(loadingTask, timeoutMs, fileName) {
