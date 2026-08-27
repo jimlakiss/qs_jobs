@@ -45,25 +45,6 @@ function requirePdfjsLib() {
   return lib;
 }
 
-const PDF_MAX_IMAGE_SIZE = 4096 * 4096;
-const THUMBNAIL_RENDER_TIMEOUT_MS = 8000;
-
-function pdfDocumentOptions(data) {
-  return {
-    data,
-    cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
-    cMapPacked: true,
-    disableAutoFetch: true,
-    disableStream: false,
-    disableFontFace: false,
-    useSystemFonts: false,
-    standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/',
-    maxImageSize: PDF_MAX_IMAGE_SIZE,
-    isEvalSupported: false,
-    stopAtErrors: false,
-  };
-}
-
 const initialPdfjsLib = getPdfjsLib();
 if (initialPdfjsLib?.GlobalWorkerOptions) {
   initialPdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
@@ -121,7 +102,6 @@ let recenterAfterRender = false;
 let appMode = 'extract'; // 'extract' | 'measure'
 let currentTool = 'select'; // 'select' | 'scale-zone' | 'linear' | 'area' | 'count'
 const thumbnailDataCache = new Map();
-const thumbnailLoadPromises = new Map();
 const projectPdfFileCache = new Map();
 const projectPdfSessionCache = new Map();
 const PROJECT_PDF_CACHE_LIMIT = 5;
@@ -289,7 +269,6 @@ function resetSinglePdfViewerState(fileName) {
   currentPage = 1;
   scale = ACTUAL_SIZE_SCALE;
   thumbnailDataCache.clear();
-  thumbnailLoadPromises.clear();
   pageBaseDimsCache.clear();
   snapPointsByPage.clear();
   snapSegmentsByPage.clear();
@@ -356,7 +335,6 @@ function restoreProjectPdfSession(session) {
   pdfRawBytes = session.rawBytes;
   pdfFileBaseName = session.baseName || pdfFileBaseName;
   thumbnailDataCache.clear();
-  thumbnailLoadPromises.clear();
   (session.thumbnailData || new Map()).forEach((value, key) => {
     thumbnailDataCache.set(Number(key), value);
   });
@@ -500,7 +478,6 @@ async function loadProjectPdfSession(item) {
     autoFitScale();
     recenterAfterRender = true;
     await renderPage(1);
-    scheduleThumbnailWarmup(initialThumbnailWarmupPages());
     return;
   }
 
@@ -512,7 +489,16 @@ async function loadProjectPdfSession(item) {
   pdfRawBytes = data.slice(); // copy before PDF.js transfers the ArrayBuffer to its worker
   console.log(`📂 Loading project PDF document: ${file.name}`);
 
-  const loadingTask = requirePdfjsLib().getDocument(pdfDocumentOptions(data));
+  const loadingTask = requirePdfjsLib().getDocument({
+    data,
+    cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
+    cMapPacked: true,
+    disableAutoFetch: true,
+    disableStream: false,
+    disableFontFace: false,
+    useSystemFonts: false,
+    standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/',
+  });
 
   pdfDoc = await loadingTask.promise;
   const pageCount = pdfDoc.numPages;
@@ -534,7 +520,6 @@ async function loadProjectPdfSession(item) {
   autoFitScale();
   recenterAfterRender = true;
   await renderPage(1);
-  scheduleThumbnailWarmup(initialThumbnailWarmupPages());
 
   rememberProjectPdfSession(item, {
     pdfDoc,
@@ -915,7 +900,16 @@ async function handleSelectedPDFs(selectedFiles, source = "picker") {
         pdfRawBytes = data.slice(); // copy before PDF.js transfers the ArrayBuffer to its worker
         console.log('📂 Loading PDF document...');
 
-        const loadingTask = requirePdfjsLib().getDocument(pdfDocumentOptions(data));
+        const loadingTask = requirePdfjsLib().getDocument({
+          data: data,
+          cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
+          cMapPacked: true,
+          disableAutoFetch: true,
+          disableStream: false,
+          disableFontFace: false,
+          useSystemFonts: false,
+          standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/',
+        });
 
         pdfDoc = await loadingTask.promise;
         snapPointsByPage.clear(); // invalidate snap cache for previous PDF
@@ -946,7 +940,6 @@ async function handleSelectedPDFs(selectedFiles, source = "picker") {
         autoFitScale();
         recenterAfterRender = true;
         await renderPage(1);
-        scheduleThumbnailWarmup(initialThumbnailWarmupPages());
         console.log('✅ PDF ready');
         resolve();
       } catch (err) {
@@ -1073,7 +1066,6 @@ async function loadMultiplePDFs(files) {
   currentPage = 1;
   scale = ACTUAL_SIZE_SCALE;
   thumbnailDataCache.clear();
-  thumbnailLoadPromises.clear();
   pageBaseDimsCache.clear();
   selectedRegionIds = [];
   selectedRegionId = null;
@@ -1101,7 +1093,14 @@ async function loadMultiplePDFs(files) {
       const uint8Data = new Uint8Array(data);
       const uint8Copy = uint8Data.slice(); // copy before PDF.js transfers the ArrayBuffer to its worker
 
-      const loadingTask = requirePdfjsLib().getDocument(pdfDocumentOptions(uint8Data));
+      const loadingTask = requirePdfjsLib().getDocument({
+        data: uint8Data,
+        cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
+        cMapPacked: true,
+        disableAutoFetch: true,
+        disableStream: false,
+        disableFontFace: false,
+      });
 
       const doc = await loadingTask.promise;
       
@@ -1148,7 +1147,6 @@ async function loadMultiplePDFs(files) {
   await autoFitScale();
   recenterAfterRender = true;
   await renderPage(1);
-  scheduleThumbnailWarmup(initialThumbnailWarmupPages());
   console.log('✅ Combined PDF ready');
 }
 
@@ -1410,9 +1408,25 @@ async function buildThumbnails() {
     console.error(`❌ Mismatch! Expected ${numPages}, got ${placeholderCount}`);
   }
   
-  highlightActiveThumb(false);
+  highlightActiveThumb();
+  
+  if (numPages > 10) {
+    console.log('📄 Large PDF - lazy loading thumbnails');
+    for (let i = 1; i <= Math.min(3, numPages); i++) {
+      await loadThumbnail(i);
+    }
+    return;
+  }
+  
+  console.log('📄 Loading all thumbnails...');
+  for (let i = 1; i <= numPages; i++) {
+    await loadThumbnail(i);
+    if (i % 3 === 0) {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
+  }
 
-  console.log(numPages > 10 ? '📄 Large PDF - thumbnails will load lazily' : '📄 Thumbnails will load after the first page renders');
+  console.log('✅ All thumbnails loaded');
 }
 
 function renderCachedThumbnail(pageNum) {
@@ -1433,52 +1447,13 @@ function renderCachedThumbnail(pageNum) {
 
 async function loadThumbnail(pageNum) {
   if (renderCachedThumbnail(pageNum)) return;
-
-  if (thumbnailLoadPromises.has(pageNum)) {
-    return thumbnailLoadPromises.get(pageNum);
-  }
-
-  const promise = loadThumbnailUncached(pageNum).finally(() => {
-    thumbnailLoadPromises.delete(pageNum);
-  });
-  thumbnailLoadPromises.set(pageNum, promise);
-  return promise;
-}
-
-function scheduleThumbnailWarmup(pageNums) {
-  const uniquePageNums = [...new Set(pageNums)].filter(pageNum => Number.isInteger(pageNum));
-  if (!uniquePageNums.length) return;
-
-  setTimeout(async () => {
-    for (const pageNum of uniquePageNums) {
-      await loadThumbnail(pageNum);
-      await new Promise(resolve => setTimeout(resolve, 0));
-    }
-  }, 0);
-}
-
-function initialThumbnailWarmupPages() {
-  if (!pdfDoc?.numPages) return [];
-
-  if (pdfDoc.numPages > 10) {
-    return [currentPage, currentPage - 1, currentPage + 1]
-      .filter(pageNum => pageNum >= 1 && pageNum <= pdfDoc.numPages);
-  }
-
-  return Array.from({ length: pdfDoc.numPages }, (_, index) => index + 1);
-}
-
-async function loadThumbnailUncached(pageNum) {
-  let page = null;
-  let tempCanvas = null;
-  let timeoutId = null;
-
+  
   try {
-    page = await pdfDoc.getPage(pageNum);
+    const page = await pdfDoc.getPage(pageNum);
     const THUMB_SCALE = 0.12;
     const viewport = getPageViewport(page, pageNum, THUMB_SCALE);
 
-    tempCanvas = document.createElement("canvas");
+    const tempCanvas = document.createElement("canvas");
     const maxWidth = 360;
     const scaleFactor = Math.min(1, maxWidth / viewport.width);
     tempCanvas.width = viewport.width * scaleFactor;
@@ -1486,22 +1461,12 @@ async function loadThumbnailUncached(pageNum) {
     
     const tempCtx = tempCanvas.getContext("2d", { alpha: false });
 
-    const renderTask = page.render({
+    await page.render({ 
       canvasContext: tempCtx, 
       viewport: getPageViewport(page, pageNum, tempCanvas.width / getPageViewport(page, pageNum, 1).width),
       intent: 'display',
       renderInteractiveForms: false,
-    });
-
-    const timeoutPromise = new Promise((_, reject) => {
-      timeoutId = setTimeout(() => {
-        renderTask.cancel();
-        reject(new Error(`Thumbnail render timed out after ${THUMBNAIL_RENDER_TIMEOUT_MS}ms`));
-      }, THUMBNAIL_RENDER_TIMEOUT_MS);
-    });
-
-    await Promise.race([renderTask.promise, timeoutPromise]);
-    if (timeoutId) clearTimeout(timeoutId);
+    }).promise;
 
     const dataUrl = tempCanvas.toDataURL('image/jpeg', 0.7);
     thumbnailDataCache.set(pageNum, dataUrl);
@@ -1513,26 +1478,24 @@ async function loadThumbnailUncached(pageNum) {
     if (!renderCachedThumbnail(pageNum)) {
       console.warn(`Could not find placeholder for page ${pageNum}`);
     }
+    
+    page.cleanup();
+    tempCanvas.width = 0;
+    tempCanvas.height = 0;
+    
   } catch (err) {
     console.error(`Error loading thumbnail ${pageNum}:`, err);
-  } finally {
-    if (timeoutId) clearTimeout(timeoutId);
-    if (page?.cleanup) page.cleanup();
-    if (tempCanvas) {
-      tempCanvas.width = 0;
-      tempCanvas.height = 0;
-    }
   }
 }
 
-function highlightActiveThumb(loadVisibleThumbs = true) {
+function highlightActiveThumb() {
   const thumbs = thumbnailList.querySelectorAll(".thumb");
   thumbs.forEach((t, i) => {
     const isActive = (i + 1) === currentPage;
     if (isActive) {
       t.style.borderColor = '#4da3ff';
       const pageNum = i + 1;
-      if (loadVisibleThumbs && pdfDoc && pdfDoc.numPages > 10) {
+      if (pdfDoc && pdfDoc.numPages > 10) {
         loadThumbnail(pageNum);
         if (pageNum > 1) loadThumbnail(pageNum - 1);
         if (pageNum < pdfDoc.numPages) loadThumbnail(pageNum + 1);
