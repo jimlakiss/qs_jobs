@@ -1225,9 +1225,6 @@ async function renderPage(pageNum) {
   offscreen.height = viewport.height;
 
   try {
-    showPdfLoadingState(pageNum, viewport);
-    await waitForBrowserPaint();
-
     currentRenderTask = page.render({
       canvasContext: offscreen.getContext('2d'),
       viewport,
@@ -1289,12 +1286,6 @@ async function renderPage(pageNum) {
 
   if (page?.cleanup) page.cleanup();
   page = null;
-}
-
-function waitForBrowserPaint() {
-  return new Promise(resolve => {
-    requestAnimationFrame(() => requestAnimationFrame(resolve));
-  });
 }
 
 async function waitForPdfLoad(loadingTask, timeoutMs, fileName) {
@@ -1377,49 +1368,6 @@ function showPdfFailureState(message, err, options = {}) {
   canvasOuter.style.padding = '24px';
   pdfScroll.scrollLeft = 0;
   pdfScroll.scrollTop = 0;
-}
-
-function showPdfLoadingState(pageNum, viewport) {
-  const width = Math.max(640, Math.round(viewport?.width || canvas.clientWidth || 900));
-  const height = Math.max(360, Math.round(viewport?.height || canvas.clientHeight || 640));
-
-  canvas.width = width;
-  canvas.height = height;
-  canvas.style.width = '';
-  canvas.style.height = '';
-
-  ctx.save();
-  ctx.fillStyle = '#111827';
-  ctx.fillRect(0, 0, width, height);
-  ctx.fillStyle = '#f8fafc';
-  ctx.font = '600 22px system-ui, -apple-system, sans-serif';
-  ctx.fillText(`Loading PDF page ${pageNum}`, 36, 56);
-  ctx.fillStyle = '#cbd5e1';
-  ctx.font = '15px system-ui, -apple-system, sans-serif';
-  wrapCanvasText(
-    ctx,
-    `If this message remains idle, ${PDF_UNABLE_TO_LOAD_MESSAGE}`,
-    36,
-    92,
-    width - 72,
-    24
-  );
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '13px system-ui, -apple-system, sans-serif';
-  wrapCanvasText(
-    ctx,
-    'Layered or marked-up PDFs can block the browser before a timeout can update the screen.',
-    36,
-    132,
-    width - 72,
-    20
-  );
-  ctx.restore();
-
-  overlay.setAttribute('width', width);
-  overlay.setAttribute('height', height);
-  overlay.innerHTML = '';
-  renderedScale = scale;
 }
 
 function wrapCanvasText(context, text, x, y, maxWidth, lineHeight) {
