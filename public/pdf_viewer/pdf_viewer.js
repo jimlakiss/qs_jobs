@@ -46,8 +46,10 @@ function requirePdfjsLib() {
 }
 
 const PDF_MAX_IMAGE_SIZE = 4096 * 4096;
+const PDF_LOAD_TIMEOUT_MS = 15000;
 const THUMBNAIL_RENDER_TIMEOUT_MS = 8000;
 const PAGE_RENDER_TIMEOUT_MS = 15000;
+const PDF_UNABLE_TO_LOAD_MESSAGE = "PDF unable to be loaded; check file externally.";
 
 function pdfDocumentOptions(data) {
   return {
@@ -420,7 +422,7 @@ function renderDocumentTree() {
       button.addEventListener("click", () => {
         loadProjectDocument(item).catch(err => {
           console.error("Failed to open project document:", err);
-          alert(`Failed to open ${item.name || "PDF"}: ${err.message}`);
+          showPdfFailureState(PDF_UNABLE_TO_LOAD_MESSAGE, err);
         });
       });
 
@@ -515,7 +517,7 @@ async function loadProjectPdfSession(item) {
 
   const loadingTask = requirePdfjsLib().getDocument(pdfDocumentOptions(data));
 
-  pdfDoc = await loadingTask.promise;
+  pdfDoc = await waitForPdfLoad(loadingTask, PDF_LOAD_TIMEOUT_MS, file.name);
   const pageCount = pdfDoc.numPages;
   console.log(`✅ Project PDF loaded: ${pageCount} pages (${fileSizeMB.toFixed(1)} MB)`);
 
@@ -918,7 +920,7 @@ async function handleSelectedPDFs(selectedFiles, source = "picker") {
 
         const loadingTask = requirePdfjsLib().getDocument(pdfDocumentOptions(data));
 
-        pdfDoc = await loadingTask.promise;
+        pdfDoc = await waitForPdfLoad(loadingTask, PDF_LOAD_TIMEOUT_MS, file.name);
         snapPointsByPage.clear(); // invalidate snap cache for previous PDF
         snapSegmentsByPage.clear();
         const pageCount = pdfDoc.numPages;
@@ -952,7 +954,7 @@ async function handleSelectedPDFs(selectedFiles, source = "picker") {
         resolve();
       } catch (err) {
         console.error('❌ Error loading PDF:', err);
-        alert(`Failed to load PDF: ${err.message}`);
+        showPdfFailureState(PDF_UNABLE_TO_LOAD_MESSAGE, err);
         if (fileInput) fileInput.value = '';
         reject(err);
       }
@@ -961,7 +963,7 @@ async function handleSelectedPDFs(selectedFiles, source = "picker") {
     reader.onerror = () => {
       const err = new Error('Failed to read the PDF file');
       console.error('❌ Error reading file');
-      alert(err.message);
+      showPdfFailureState(PDF_UNABLE_TO_LOAD_MESSAGE, err);
       if (fileInput) fileInput.value = '';
       reject(err);
     };
@@ -1014,7 +1016,7 @@ async function loadInitialProjectPdf() {
     }
   } catch (err) {
     console.error("Failed to load project PDF(s):", err);
-    alert(`Failed to load project PDF(s): ${err.message}`);
+    showPdfFailureState(PDF_UNABLE_TO_LOAD_MESSAGE, err);
   }
 }
 
@@ -1104,7 +1106,7 @@ async function loadMultiplePDFs(files) {
 
       const loadingTask = requirePdfjsLib().getDocument(pdfDocumentOptions(uint8Data));
 
-      const doc = await loadingTask.promise;
+      const doc = await waitForPdfLoad(loadingTask, PDF_LOAD_TIMEOUT_MS, file.name);
       
       multiPdfDocs.push({
         doc: doc,
@@ -1120,7 +1122,7 @@ async function loadMultiplePDFs(files) {
 
     } catch (err) {
       console.error(`    ❌ Failed to load ${file.name}:`, err);
-      alert(`Failed to load ${file.name}: ${err.message}`);
+      showPdfFailureState(PDF_UNABLE_TO_LOAD_MESSAGE, err);
       fileInput.value = '';
       return;
     }
@@ -1238,7 +1240,10 @@ async function renderPage(pageNum) {
     currentRenderTask = null;
     if (err.name !== 'RenderingCancelledException') {
       console.error(`❌ Error rendering page ${pageNum}:`, err);
-      showPageRenderFailure(pageNum, viewport, err);
+      showPdfFailureState(PDF_UNABLE_TO_LOAD_MESSAGE, err, {
+        title: `Page ${pageNum} could not be rendered`,
+        viewport,
+      });
       updateControls();
       highlightActiveThumb();
     }
@@ -1283,6 +1288,23 @@ async function renderPage(pageNum) {
   page = null;
 }
 
+async function waitForPdfLoad(loadingTask, timeoutMs, fileName) {
+  let timeoutId = null;
+
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      loadingTask.destroy?.();
+      reject(new Error(`${fileName || "PDF"} load timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([loadingTask.promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+}
+
 async function waitForRenderTask(renderTask, timeoutMs, label) {
   let timeoutId = null;
 
@@ -1300,9 +1322,15 @@ async function waitForRenderTask(renderTask, timeoutMs, label) {
   }
 }
 
-function showPageRenderFailure(pageNum, viewport, err) {
+function showPdfFailureState(message, err, options = {}) {
+  const viewport = options.viewport;
   const width = Math.max(640, Math.round(viewport?.width || canvas.clientWidth || 900));
   const height = Math.max(360, Math.round(viewport?.height || canvas.clientHeight || 640));
+
+  if (currentRenderTask) {
+    try { currentRenderTask.cancel(); } catch (_) {}
+    currentRenderTask = null;
+  }
 
   canvas.width = width;
   canvas.height = height;
@@ -1314,12 +1342,12 @@ function showPageRenderFailure(pageNum, viewport, err) {
   ctx.fillRect(0, 0, width, height);
   ctx.fillStyle = '#f8fafc';
   ctx.font = '600 22px system-ui, -apple-system, sans-serif';
-  ctx.fillText(`Page ${pageNum} could not be rendered`, 36, 56);
+  ctx.fillText(options.title || message || PDF_UNABLE_TO_LOAD_MESSAGE, 36, 56);
   ctx.fillStyle = '#cbd5e1';
   ctx.font = '15px system-ui, -apple-system, sans-serif';
   wrapCanvasText(
     ctx,
-    'This PDF contains invalid or very heavy layer/markup content. Try another page, or repair/flatten the PDF before measuring or extraction.',
+    options.title ? message : 'This PDF may contain invalid, layered, or very heavy markup content. Open the file externally to verify it, then repair/flatten the PDF before measuring or extraction.',
     36,
     92,
     width - 72,
@@ -1332,7 +1360,14 @@ function showPageRenderFailure(pageNum, viewport, err) {
 
   overlay.setAttribute('width', width);
   overlay.setAttribute('height', height);
+  overlay.innerHTML = '';
   renderedScale = scale;
+
+  canvasPadX = 0;
+  canvasPadY = 0;
+  canvasOuter.style.padding = '24px';
+  pdfScroll.scrollLeft = 0;
+  pdfScroll.scrollTop = 0;
 }
 
 function wrapCanvasText(context, text, x, y, maxWidth, lineHeight) {
