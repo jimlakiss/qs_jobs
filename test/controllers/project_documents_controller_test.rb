@@ -179,7 +179,7 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "window.qsJobsDocument"
     assert_includes response.body, "drawings.pdf"
     assert_includes response.body, "Scale Page"
-    assert_includes response.body, "/rails/active_storage/blobs/proxy/"
+    assert_includes response.body, "/rails/active_storage/blobs/redirect/"
   end
 
   test "opens the viewer for grouped pdf documents" do
