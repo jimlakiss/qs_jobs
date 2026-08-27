@@ -47,6 +47,7 @@ function requirePdfjsLib() {
 
 const PDF_MAX_IMAGE_SIZE = 4096 * 4096;
 const THUMBNAIL_RENDER_TIMEOUT_MS = 8000;
+const PAGE_RENDER_TIMEOUT_MS = 15000;
 
 function pdfDocumentOptions(data) {
   return {
@@ -1229,13 +1230,17 @@ async function renderPage(pageNum) {
       renderInteractiveForms: false,
       enableWebGL: false,
     });
-    await currentRenderTask.promise;
+    await waitForRenderTask(currentRenderTask, PAGE_RENDER_TIMEOUT_MS, `Page ${pageNum} render`);
     currentRenderTask = null;
   } catch (err) {
     offscreen.width = 0;
     offscreen.height = 0;
+    currentRenderTask = null;
     if (err.name !== 'RenderingCancelledException') {
       console.error(`❌ Error rendering page ${pageNum}:`, err);
+      showPageRenderFailure(pageNum, viewport, err);
+      updateControls();
+      highlightActiveThumb();
     }
     if (page?.cleanup) page.cleanup();
     return;
@@ -1276,6 +1281,78 @@ async function renderPage(pageNum) {
 
   if (page?.cleanup) page.cleanup();
   page = null;
+}
+
+async function waitForRenderTask(renderTask, timeoutMs, label) {
+  let timeoutId = null;
+
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      renderTask.cancel();
+      reject(new Error(`${label} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  try {
+    await Promise.race([renderTask.promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+}
+
+function showPageRenderFailure(pageNum, viewport, err) {
+  const width = Math.max(640, Math.round(viewport?.width || canvas.clientWidth || 900));
+  const height = Math.max(360, Math.round(viewport?.height || canvas.clientHeight || 640));
+
+  canvas.width = width;
+  canvas.height = height;
+  canvas.style.width = '';
+  canvas.style.height = '';
+
+  ctx.save();
+  ctx.fillStyle = '#111827';
+  ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = '#f8fafc';
+  ctx.font = '600 22px system-ui, -apple-system, sans-serif';
+  ctx.fillText(`Page ${pageNum} could not be rendered`, 36, 56);
+  ctx.fillStyle = '#cbd5e1';
+  ctx.font = '15px system-ui, -apple-system, sans-serif';
+  wrapCanvasText(
+    ctx,
+    'This PDF contains invalid or very heavy layer/markup content. Try another page, or repair/flatten the PDF before measuring or extraction.',
+    36,
+    92,
+    width - 72,
+    24
+  );
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '13px system-ui, -apple-system, sans-serif';
+  wrapCanvasText(ctx, err?.message || 'PDF.js render failed.', 36, 154, width - 72, 20);
+  ctx.restore();
+
+  overlay.setAttribute('width', width);
+  overlay.setAttribute('height', height);
+  renderedScale = scale;
+}
+
+function wrapCanvasText(context, text, x, y, maxWidth, lineHeight) {
+  const words = String(text || '').split(/\s+/);
+  let line = '';
+
+  words.forEach((word, index) => {
+    const testLine = line ? `${line} ${word}` : word;
+    if (context.measureText(testLine).width > maxWidth && line) {
+      context.fillText(line, x, y);
+      line = word;
+      y += lineHeight;
+    } else {
+      line = testLine;
+    }
+
+    if (index === words.length - 1 && line) {
+      context.fillText(line, x, y);
+    }
+  });
 }
 
 // Sets padding on canvas-outer so there is scroll room in every direction,
