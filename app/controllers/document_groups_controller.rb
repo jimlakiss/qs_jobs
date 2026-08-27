@@ -115,7 +115,7 @@ class DocumentGroupsController < ApplicationController
         size: attachment.byte_size,
         receivedAt: (metadata&.received_at || attachment.created_at)&.iso8601,
         exportKind: metadata&.export_kind,
-        url: rails_service_blob_path(attachment.blob.signed_id, attachment.filename),
+        url: rails_service_blob_proxy_path(attachment.blob.signed_id, attachment.filename),
         saveExtractionUrl: save_extraction_project_document_path(@project, attachment),
         viewerStateUrl: viewer_state_project_document_path(@project, attachment),
         uploadExportUrl: upload_export_project_document_path(@project, attachment)

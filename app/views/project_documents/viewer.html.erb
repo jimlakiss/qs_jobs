@@ -887,13 +887,13 @@
     documentGroupName: <%= @viewer_document_metadata&.document_group&.name.to_json.html_safe %>,
     projectUrl: <%= project_path(@project).to_json.html_safe %>,
     viewerTitle: <%= (@viewer_title.presence || @document.filename.to_s).to_json.html_safe %>,
-    initialPdfUrl: <%= rails_service_blob_path(@document.blob.signed_id, @document.filename).to_json.html_safe %>,
+    initialPdfUrl: <%= rails_service_blob_proxy_path(@document.blob.signed_id, @document.filename).to_json.html_safe %>,
     initialPdfName: <%= @document.filename.to_s.to_json.html_safe %>,
     initialPdfs: <%= Array(@viewer_documents.presence || [@document]).map { |document|
       {
         id: document.id,
         name: document.filename.to_s,
-        url: rails_service_blob_path(document.blob.signed_id, document.filename)
+        url: rails_service_blob_proxy_path(document.blob.signed_id, document.filename)
       }
     }.to_json.html_safe %>,
     navigationDocuments: <%= Array(@viewer_navigation_documents).to_json.html_safe %>,
