@@ -428,7 +428,15 @@
                             <td class="text-end">
                               <% if row[:attachment_id] %>
                                 <%= link_to "Open",
-                                      viewer_project_document_path(@project, row[:attachment_id]),
+                                      viewer_project_document_path(
+                                        @project,
+                                        row[:attachment_id],
+                                        measurement_page: row[:page],
+                                        measurement_id: row[:measurement_id],
+                                        measurement_name: row[:name],
+                                        measurement_group: row[:group],
+                                        measurement_type: row[:type]
+                                      ),
                                       class: "btn btn-outline-secondary btn-sm",
                                       data: { turbo: false } %>
                               <% end %>

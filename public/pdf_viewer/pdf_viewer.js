@@ -228,8 +228,45 @@ function viewerStateConfig() {
   return window.qsJobsDocument || {};
 }
 
+function measurementTargetConfig() {
+  const target = viewerStateConfig().measurementTarget;
+  return target && typeof target === 'object' ? target : null;
+}
+
 function isWorkingDocumentSession() {
   return viewerStateConfig().documentCategory === "extracted_document";
+}
+
+function normalizedTargetText(value) {
+  return String(value || '').trim();
+}
+
+function measurementMatchesTarget(m, target) {
+  if (!m || !target) return false;
+  if (target.id && String(m.id) === String(target.id)) return true;
+
+  return normalizedTargetText(m.type) === normalizedTargetText(target.type) &&
+    normalizedTargetText(m.label) === normalizedTargetText(target.group) &&
+    normalizedTargetText(msrDimensionName(m)) === normalizedTargetText(target.name);
+}
+
+async function applyMeasurementTarget() {
+  const target = measurementTargetConfig();
+  if (!target || !isWorkingDocumentSession()) return false;
+
+  const targetPage = parseInt(target.page, 10);
+  if (Number.isFinite(targetPage) && targetPage > 0 && pdfDoc && targetPage <= pdfDoc.numPages && targetPage !== currentPage) {
+    await renderPage(targetPage);
+  }
+
+  setAppMode('measure');
+  msrSetTool('select');
+
+  const match = (measurementsByPage[currentPage] || []).find(m => measurementMatchesTarget(m, target));
+  if (match) msrSetSelectedMeasurement(match.id);
+
+  redrawRegions();
+  return true;
 }
 
 function projectNavigationDocuments() {
@@ -275,12 +312,17 @@ function resetSinglePdfViewerState(fileName) {
   selectedRegionIds = [];
   selectedRegionId = null;
   regionIdCounter = 1;
+  msrSelectedId = null;
+  msrSelectedPtIdx = -1;
+  msrSelectedGroupLabel = null;
 
   for (const k of Object.keys(documentDetails)) documentDetails[k] = "";
   for (const k of Object.keys(sheetDetailsByPage)) delete sheetDetailsByPage[k];
   for (const k of Object.keys(regionsByPage)) delete regionsByPage[k];
   for (const k of Object.keys(regionTemplates)) delete regionTemplates[k];
   for (const k of Object.keys(pageRotations)) delete pageRotations[k];
+  for (const k of Object.keys(measurementsByPage)) delete measurementsByPage[k];
+  for (const k of Object.keys(scaleZonesByPage)) delete scaleZonesByPage[k];
 
   if (preparedByInput) preparedByInput.value = "";
   if (projectIdInput) projectIdInput.value = "";
@@ -461,9 +503,10 @@ async function restoreProjectViewerStateForItem(item) {
   }
   viewerStateRestored = true;
 
-  if (restoredViewerPage && pdfDoc && restoredViewerPage >= 1 && restoredViewerPage <= pdfDoc.numPages && restoredViewerPage !== currentPage) {
+  const measurementTargetApplied = measurementTargetConfig() && await applyMeasurementTarget();
+  if (!measurementTargetApplied && restoredViewerPage && pdfDoc && restoredViewerPage >= 1 && restoredViewerPage <= pdfDoc.numPages && restoredViewerPage !== currentPage) {
     await renderPage(restoredViewerPage);
-  } else {
+  } else if (!measurementTargetApplied) {
     redrawRegions();
     msrUpdateInfoPane();
   }
@@ -999,9 +1042,10 @@ async function loadInitialProjectPdf() {
 
     await handleSelectedPDFs(files, files.length > 1 ? "project-document-group" : "project-document");
     restoreInitialViewerState();
-    if (restoredViewerPage && pdfDoc && restoredViewerPage >= 1 && restoredViewerPage <= pdfDoc.numPages && restoredViewerPage !== currentPage) {
+    const measurementTargetApplied = measurementTargetConfig() && await applyMeasurementTarget();
+    if (!measurementTargetApplied && restoredViewerPage && pdfDoc && restoredViewerPage >= 1 && restoredViewerPage <= pdfDoc.numPages && restoredViewerPage !== currentPage) {
       await renderPage(restoredViewerPage);
-    } else {
+    } else if (!measurementTargetApplied) {
       redrawRegions();
     }
   } catch (err) {
@@ -1070,12 +1114,17 @@ async function loadMultiplePDFs(files) {
   selectedRegionIds = [];
   selectedRegionId = null;
   regionIdCounter = 1;
+  msrSelectedId = null;
+  msrSelectedPtIdx = -1;
+  msrSelectedGroupLabel = null;
 
   for (const k of Object.keys(documentDetails)) documentDetails[k] = "";
   for (const k of Object.keys(sheetDetailsByPage)) delete sheetDetailsByPage[k];
   for (const k of Object.keys(regionsByPage)) delete regionsByPage[k];
   for (const k of Object.keys(regionTemplates)) delete regionTemplates[k];
   for (const k of Object.keys(pageRotations)) delete pageRotations[k];
+  for (const k of Object.keys(measurementsByPage)) delete measurementsByPage[k];
+  for (const k of Object.keys(scaleZonesByPage)) delete scaleZonesByPage[k];
 
   if (preparedByInput) preparedByInput.value = "";
   if (projectIdInput) projectIdInput.value = "";

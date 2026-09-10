@@ -328,12 +328,21 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
       saved_at: Time.current
     )
 
-    get viewer_project_document_path(@project, document)
+    get viewer_project_document_path(
+      @project,
+      document,
+      measurement_page: 2,
+      measurement_id: 42,
+      measurement_name: "Bedroom 1",
+      measurement_group: "FLOOR AREA",
+      measurement_type: "linear"
+    )
 
     assert_response :success
     assert_includes response.body, "viewerStateUrl"
     assert_includes response.body, "DRAFT-001"
     assert_includes response.body, "measurementsByPage"
+    assert_includes response.body, 'measurementTarget: {"page":"2","id":"42","name":"Bedroom 1","group":"FLOOR AREA","type":"linear"}'
   end
 
   test "imported viewer does not include working pdf navigation" do

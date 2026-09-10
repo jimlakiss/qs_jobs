@@ -162,6 +162,7 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
         measurementsByPage: {
           "1" => [
             {
+              id: 42,
               type: "area",
               label: "FLOOR AREA",
               name: "Bedroom 1",
@@ -186,6 +187,12 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "A101"
     assert_includes response.body, "6.452 m²"
     assert_includes response.body, "10.16 m"
+
+    link = Nokogiri::HTML(response.body).css("a").find { |anchor| anchor["href"].to_s.include?("measurement_page=1") }
+    assert link
+    assert_includes link["href"], "measurement_page=1"
+    assert_includes link["href"], "measurement_id=42"
+    assert_includes link["href"], "measurement_name=Bedroom+1"
   end
 
   test "deleting project unlinks converted client submission without removing client upload" do

@@ -900,6 +900,13 @@
     saveExtractionUrl: <%= save_extraction_project_document_path(@project, @document).to_json.html_safe %>,
     viewerStateUrl: <%= viewer_state_project_document_path(@project, @document).to_json.html_safe %>,
     viewerState: <%= @viewer_state.to_json.html_safe %>,
+    measurementTarget: <%= {
+      page: params[:measurement_page].presence,
+      id: params[:measurement_id].presence,
+      name: params[:measurement_name].presence,
+      group: params[:measurement_group].presence,
+      type: params[:measurement_type].presence
+    }.compact.to_json.html_safe %>,
     uploadExportUrl: <%= upload_export_project_document_path(@project, @document).to_json.html_safe %>,
     csrfToken: <%= form_authenticity_token.to_json.html_safe %>
   };

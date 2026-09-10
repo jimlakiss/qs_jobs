@@ -43,6 +43,7 @@ class MeasuredDimensionsBuilder
 
         {
           attachment_id: attachment&.id,
+          measurement_id: measurement["id"],
           document_filename: attachment&.filename&.to_s || "Document #{viewer_state.active_storage_attachment_id}",
           page: page,
           sheet_id: sheet_id_for_page(page, sheet_details_by_page, staging_by_page),
