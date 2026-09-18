@@ -26,6 +26,10 @@ class User < ApplicationRecord
 
   protected
 
+  def send_devise_notification(notification, *args)
+    devise_mailer.send(notification, self, *args).deliver_later
+  end
+
   def password_required?
     return false if invited_without_password
 
