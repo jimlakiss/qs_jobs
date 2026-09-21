@@ -421,6 +421,57 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, "source-package.pdf&quot;,&quot;group&quot;"
   end
 
+  test "working viewer remaps measurement state from a source pdf page" do
+    @project.documents.attach(
+      io: StringIO.new("%PDF-1.4"),
+      filename: "raw-package.pdf",
+      content_type: "application/pdf"
+    )
+    source_document = @project.documents.attachments.last
+    @project.documents.attach(
+      io: StringIO.new("%PDF-1.4"),
+      filename: "A104 - Roof Plan.pdf",
+      content_type: "application/pdf"
+    )
+    working_document = @project.documents.attachments.last
+    @project.project_documents.create!(
+      active_storage_attachment_id: working_document.id,
+      category: "extracted_document",
+      export_kind: "working_document_pdf",
+      generated_from_attachment_id: source_document.id
+    )
+    @project.document_viewer_states.create!(
+      active_storage_attachment_id: source_document.id,
+      saved_at: Time.current,
+      data: {
+        currentPage: 4,
+        measurementsByPage: {
+          "3" => [ { id: 66, type: "count", points: [ { x: 0.1, y: 0.1 } ] } ],
+          "4" => [ { id: 77, type: "count", points: [ { x: 0.5, y: 0.5 } ] } ]
+        },
+        pageBaseDimsByPage: {
+          "3" => { width: 600, height: 800 },
+          "4" => { width: 720, height: 900 }
+        }
+      }
+    )
+
+    get viewer_project_document_path(
+      @project,
+      working_document,
+      measurement_page: 1,
+      measurement_id: 77,
+      measurement_source_attachment_id: source_document.id,
+      measurement_source_page: 4
+    )
+
+    assert_response :success
+    assert_includes response.body, '"measurementsByPage":{"1":[{"id":77'
+    assert_not_includes response.body, '"id":66'
+    assert_includes response.body, '"pageBaseDimsByPage":{"1":{"width":720,"height":900}}'
+    assert_includes response.body, '"currentPage":1'
+  end
+
   test "returns saved draft viewer state as json" do
     @project.documents.attach(
       io: StringIO.new("%PDF-1.4"),

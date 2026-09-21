@@ -195,6 +195,61 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_includes link["href"], "measurement_name=Bedroom+1"
   end
 
+  test "measured dimension open link targets its split working pdf" do
+    project = Project.create!(code: "MEASURED-WORKING-001", address: "1 Test Street")
+    project.documents.attach(
+      io: StringIO.new("%PDF-1.4"),
+      filename: "raw-package.pdf",
+      content_type: "application/pdf"
+    )
+    source_document = project.documents.attachments.last
+    project.project_documents.create!(
+      active_storage_attachment_id: source_document.id,
+      category: "imported"
+    )
+    extraction = project.document_extractions.create!(
+      active_storage_attachment_id: source_document.id,
+      source_filename: source_document.filename.to_s,
+      sheets: [ { page: 4, sheet_id: "A104", filename: "004 - A104 - Roof Plan.pdf" } ],
+      extracted_at: Time.current
+    )
+
+    project.documents.attach(
+      io: StringIO.new("%PDF-1.4"),
+      filename: "004 - A104 - Roof Plan.pdf",
+      content_type: "application/pdf"
+    )
+    working_document = project.documents.attachments.last
+    project.project_documents.create!(
+      active_storage_attachment_id: working_document.id,
+      category: "extracted_document",
+      export_kind: "working_document_pdf",
+      generated_from_attachment_id: source_document.id,
+      document_extraction: extraction
+    )
+    project.document_viewer_states.create!(
+      active_storage_attachment_id: source_document.id,
+      saved_at: Time.current,
+      data: {
+        sheetDetailsByPage: { "4" => { sheet_id: "A104" } },
+        measurementsByPage: {
+          "4" => [ { id: 77, type: "count", label: "WINDOWS", name: "W01", points: [ { x: 0.5, y: 0.5 } ] } ]
+        }
+      }
+    )
+
+    get project_path(project, tab: "measured-dimensions")
+
+    assert_response :success
+    link = Nokogiri::HTML(response.body).css("a").find { |anchor| anchor["href"].to_s.include?("measurement_id=77") }
+    assert link
+    assert_includes link["href"], "/documents/#{working_document.id}/viewer"
+    assert_includes link["href"], "measurement_page=1"
+    assert_includes link["href"], "measurement_source_attachment_id=#{source_document.id}"
+    assert_includes link["href"], "measurement_source_page=4"
+    assert_includes response.body, "004 - A104 - Roof Plan.pdf"
+  end
+
   test "deleting project unlinks converted client submission without removing client upload" do
     project = Project.create!(code: "CLIENT-LINK-001", address: "1 Test Street")
     submission = users(:client).client_submissions.create!(

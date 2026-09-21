@@ -435,7 +435,9 @@
                                         measurement_id: row[:measurement_id],
                                         measurement_name: row[:name],
                                         measurement_group: row[:group],
-                                        measurement_type: row[:type]
+                                        measurement_type: row[:type],
+                                        measurement_source_attachment_id: row[:measurement_source_attachment_id],
+                                        measurement_source_page: row[:measurement_source_page]
                                       ),
                                       class: "btn btn-outline-secondary btn-sm",
                                       data: { turbo: false } %>

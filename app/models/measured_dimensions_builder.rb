@@ -5,6 +5,14 @@ class MeasuredDimensionsBuilder
   def initialize(project)
     @project = project
     @attachments_by_id = project.documents.attachments.index_by(&:id)
+    @project_documents_by_attachment_id = project.project_documents
+      .includes(:document_attachment)
+      .index_by(&:active_storage_attachment_id)
+    @extractions_by_attachment_id = project.document_extractions.index_by(&:active_storage_attachment_id)
+    @working_documents_by_source_id = project.project_documents
+      .where(category: "extracted_document", export_kind: "working_document_pdf")
+      .includes(:document_attachment)
+      .group_by(&:generated_from_attachment_id)
   end
 
   def rows
@@ -30,10 +38,12 @@ class MeasuredDimensionsBuilder
     page_dims_by_page = hash_at(data, "pageBaseDimsByPage")
     sheet_details_by_page = hash_at(data, "sheetDetailsByPage")
     staging_by_page = staging_rows_by_page(data.dig("staging", "stagingData"))
-    attachment = @attachments_by_id[viewer_state.active_storage_attachment_id] || viewer_state.document_attachment
+    source_attachment = @attachments_by_id[viewer_state.active_storage_attachment_id] || viewer_state.document_attachment
 
     measurements_by_page.flat_map do |page_key, measurements|
       page = page_key.to_i
+      attachment = working_attachment_for(source_attachment, page) || source_attachment
+      viewer_page = attachment&.id == source_attachment&.id ? page : 1
       Array(measurements).filter_map do |measurement|
         next unless measurement.is_a?(Hash)
 
@@ -43,9 +53,11 @@ class MeasuredDimensionsBuilder
 
         {
           attachment_id: attachment&.id,
+          measurement_source_attachment_id: source_attachment&.id,
+          measurement_source_page: page,
           measurement_id: measurement["id"],
           document_filename: attachment&.filename&.to_s || "Document #{viewer_state.active_storage_attachment_id}",
-          page: page,
+          page: viewer_page,
           sheet_id: sheet_id_for_page(page, sheet_details_by_page, staging_by_page),
           group: measurement["label"].to_s.strip.presence || "Ungrouped Measurements",
           name: measurement["name"].to_s.strip.presence || measurement["dimensionName"].to_s.strip.presence,
@@ -59,6 +71,27 @@ class MeasuredDimensionsBuilder
         }
       end
     end
+  end
+
+  def working_attachment_for(source_attachment, page)
+    return unless source_attachment
+
+    metadata = @project_documents_by_attachment_id[source_attachment.id]
+    return source_attachment if metadata&.category == "extracted_document"
+
+    extraction = @extractions_by_attachment_id[source_attachment.id]
+    filename = sheet_filename_for_page(extraction, page)
+    return if filename.blank?
+
+    @working_documents_by_source_id.fetch(source_attachment.id, []).find do |working_document|
+      working_document.document_attachment.filename.to_s == filename
+    end&.document_attachment
+  end
+
+  def sheet_filename_for_page(extraction, page)
+    Array(extraction&.sheets).find do |sheet|
+      sheet.is_a?(Hash) && sheet["page"].to_i == page
+    end&.dig("filename")
   end
 
   def hash_at(data, key)

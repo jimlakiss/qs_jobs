@@ -1,4 +1,9 @@
 class ProjectDocumentsController < ApplicationController
+  VIEWER_PAGE_STATE_KEYS = %w[
+    sheetDetailsByPage regionsByPage pageRotations ghostExclusions
+    measurementsByPage scaleZonesByPage pageBaseDimsByPage
+  ].freeze
+
   layout false, only: :viewer
 
   before_action :require_admin!
@@ -7,7 +12,7 @@ class ProjectDocumentsController < ApplicationController
 
   def viewer
     redirect_to @project, alert: "Only PDF documents can be opened in the viewer" unless pdf_document?
-    @viewer_state = current_viewer_state&.data || {}
+    @viewer_state = viewer_state_data
     @viewer_document_metadata = @project.project_documents.find_by(active_storage_attachment_id: @document.id)
     @viewer_navigation_documents = working_document_session? ? viewer_navigation_documents : []
   end
@@ -245,6 +250,33 @@ class ProjectDocumentsController < ApplicationController
 
   def current_viewer_state
     @current_viewer_state ||= @project.document_viewer_states.find_by(active_storage_attachment_id: @document.id)
+  end
+
+  def viewer_state_data
+    source_attachment_id = params[:measurement_source_attachment_id].presence
+    source_page = params[:measurement_source_page].to_i
+    return current_viewer_state&.data || {} unless source_attachment_id && source_page.positive?
+    return current_viewer_state&.data || {} if source_attachment_id.to_i == @document.id
+
+    source_state = @project.document_viewer_states.find_by(active_storage_attachment_id: source_attachment_id)
+    return current_viewer_state&.data || {} unless source_state
+
+    viewer_state_for_single_page(source_state.data || {}, source_page)
+  end
+
+  def viewer_state_for_single_page(data, source_page)
+    state = data.deep_dup
+    state["currentPage"] = 1
+
+    VIEWER_PAGE_STATE_KEYS.each do |key|
+      page_data = state[key]
+      next unless page_data.is_a?(Hash)
+
+      value = page_data[source_page.to_s] || page_data[source_page]
+      state[key] = value.nil? ? {} : { "1" => value }
+    end
+
+    state
   end
 
   def document_group_from_upload_params
