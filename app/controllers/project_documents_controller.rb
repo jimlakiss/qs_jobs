@@ -73,7 +73,7 @@ class ProjectDocumentsController < ApplicationController
 
   def viewer_state
     if request.get?
-      render json: { viewer_state: current_viewer_state&.data || {} }
+      render json: { viewer_state: viewer_state_data }
       return
     end
 
@@ -136,7 +136,7 @@ class ProjectDocumentsController < ApplicationController
         exportKind: metadata&.export_kind,
         url: rails_service_blob_proxy_path(attachment.blob.signed_id, attachment.filename),
         saveExtractionUrl: save_extraction_project_document_path(@project, attachment),
-        viewerStateUrl: viewer_state_project_document_path(@project, attachment),
+        viewerStateUrl: viewer_state_url_for(attachment),
         uploadExportUrl: upload_export_project_document_path(@project, attachment)
       }
     end.sort_by { |item| [item[:group].downcase, item[:name].downcase] }
@@ -277,6 +277,16 @@ class ProjectDocumentsController < ApplicationController
     end
 
     state
+  end
+
+  def viewer_state_url_for(attachment)
+    state_params = if attachment.id == @document.id
+      params.permit(:measurement_source_attachment_id, :measurement_source_page)
+    else
+      {}
+    end
+
+    viewer_state_project_document_path(@project, attachment, state_params)
   end
 
   def document_group_from_upload_params

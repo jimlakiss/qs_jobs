@@ -470,6 +470,21 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, '"id":66'
     assert_includes response.body, '"pageBaseDimsByPage":{"1":{"width":720,"height":900}}'
     assert_includes response.body, '"currentPage":1'
+    assert_includes response.body, "measurement_source_attachment_id=#{source_document.id}"
+    assert_includes response.body, "measurement_source_page=4"
+
+    get viewer_state_project_document_path(
+      @project,
+      working_document,
+      measurement_source_attachment_id: source_document.id,
+      measurement_source_page: 4
+    ), as: :json
+
+    assert_response :success
+    state = response.parsed_body.fetch("viewer_state")
+    assert_equal 1, state.fetch("currentPage")
+    assert_equal [ 77 ], state.dig("measurementsByPage", "1").pluck("id")
+    assert_equal({ "width" => 720, "height" => 900 }, state.dig("pageBaseDimsByPage", "1"))
   end
 
   test "returns saved draft viewer state as json" do
