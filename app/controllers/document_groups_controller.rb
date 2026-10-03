@@ -18,6 +18,8 @@ class DocumentGroupsController < ApplicationController
     @document = @viewer_documents.first
     @viewer_title = @document_group.name
     @viewer_navigation_documents = []
+    @viewer_document_metadata = @project.project_documents.find_by(active_storage_attachment_id: @document.id)
+    @viewer_state = viewer_state_data
     render "project_documents/viewer"
   end
 
@@ -98,6 +100,10 @@ class DocumentGroupsController < ApplicationController
 
   def safe_zip_filename(name)
     name.to_s.gsub(%r{[/\\:*?"<>|]}, "").squish.presence || "working-documents"
+  end
+
+  def viewer_state_data
+    @project.document_viewer_states.find_by(active_storage_attachment_id: @document.id)&.data || {}
   end
 
   def viewer_navigation_documents

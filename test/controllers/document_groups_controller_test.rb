@@ -47,4 +47,37 @@ class DocumentGroupsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "application/zip", response.media_type
     assert_match(/Architectural\.zip/, response.headers["Content-Disposition"])
   end
+
+  test "group viewer includes saved marker state for first grouped drawing" do
+    @project.documents.attach(
+      io: StringIO.new("%PDF-1.4"),
+      filename: "A1.pdf",
+      content_type: "application/pdf"
+    )
+    document = @project.documents.attachments.last
+    @project.project_documents.create!(
+      active_storage_attachment_id: document.id,
+      category: "imported",
+      document_group: @imported_group
+    )
+    @project.document_viewer_states.create!(
+      active_storage_attachment_id: document.id,
+      data: {
+        version: 1,
+        measurementsByPage: {
+          "1" => [
+            { type: "count", points: [{ x: 0.2, y: 0.4 }] }
+          ]
+        }
+      },
+      saved_at: Time.current
+    )
+
+    get viewer_project_document_group_path(@project, @imported_group)
+
+    assert_response :success
+    assert_includes response.body, '"measurementsByPage"'
+    assert_includes response.body, '"count"'
+    assert_includes response.body, viewer_state_project_document_path(@project, document)
+  end
 end

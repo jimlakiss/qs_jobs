@@ -896,7 +896,10 @@
       {
         id: document.id,
         name: document.filename.to_s,
-        url: rails_service_blob_proxy_path(document.blob.signed_id, document.filename)
+        url: rails_service_blob_proxy_path(document.blob.signed_id, document.filename),
+        saveExtractionUrl: save_extraction_project_document_path(@project, document),
+        viewerStateUrl: viewer_state_project_document_path(@project, document),
+        uploadExportUrl: upload_export_project_document_path(@project, document)
       }
     }.to_json.html_safe %>,
     navigationDocuments: <%= Array(@viewer_navigation_documents).to_json.html_safe %>,
