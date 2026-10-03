@@ -179,6 +179,7 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "window.qsJobsDocument"
     assert_includes response.body, "drawings.pdf"
     assert_includes response.body, "Scale Page"
+    assert_includes response.body, "Finalise Extraction"
     assert_includes response.body, "/rails/active_storage/blobs/proxy/"
   end
 

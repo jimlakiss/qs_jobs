@@ -477,6 +477,8 @@
     .sp-btn-json:hover  { background: rgba(155,89,182,0.15); }
     .sp-btn-zip    { background: #1a6b3c; color: #fff; border-color: #22854c; font-weight: 700; }
     .sp-btn-zip:hover  { background: #22854c; }
+    .sp-btn-finalise { background: #1f5fbf; color: #fff; border-color: #2f72d6; font-weight: 800; }
+    .sp-btn-finalise:hover { background: #2f72d6; }
 
     /* ── Drag-and-drop row reordering ───────────────────── */
     .sp-drag-handle {
@@ -865,6 +867,7 @@
     <div class="sp-footer">
       <span id="sp-stats" style="font-size:12px;color:var(--text-dim)">—</span>
       <div class="sp-actions">
+        <button class="sp-btn sp-btn-finalise" id="sp-btn-finalise">Finalise Extraction (—)</button>
         <button class="sp-btn sp-btn-zip"  id="sp-btn-working">Create Working Docs (—)</button>
         <button class="sp-btn sp-btn-csv"  id="sp-btn-csv">  ⬇ Export CSV</button>
         <button class="sp-btn sp-btn-json" id="sp-btn-json"> ⬇ Export JSON</button>

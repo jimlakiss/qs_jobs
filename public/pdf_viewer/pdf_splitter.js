@@ -90,6 +90,7 @@
     });
 
     if (!response.ok) throw new Error(`Save failed (${response.status})`);
+    return await response.json().catch(() => ({}));
   }
 
   async function uploadExportToApp(blob, filename, kind) {
@@ -111,6 +112,16 @@
     });
 
     if (!response.ok) throw new Error(`Export save failed (${response.status})`);
+    return await response.json().catch(() => ({}));
+  }
+
+  async function checkpointViewerState(reason) {
+    if (typeof window.flushViewerStateSave !== 'function') return;
+
+    const result = await window.flushViewerStateSave(reason);
+    if (result?.ok === false) {
+      throw new Error(`Viewer marker state could not be saved: ${result.error || 'unknown error'}`);
+    }
   }
 
   const PRESETS = [
@@ -202,6 +213,101 @@
     if (allBlank) return 'failed';
     if (!sheet.sheet_id || !sheet.description) return 'review';
     return 'ready';
+  }
+
+  function includedSheets() {
+    return stagingData.filter(s => s.included);
+  }
+
+  function buildCsvExport() {
+    const included = includedSheets();
+    if (!included.length) throw new Error('No sheets selected.');
+
+    const canonical = window.getCanonicalExportData ? window.getCanonicalExportData() : {};
+    const doc     = canonical.document || window.documentDetails || {};
+    const headers = ['order', 'page', 'filename', 'prepared_by', 'project_id', 'sheet_id', 'description', 'issue_id', 'date', 'issue_description', 'status'];
+    const q       = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+
+    const csv = [
+      headers.join(','),
+      ...included.map((s, i) =>
+        [i + 1, s.page, s.filename, doc.prepared_by || '', doc.project_id || '', s.sheet_id, s.description, s.issue_id, s.date, s.issue_description, s.status].map(q).join(',')
+      ),
+    ].join('\n');
+
+    const name = getExportBaseName() + '.csv';
+    return { name, text: csv, blob: new Blob([csv], { type: 'text/csv' }) };
+  }
+
+  function buildJsonExport() {
+    const included = includedSheets();
+    if (!included.length) throw new Error('No sheets selected.');
+
+    const canonical = window.getCanonicalExportData ? window.getCanonicalExportData() : {};
+    const doc  = canonical.document || window.documentDetails || {};
+    const data = {
+      exported_at: new Date().toISOString(),
+      project_id:  doc.project_id  || '',
+      prepared_by: doc.prepared_by || '',
+      sheets: included.map((s, i) => ({
+        order:             i + 1,     // position in export (post-drag)
+        page:              s.page,    // source PDF page number
+        filename:          s.filename,
+        sheet_id:          s.sheet_id,
+        description:       s.description,
+        issue_id:          s.issue_id,
+        date:              s.date,
+        issue_description: s.issue_description,
+        status:            s.status,
+      })),
+    };
+
+    const text = JSON.stringify(data, null, 2);
+    const name = getExportBaseName() + '.json';
+    return { name, data, text, blob: new Blob([text], { type: 'application/json' }) };
+  }
+
+  function buildViewerStateExport() {
+    const snapshot = window.getPdfViewerStateSnapshot
+      ? window.getPdfViewerStateSnapshot()
+      : { staging: window.getPdfViewerStagingState ? window.getPdfViewerStagingState() : {} };
+    const text = JSON.stringify(snapshot, null, 2);
+    return {
+      name: getExportBaseName() + '-viewer-state.json',
+      data: snapshot,
+      text,
+      blob: new Blob([text], { type: 'application/json' }),
+    };
+  }
+
+  async function buildPackageZip(loosePdfs, csvExport = buildCsvExport(), jsonExport = buildJsonExport(), viewerStateExport = buildViewerStateExport(), showP) {
+    const zip = new JSZip();
+    loosePdfs.forEach(sheetPdf => zip.file(`working-documents/${sheetPdf.filename}`, sheetPdf.bytes));
+    zip.file(csvExport.name, csvExport.text);
+    zip.file(jsonExport.name, jsonExport.text);
+    zip.file(viewerStateExport.name, viewerStateExport.text);
+
+    showP?.('Compressing ZIP package…');
+    const blob = await zip.generateAsync({
+      type: 'blob',
+      compression: 'DEFLATE',
+      compressionOptions: { level: 1 }, // PDFs are already compressed
+    });
+
+    return { name: getExportBaseName() + '.zip', blob };
+  }
+
+  function downloadBlob(blob, name) {
+    if (window.downloadBlob) {
+      window.downloadBlob(blob, name);
+      return;
+    }
+
+    const url = URL.createObjectURL(blob);
+    const a   = Object.assign(document.createElement('a'), { href: url, download: name });
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   function refreshAllFilenames() {
@@ -398,6 +504,8 @@
     if (btn) btn.textContent = `Download ZIP (${inc.length} files)`;
     const workingBtn = document.getElementById('sp-btn-working');
     if (workingBtn) workingBtn.textContent = `Create Working Docs (${inc.length} files)`;
+    const finaliseBtn = document.getElementById('sp-btn-finalise');
+    if (finaliseBtn) finaliseBtn.textContent = `Finalise Extraction (${inc.length} files)`;
 
     window.scheduleViewerStateSave?.('staging');
   }
@@ -466,7 +574,7 @@
   // ─────────────────────────────────────────────────────────────────────
 
   async function splitIncludedSheets(showP) {
-    const included = stagingData.filter(s => s.included);
+    const included = includedSheets();
     if (!included.length) throw new Error('No sheets selected.');
 
     const isMulti   = window.isMultiPdfMode;
@@ -518,6 +626,9 @@
     showP('Preparing working documents…');
 
     try {
+      showP('Saving marker snapshot…');
+      await checkpointViewerState('create_working_documents');
+
       const loosePdfs = await splitIncludedSheets(showP);
       if (!loosePdfs.length) throw new Error('No sheets were created.');
 
@@ -546,32 +657,15 @@
   async function downloadZip() {
     const showP = window.showProcessing || (m => console.log(m));
     const hideP = window.hideProcessing || (() => {});
-    const dlB   = window.downloadBlob;
 
-    showP('Preparing ZIP…');
+    showP('Preparing ZIP package…');
 
     try {
+      await checkpointViewerState('zip_export');
       const loosePdfs = await splitIncludedSheets(showP);
       if (!loosePdfs.length) throw new Error('No sheets were created.');
-      const zip = new JSZip();
-      loosePdfs.forEach(sheetPdf => zip.file(sheetPdf.filename, sheetPdf.bytes));
-
-      showP('Compressing ZIP…');
-      const blob = await zip.generateAsync({
-        type: 'blob',
-        compression: 'DEFLATE',
-        compressionOptions: { level: 1 }, // PDFs are already compressed
-      });
-
-      const name = getExportBaseName() + '.zip';
-
-      if (dlB) { dlB(blob, name); } else {
-        const url = URL.createObjectURL(blob);
-        const a   = Object.assign(document.createElement('a'), { href: url, download: name });
-        document.body.appendChild(a); a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }
+      const zipExport = await buildPackageZip(loosePdfs, undefined, undefined, undefined, showP);
+      downloadBlob(zipExport.blob, zipExport.name);
     } catch (err) {
       console.error('ZIP error:', err);
       alert('Error creating ZIP: ' + err.message);
@@ -585,27 +679,18 @@
   // ─────────────────────────────────────────────────────────────────────
 
   function exportCSV() {
-    const included = stagingData.filter(s => s.included);
-    if (!included.length) { alert('No sheets selected.'); return; }
+    let csvExport;
+    try {
+      csvExport = buildCsvExport();
+    } catch (err) {
+      alert(err.message);
+      return;
+    }
 
-    const canonical = window.getCanonicalExportData ? window.getCanonicalExportData() : {};
-    const doc     = canonical.document || window.documentDetails || {};
-    const headers = ['order', 'page', 'filename', 'prepared_by', 'project_id', 'sheet_id', 'description', 'issue_id', 'date', 'issue_description', 'status'];
-    const q       = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    downloadBlob(csvExport.blob, csvExport.name);
 
-    const csv = [
-      headers.join(','),
-      ...included.map((s, i) =>
-        [i + 1, s.page, s.filename, doc.prepared_by || '', doc.project_id || '', s.sheet_id, s.description, s.issue_id, s.date, s.issue_description, s.status].map(q).join(',')
-      ),
-    ].join('\n');
-
-    const name = getExportBaseName() + '.csv';
-    const blob = new Blob([csv], { type: 'text/csv' });
-    if (window.downloadBlob) window.downloadBlob(blob, name);
-
-    uploadExportToApp(blob, name, 'extraction_csv')
-      .then(() => saveExtractionToApp('csv_export'))
+    saveExtractionToApp('csv_export')
+      .then(() => uploadExportToApp(csvExport.blob, csvExport.name, 'extraction_csv'))
       .catch(err => {
         console.error('CSV save error:', err);
         alert('CSV downloaded, but saving it to the project failed: ' + err.message);
@@ -617,38 +702,75 @@
   // ─────────────────────────────────────────────────────────────────────
 
   function exportJSON() {
-    const included = stagingData.filter(s => s.included);
-    if (!included.length) { alert('No sheets selected.'); return; }
+    let jsonExport;
+    try {
+      jsonExport = buildJsonExport();
+    } catch (err) {
+      alert(err.message);
+      return;
+    }
 
-    const canonical = window.getCanonicalExportData ? window.getCanonicalExportData() : {};
-    const doc  = canonical.document || window.documentDetails || {};
-    const data = {
-      exported_at: new Date().toISOString(),
-      project_id:  doc.project_id  || '',
-      prepared_by: doc.prepared_by || '',
-      sheets: included.map((s, i) => ({
-        order:             i + 1,     // position in export (post-drag)
-        page:              s.page,    // source PDF page number
-        filename:          s.filename,
-        sheet_id:          s.sheet_id,
-        description:       s.description,
-        issue_id:          s.issue_id,
-        date:              s.date,
-        issue_description: s.issue_description,
-        status:            s.status,
-      })),
-    };
+    downloadBlob(jsonExport.blob, jsonExport.name);
 
-    const name = getExportBaseName() + '.json';
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    if (window.downloadBlob) window.downloadBlob(blob, name);
-
-    uploadExportToApp(blob, name, 'extraction_json')
-      .then(() => saveExtractionToApp('json_export'))
+    saveExtractionToApp('json_export')
+      .then(() => uploadExportToApp(jsonExport.blob, jsonExport.name, 'extraction_json'))
       .catch(err => {
         console.error('JSON save error:', err);
         alert('JSON downloaded, but saving it to the project failed: ' + err.message);
       });
+  }
+
+  async function finaliseExtraction() {
+    if (!appConfig().uploadExportUrl) {
+      alert('This viewer is not connected to project exports.');
+      return;
+    }
+
+    const showP = window.showProcessing || (m => console.log(m));
+    const hideP = window.hideProcessing || (() => {});
+
+    showP('Finalising extraction…');
+
+    try {
+      showP('Saving marker snapshot…');
+      await checkpointViewerState('finalise_extraction');
+
+      const csvExport = buildCsvExport();
+      const jsonExport = buildJsonExport();
+      const viewerStateExport = buildViewerStateExport();
+
+      showP('Saving extraction data…');
+      await saveExtractionToApp('finalise_extraction');
+
+      const loosePdfs = await splitIncludedSheets(showP);
+      if (!loosePdfs.length) throw new Error('No sheets were created.');
+
+      for (let i = 0; i < loosePdfs.length; i++) {
+        const sheetPdf = loosePdfs[i];
+        showP(`Saving working document ${i + 1} / ${loosePdfs.length}: ${sheetPdf.filename}`);
+        await uploadExportToApp(
+          new Blob([sheetPdf.bytes], { type: 'application/pdf' }),
+          sheetPdf.filename,
+          'working_document_pdf'
+        );
+      }
+
+      showP('Saving CSV manifest…');
+      await uploadExportToApp(csvExport.blob, csvExport.name, 'extraction_csv');
+
+      showP('Saving JSON manifest…');
+      await uploadExportToApp(jsonExport.blob, jsonExport.name, 'extraction_json');
+
+      const zipExport = await buildPackageZip(loosePdfs, csvExport, jsonExport, viewerStateExport, showP);
+      downloadBlob(zipExport.blob, zipExport.name);
+
+      alert(`Finalised extraction: ${loosePdfs.length} working document${loosePdfs.length === 1 ? '' : 's'}, CSV, JSON, marker snapshot, and ZIP package.`);
+    } catch (err) {
+      console.error('finalise extraction error:', err);
+      alert('Finalise extraction stopped: ' + err.message);
+    } finally {
+      hideP();
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -723,6 +845,7 @@
 
     // Action buttons
     document.getElementById('sp-btn-working')?.addEventListener('click', buildWorkingDocuments);
+    document.getElementById('sp-btn-finalise')?.addEventListener('click', finaliseExtraction);
     document.getElementById('sp-btn-zip')?.addEventListener('click', downloadZip);
     document.getElementById('sp-btn-csv')?.addEventListener('click', exportCSV);
     document.getElementById('sp-btn-json')?.addEventListener('click', exportJSON);
@@ -745,6 +868,7 @@
   window.closeStaging           = closePanel;
   window.exportStagingCSV       = exportCSV;
   window.exportStagingJSON      = exportJSON;
+  window.finalisePdfExtraction  = finaliseExtraction;
   window.getPdfViewerStagingState = function () {
     return {
       stagingData: clone(stagingData, []),

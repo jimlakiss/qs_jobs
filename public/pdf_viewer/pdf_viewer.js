@@ -218,6 +218,7 @@ function updateControls() {
 }
 
 let viewerStateSaveTimer = null;
+let viewerStateSavePromise = null;
 let viewerStateSaving = false;
 let viewerStateRestoreInProgress = false;
 let viewerStateLastSavedAt = null;
@@ -687,10 +688,13 @@ function scheduleViewerStateSave(reason = 'change') {
 
 async function saveViewerState(reason = 'change') {
   const url = viewerStateConfig().viewerStateUrl;
-  if (!url || viewerStateSaving || viewerStateRestoreInProgress) return;
+  if (!url || viewerStateRestoreInProgress) return;
+  if (viewerStateSaving) {
+    return viewerStateSavePromise.catch(err => ({ ok: false, error: err.message }));
+  }
 
   viewerStateSaving = true;
-  try {
+  viewerStateSavePromise = (async () => {
     const response = await fetch(url, {
       method: 'PATCH',
       headers: {
@@ -704,15 +708,30 @@ async function saveViewerState(reason = 'change') {
     if (!response.ok) throw new Error(`Viewer state save failed (${response.status})`);
     const result = await response.json().catch(() => ({}));
     viewerStateLastSavedAt = result.saved_at || new Date().toISOString();
+    return result;
+  })();
+
+  try {
+    return await viewerStateSavePromise;
   } catch (err) {
     console.warn('Viewer state autosave failed:', err);
+    return { ok: false, error: err.message };
   } finally {
     viewerStateSaving = false;
+    viewerStateSavePromise = null;
   }
 }
 
 window.scheduleViewerStateSave = scheduleViewerStateSave;
 window.saveViewerState = saveViewerState;
+window.getPdfViewerStateSnapshot = buildViewerState;
+window.flushViewerStateSave = function (reason = 'flush') {
+  if (viewerStateSaveTimer) {
+    clearTimeout(viewerStateSaveTimer);
+    viewerStateSaveTimer = null;
+  }
+  return saveViewerState(reason);
+};
 window.buildViewerState = buildViewerState;
 
 // ghostExclusions variable
