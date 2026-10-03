@@ -103,7 +103,35 @@ class DocumentGroupsController < ApplicationController
   end
 
   def viewer_state_data
-    @project.document_viewer_states.find_by(active_storage_attachment_id: @document.id)&.data || {}
+    state = @project.document_viewer_states.find_by(active_storage_attachment_id: @document.id)&.data || {}
+    hydrated_viewer_state_for(@document.id, state)
+  end
+
+  def hydrated_viewer_state_for(attachment_id, data)
+    state = normalize_json(data, {})
+    return state if viewer_state_has_regions?(state)
+
+    extraction = @project.document_extractions.find_by(active_storage_attachment_id: attachment_id)
+    regions = normalize_json(extraction&.regions, {})
+    return state if regions.blank?
+
+    state["regionTemplates"] = regions
+    state["regionsByPage"] = state["regionsByPage"].presence || {}
+    state
+  end
+
+  def viewer_state_has_regions?(state)
+    region_templates = state["regionTemplates"]
+    return true if region_templates.is_a?(Hash) && region_templates.present?
+
+    regions_by_page = state["regionsByPage"]
+    regions_by_page.is_a?(Hash) && regions_by_page.values.any? { |regions| Array(regions).any? }
+  end
+
+  def normalize_json(value, fallback)
+    return fallback if value.blank?
+
+    JSON.parse(value.to_json)
   end
 
   def viewer_navigation_documents

@@ -255,13 +255,34 @@ class ProjectDocumentsController < ApplicationController
   def viewer_state_data
     source_attachment_id = params[:measurement_source_attachment_id].presence
     source_page = params[:measurement_source_page].to_i
-    return current_viewer_state&.data || {} unless source_attachment_id && source_page.positive?
-    return current_viewer_state&.data || {} if source_attachment_id.to_i == @document.id
+    return hydrated_viewer_state_for(@document.id, current_viewer_state&.data || {}) unless source_attachment_id && source_page.positive?
+    return hydrated_viewer_state_for(@document.id, current_viewer_state&.data || {}) if source_attachment_id.to_i == @document.id
 
     source_state = @project.document_viewer_states.find_by(active_storage_attachment_id: source_attachment_id)
-    return current_viewer_state&.data || {} unless source_state
+    return hydrated_viewer_state_for(@document.id, current_viewer_state&.data || {}) unless source_state
 
     viewer_state_for_single_page(source_state.data || {}, source_page)
+  end
+
+  def hydrated_viewer_state_for(attachment_id, data)
+    state = normalize_json(data, {})
+    return state if viewer_state_has_regions?(state)
+
+    extraction = @project.document_extractions.find_by(active_storage_attachment_id: attachment_id)
+    regions = normalize_json(extraction&.regions, {})
+    return state if regions.blank?
+
+    state["regionTemplates"] = regions
+    state["regionsByPage"] = state["regionsByPage"].presence || {}
+    state
+  end
+
+  def viewer_state_has_regions?(state)
+    region_templates = state["regionTemplates"]
+    return true if region_templates.is_a?(Hash) && region_templates.present?
+
+    regions_by_page = state["regionsByPage"]
+    regions_by_page.is_a?(Hash) && regions_by_page.values.any? { |regions| Array(regions).any? }
   end
 
   def viewer_state_for_single_page(data, source_page)

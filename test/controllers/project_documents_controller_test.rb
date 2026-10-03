@@ -513,6 +513,38 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "DRAFT-JSON", response.parsed_body.dig("viewer_state", "documentDetails", "project_id")
   end
 
+  test "hydrates missing viewer regions from saved extraction regions" do
+    @project.documents.attach(
+      io: StringIO.new("%PDF-1.4"),
+      filename: "stormwater.pdf",
+      content_type: "application/pdf"
+    )
+
+    document = @project.documents.first
+    @project.document_viewer_states.create!(
+      active_storage_attachment_id: document.id,
+      data: {
+        version: 1,
+        currentPage: 1,
+        regionTemplates: {},
+        regionsByPage: { "1" => [] }
+      },
+      saved_at: Time.current
+    )
+    @project.document_extractions.create!(
+      active_storage_attachment_id: document.id,
+      regions: {
+        sheet_id: { x: 0.1, y: 0.2, w: 0.3, h: 0.4, type: "sheet_id" }
+      },
+      extracted_at: Time.current
+    )
+
+    get viewer_state_project_document_path(@project, document), as: :json
+
+    assert_response :success
+    assert_equal "sheet_id", response.parsed_body.dig("viewer_state", "regionTemplates", "sheet_id", "type")
+  end
+
   test "saves exported files back to project documents" do
     @project.documents.attach(
       io: StringIO.new("%PDF-1.4"),
