@@ -703,7 +703,8 @@ async function saveViewerState(reason = 'change') {
         ...csrfHeaders(),
       },
       body: JSON.stringify({ viewer_state: buildViewerState(), reason }),
-      keepalive: true,
+      // Keepalive has a 64 KiB body limit; normal saves can contain much more.
+      keepalive: reason === 'beforeunload',
     });
     if (!response.ok) throw new Error(`Viewer state save failed (${response.status})`);
     const result = await response.json().catch(() => ({}));
