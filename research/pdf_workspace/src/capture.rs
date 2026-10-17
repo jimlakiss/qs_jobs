@@ -359,10 +359,18 @@ struct RegionDrag {
     corner: Option<usize>,
     companions: Vec<(usize, usize, Region, Region)>,
 }
+struct RegionMarquee {
+    anchor: [f64; 2],
+    end: [f64; 2],
+    screen_start: egui::Pos2,
+    moved: bool,
+    additive: bool,
+}
 #[derive(Default)]
 pub struct Capture {
     pub open: bool,
     pub drawing: bool,
+    pub focus_drawing: bool,
     pub hide_boxes: bool,
     pub selection: Selection,
     pub documents: BTreeMap<String, Data>,
@@ -379,6 +387,8 @@ pub struct Capture {
     page_counts: BTreeMap<String, i32>,
     template_membership: BTreeMap<String, String>,
     move_region: Option<RegionDrag>,
+    toggle_click: bool,
+    marquee: Option<RegionMarquee>,
     active_path: String,
     append_region: bool,
     undo: Vec<RegionSnapshot>,
@@ -539,10 +549,13 @@ impl Capture {
         self.confirm_selection();
     }
     pub fn confirm_selection(&mut self) {
+        self.focus_drawing = false;
         self.highlighted = false;
         self.selected_regions.clear();
         self.selection.clear();
         self.move_region = None;
+        self.toggle_click = false;
+        self.marquee = None;
     }
 
     pub fn activate_document(&mut self, path: &str, info: &PageInfo) {
@@ -741,6 +754,7 @@ impl Capture {
         let mut reset_sheet = false;
         let mut restore_excluded = false;
         let mut clear_field = false;
+        let mut clear_all = false;
         let mut imported = false;
         let mut undo = false;
         let mut redo = false;
@@ -771,6 +785,20 @@ impl Capture {
                     return;
                 };
                 let busy = self.job.is_some();
+                ui.horizontal_wrapped(|ui| {
+                    if ui.add_enabled(!busy, egui::Button::new("Select / move regions").selected(!self.drawing)).clicked() {
+                        self.drawing = false;
+                        self.append_region = false;
+                        self.confirm_selection();
+                        self.focus_drawing = true;
+                    }
+                    if ui.add_enabled(!busy && !self.hide_boxes, egui::Button::new("Select all on sheet").shortcut_text("⌘A")).clicked() {
+                        self.select_all_regions(info);
+                        self.focus_drawing = true;
+                    }
+                    clear_all = ui.add_enabled(!busy, egui::Button::new("Clear all regions"))
+                        .on_hover_text("Clear every field's master and all sheet overrides in the current drawing set, plus captured values. Field names stay. Undo is available.").clicked();
+                });
                 let data = self.documents.entry(info.doc.clone()).or_default();
                 self.selected = self.selected.min(data.fields.len() - 1);
                 ui.label("Choose a field, its scope, then draw its box.");
@@ -860,9 +888,9 @@ impl Capture {
                             .changed();
                     });
                     ui.small(if self.drawing {
-                        "Release to keep changes · Shift-click: select boxes · Drag: move · ⌘C / ⌘V: copy / paste · Delete: remove on this sheet · ⌘Z / ⇧⌘Z: undo / redo · Enter / blank click: deselect · Esc: Pan"
+                        "Release to keep changes · Shift-drag blank space: select boxes · Select / move regions: stop drawing · ⌘A: select all on sheet · Shift-click: select boxes · Drag: move · ⌘C / ⌘V: copy / paste · Delete: remove on this sheet · ⌘Z / ⇧⌘Z: undo / redo · Enter / blank click: deselect · Esc: Pan"
                     } else {
-                        "Select a field above, then drag its box on the drawing."
+                        "Click / Shift-click boxes. Drag blank space to box-select; Shift-drag adds. Drag any selected box to move the group. Space-drag pans."
                     });
                     if self.highlighted && !self.selected_regions.is_empty() {
                         ui.small(format!("{} box(es) selected", self.selected_regions.len()));
@@ -1087,6 +1115,11 @@ impl Capture {
                 data.cells.remove(&field.id);
             }
         }
+        if clear_all {
+            if let Some(info) = info {
+                self.clear_all_regions(path, info);
+            }
+        }
         if restore_excluded {
             if let Some(info) = info {
                 self.documents.get_mut(&info.doc).unwrap().fields[self.selected]
@@ -1276,6 +1309,103 @@ impl Capture {
             && self.job.is_none()
             && !self.reviewing()
     }
+    fn select_in_box(&mut self, info: &PageInfo, bounds: [f64; 4], additive: bool) {
+        if !additive {
+            self.selected_regions.clear();
+        }
+        if let Some(data) = self.documents.get(&info.doc) {
+            for (index, field) in data.fields.iter().enumerate() {
+                if field.scope == Scope::Once
+                    && (field
+                        .master_doc
+                        .as_deref()
+                        .is_some_and(|doc| doc != info.doc)
+                        || field.region.as_ref().is_some_and(|r| r.page != info.page))
+                {
+                    continue;
+                }
+                for (slot, region) in field.regions_for(info.page).iter().enumerate() {
+                    let b = region.bounds;
+                    if b[0] <= bounds[2]
+                        && b[2] >= bounds[0]
+                        && b[1] <= bounds[3]
+                        && b[3] >= bounds[1]
+                    {
+                        self.selected_regions.insert((index, slot));
+                    }
+                }
+            }
+        }
+        self.highlighted = !self.selected_regions.is_empty();
+        self.notice = format!("{} boxes selected. Drag any selected box to move the group; Shift-click adds/removes boxes.", self.selected_regions.len());
+    }
+    fn select_all_regions(&mut self, info: &PageInfo) {
+        if !self.open || self.hide_boxes || self.job.is_some() || self.reviewing() {
+            return;
+        }
+        self.confirm_selection();
+        if let Some(data) = self.documents.get(&info.doc) {
+            for (index, field) in data.fields.iter().enumerate() {
+                if field.scope == Scope::Once
+                    && (field
+                        .master_doc
+                        .as_deref()
+                        .is_some_and(|doc| doc != info.doc)
+                        || field.region.as_ref().is_some_and(|r| r.page != info.page))
+                {
+                    continue;
+                }
+                self.selected_regions.extend(
+                    field
+                        .regions_for(info.page)
+                        .iter()
+                        .enumerate()
+                        .map(|(slot, _)| (index, slot)),
+                );
+            }
+        }
+        self.highlighted = !self.selected_regions.is_empty();
+        self.notice = format!(
+            "{} boxes selected on this sheet. Delete to remove; ⌘Z to undo.",
+            self.selected_regions.len()
+        );
+    }
+    fn clear_all_regions(&mut self, path: &str, info: &PageInfo) {
+        if !self.open || self.job.is_some() || self.reviewing() {
+            return;
+        }
+        self.checkpoint_regions();
+        let key = self.template_key(path);
+        let mut docs: BTreeSet<_> = self
+            .paths
+            .iter()
+            .filter(|(path, _)| self.template_key(path) == key)
+            .map(|(_, doc)| doc.clone())
+            .collect();
+        docs.insert(info.doc.clone());
+        let clear = |fields: &mut [Field]| {
+            for field in fields {
+                field.region = None;
+                field.master_doc = None;
+                field.overrides.clear();
+                field.page_regions.clear();
+                field.excluded.clear();
+            }
+        };
+        if let Some(fields) = self.templates.get_mut(&key) {
+            clear(fields);
+        }
+        for doc in docs {
+            if let Some(data) = self.documents.get_mut(&doc) {
+                clear(&mut data.fields);
+                data.cells.clear();
+            }
+        }
+        self.confirm_selection();
+        self.drawing = false;
+        self.append_region = false;
+        self.notice = "All regions and captured values cleared for this drawing set. Field names kept. ⌘Z to undo.".into();
+    }
     pub fn delete_selected(&mut self, info: &PageInfo) {
         if !self.has_selection() {
             return;
@@ -1386,6 +1516,9 @@ impl Capture {
         self.notice = "Boxes pasted with their field names. Drag to position; ⌘Z to undo.".into();
     }
     fn region_shortcuts(&mut self, ctx: &egui::Context, info: &PageInfo, events: &[egui::Event]) {
+        if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::A)) {
+            self.select_all_regions(info);
+        }
         let copy = events.iter().any(|e| matches!(e, egui::Event::Copy))
             || ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::C));
         if copy {
@@ -1424,7 +1557,11 @@ impl Capture {
         if !self.open {
             return false;
         }
-        let mut consumed = self.move_region.is_some();
+        if std::mem::take(&mut self.focus_drawing) {
+            response.request_focus();
+        }
+        let mut consumed =
+            self.move_region.is_some() || self.toggle_click || self.marquee.is_some();
         let ctx = painter.ctx();
         let point =
             |p: egui::Pos2| view.normalized(viewer::turn([p.x as f64, p.y as f64], center, -turns));
@@ -1436,13 +1573,75 @@ impl Capture {
             );
             egui::pos2(p[0] as f32, p[1] as f32)
         };
-        if !self.hide_boxes && !self.reviewing() && self.job.is_none() {
+        let pan = ctx.input(|i| i.key_down(egui::Key::Space));
+        if pan {
+            self.toggle_click = false;
+            self.marquee = None;
+            self.move_region = None;
+            self.selection.clear();
+            consumed = false;
+        }
+        if !self.hide_boxes && !self.reviewing() && self.job.is_none() && !pan {
             let events = ctx.input(|i| i.events.clone());
             if response.has_focus() || !ctx.wants_keyboard_input() {
                 self.region_shortcuts(ctx, info, &events);
             }
             let mut drawing_events = Vec::new();
             for event in events {
+                if self.toggle_click {
+                    consumed = true;
+                    if matches!(
+                        event,
+                        egui::Event::PointerButton {
+                            button: egui::PointerButton::Primary,
+                            pressed: false,
+                            ..
+                        } | egui::Event::PointerGone
+                            | egui::Event::WindowFocused(false)
+                    ) {
+                        self.toggle_click = false;
+                    }
+                    continue;
+                }
+                if let Some(marquee) = &mut self.marquee {
+                    consumed = true;
+                    match &event {
+                        egui::Event::PointerMoved(pos)
+                        | egui::Event::PointerButton {
+                            pos,
+                            button: egui::PointerButton::Primary,
+                            pressed: false,
+                            ..
+                        } => {
+                            marquee.end = point(*pos);
+                            marquee.moved |= pos.distance(marquee.screen_start) >= 3.0;
+                            if matches!(event, egui::Event::PointerButton { pressed: false, .. }) {
+                                let marquee = self.marquee.take().unwrap();
+                                if marquee.moved {
+                                    let a = marquee.anchor;
+                                    let b = marquee.end;
+                                    self.select_in_box(
+                                        info,
+                                        [
+                                            a[0].min(b[0]),
+                                            a[1].min(b[1]),
+                                            a[0].max(b[0]),
+                                            a[1].max(b[1]),
+                                        ],
+                                        marquee.additive,
+                                    );
+                                } else if !marquee.additive {
+                                    self.confirm_selection();
+                                }
+                            }
+                        }
+                        egui::Event::PointerGone | egui::Event::WindowFocused(false) => {
+                            self.marquee = None;
+                        }
+                        _ => {}
+                    }
+                    continue;
+                }
                 if let egui::Event::PointerButton {
                     pos,
                     button: egui::PointerButton::Primary,
@@ -1506,6 +1705,7 @@ impl Capture {
                         if let Some((field, slot, region, corner)) = hit {
                             consumed = true;
                             if modifiers.shift {
+                                self.toggle_click = true;
                                 if !self.selected_regions.insert((field, slot)) {
                                     self.selected_regions.remove(&(field, slot));
                                 }
@@ -1552,6 +1752,19 @@ impl Capture {
                                 },
                                 companions,
                             });
+                            response.request_focus();
+                            continue;
+                        }
+                        if !self.drawing || modifiers.shift {
+                            self.selection.clear();
+                            self.marquee = Some(RegionMarquee {
+                                anchor: p,
+                                end: p,
+                                screen_start: *pos,
+                                moved: false,
+                                additive: modifiers.shift,
+                            });
+                            consumed = true;
                             response.request_focus();
                             continue;
                         }
@@ -1624,7 +1837,11 @@ impl Capture {
                 }
                 drawing_events.push(event);
             }
-            if self.move_region.is_none() && self.drawing {
+            if self.move_region.is_none()
+                && self.marquee.is_none()
+                && !self.toggle_click
+                && self.drawing
+            {
                 ctx.set_cursor_icon(egui::CursorIcon::Crosshair);
                 let was = self.selection.dragging;
                 let focused = self.selection.handle_events(
@@ -1698,11 +1915,27 @@ impl Capture {
                 });
             }
         }
-        if !self.drawing && !consumed && response.clicked() {
+        if !pan && !self.drawing && !consumed && response.clicked() {
             self.confirm_selection();
         }
         if self.hide_boxes {
             return consumed;
+        }
+        if let Some(marquee) = &self.marquee {
+            let a = marquee.anchor;
+            let b = marquee.end;
+            let points = vec![
+                to_pos([a[0], a[1]]),
+                to_pos([b[0], a[1]]),
+                to_pos([b[0], b[1]]),
+                to_pos([a[0], b[1]]),
+            ];
+            painter.add(egui::Shape::convex_polygon(
+                points,
+                egui::Color32::from_rgba_unmultiplied(50, 140, 240, 30),
+                egui::Stroke::new(1.5, egui::Color32::from_rgb(50, 140, 240)),
+            ));
+            ctx.set_cursor_icon(egui::CursorIcon::Crosshair);
         }
         if let Some(data) = self.documents.get(&info.doc) {
             for (index, field) in data.fields.iter().enumerate() {
@@ -1792,7 +2025,7 @@ impl Capture {
                 }
             }
         }
-        consumed || self.drawing
+        consumed || (self.drawing && !pan)
     }
 }
 fn field_color(index: usize) -> egui::Color32 {
@@ -2308,8 +2541,27 @@ mod tests {
         info: &PageInfo,
         events: Vec<egui::Event>,
     ) -> egui::FullOutput {
+        region_frame_turns(ctx, capture, info, events, 0)
+    }
+    fn region_frame_turns(
+        ctx: &egui::Context,
+        capture: &mut Capture,
+        info: &PageInfo,
+        events: Vec<egui::Event>,
+        turns: i32,
+    ) -> egui::FullOutput {
+        let modifiers = events
+            .iter()
+            .rev()
+            .find_map(|event| match event {
+                egui::Event::Key { modifiers, .. }
+                | egui::Event::PointerButton { modifiers, .. } => Some(*modifiers),
+                _ => None,
+            })
+            .unwrap_or_default();
         ctx.run(
             egui::RawInput {
+                modifiers,
                 screen_rect: Some(egui::Rect::from_min_size(
                     egui::Pos2::ZERO,
                     egui::vec2(300.0, 300.0),
@@ -2330,7 +2582,7 @@ mod tests {
                             page: [100.0, 100.0],
                         },
                         [100.0, 100.0],
-                        0,
+                        turns,
                         info,
                     );
                 });
@@ -2755,6 +3007,352 @@ mod tests {
         assert!(dates[&0].error.is_none());
         assert_eq!(dates[&1].text, "22/07/2026");
         assert!(dates[&1].error.is_some());
+    }
+    #[test]
+    fn command_a_selects_visible_regions_and_delete_stays_on_this_sheet() {
+        let ctx = egui::Context::default();
+        let mut capture = Capture {
+            open: true,
+            ..Default::default()
+        };
+        let info = region_info("test", 1);
+        capture.activate_document("/test.pdf", &info);
+        let data = capture.documents.get_mut("test").unwrap();
+        for index in [0, 1, 2, 3, 4] {
+            data.fields[index].master_doc = Some("test".into());
+            data.fields[index].region = Some(Region {
+                page: if index == 1 { 1 } else { 0 },
+                bounds: [0.1, 0.1, 0.2, 0.2],
+                turns: 0,
+            });
+        }
+        data.fields[3].page_regions.insert(
+            1,
+            vec![
+                Region {
+                    page: 1,
+                    bounds: [0.3, 0.3, 0.4, 0.4],
+                    turns: 0,
+                },
+                Region {
+                    page: 1,
+                    bounds: [0.5, 0.5, 0.6, 0.6],
+                    turns: 0,
+                },
+            ],
+        );
+        data.fields[4].excluded.insert(1);
+        region_frame(
+            &ctx,
+            &mut capture,
+            &info,
+            vec![region_key(egui::Key::A, true, false)],
+        );
+        assert_eq!(
+            capture.selected_regions,
+            BTreeSet::from([(1, 0), (2, 0), (3, 0), (3, 1)])
+        );
+        let before = serde_json::to_value(&capture.documents).unwrap();
+        let undo = capture.undo.len();
+        region_frame(
+            &ctx,
+            &mut capture,
+            &info,
+            vec![region_key(egui::Key::Delete, false, false)],
+        );
+        assert_eq!(capture.undo.len(), undo + 1);
+        let fields = &capture.documents["test"].fields;
+        for index in [1, 2, 3] {
+            assert!(fields[index].regions_for(1).is_empty());
+        }
+        assert!(fields[0].region.is_some()); // Once field on a different sheet was never selected.
+        assert_eq!(fields[2].regions_for(0).len(), 1);
+        capture.undo_regions();
+        assert_eq!(serde_json::to_value(&capture.documents).unwrap(), before);
+    }
+    #[test]
+    fn clear_all_regions_clears_the_set_and_undo_preserves_names_values_and_other_files() {
+        let mut capture = Capture {
+            open: true,
+            ..Default::default()
+        };
+        let a = "/set/a.pdf";
+        let b = "/set/b.pdf";
+        let other = "/other/c.pdf";
+        capture.set_paths.extend([a.into(), b.into()]);
+        capture.activate_document(a, &region_info("a", 0));
+        capture.commit_region(
+            a,
+            &region_info("a", 0),
+            2,
+            0,
+            Region {
+                page: 0,
+                bounds: [0.1, 0.1, 0.2, 0.2],
+                turns: 0,
+            },
+            false,
+        );
+        capture.activate_document(b, &region_info("b", 1));
+        capture.commit_region(
+            b,
+            &region_info("b", 1),
+            2,
+            0,
+            Region {
+                page: 1,
+                bounds: [0.2, 0.2, 0.3, 0.3],
+                turns: 0,
+            },
+            false,
+        );
+        capture.documents.get_mut("b").unwrap().fields[3].name = "Drawing title".into();
+        capture.documents.get_mut("b").unwrap().fields[2]
+            .excluded
+            .insert(2);
+        capture
+            .documents
+            .get_mut("b")
+            .unwrap()
+            .cells
+            .entry("sheet_id".into())
+            .or_default()
+            .insert(
+                1,
+                Cell {
+                    text: "A102".into(),
+                    ..Default::default()
+                },
+            );
+        capture.activate_document(other, &region_info("c", 0));
+        capture.commit_region(
+            other,
+            &region_info("c", 0),
+            2,
+            0,
+            Region {
+                page: 0,
+                bounds: [0.5, 0.5, 0.6, 0.6],
+                turns: 0,
+            },
+            false,
+        );
+        let before = capture.workspace_snapshot();
+        let undo = capture.undo.len();
+        capture.clear_all_regions(a, &region_info("a", 0));
+        assert_eq!(capture.undo.len(), undo + 1);
+        for doc in ["a", "b"] {
+            let data = &capture.documents[doc];
+            assert!(data.cells.is_empty());
+            assert!(data.fields.iter().all(|f| f.region.is_none()
+                && f.master_doc.is_none()
+                && f.overrides.is_empty()
+                && f.page_regions.is_empty()
+                && f.excluded.is_empty()));
+        }
+        assert_eq!(capture.documents["b"].fields[3].name, "Drawing title");
+        assert_eq!(
+            serde_json::to_value(&capture.documents["c"]).unwrap(),
+            serde_json::to_value(&before.documents["c"]).unwrap()
+        );
+        assert!(capture.templates["selected-drawing-set"]
+            .iter()
+            .all(|f| f.region.is_none()));
+        capture.undo_regions();
+        assert_eq!(
+            serde_json::to_value(&capture.documents).unwrap(),
+            serde_json::to_value(before.documents).unwrap()
+        );
+        assert_eq!(
+            serde_json::to_value(&capture.templates).unwrap(),
+            serde_json::to_value(before.templates).unwrap()
+        );
+    }
+    fn multi_select_fixture() -> (Capture, PageInfo) {
+        let mut capture = Capture {
+            open: true,
+            ..Default::default()
+        };
+        let master = region_info("test", 0);
+        capture.activate_document("/test.pdf", &master);
+        for (field, x) in [(2, 0.1), (3, 0.35), (4, 0.6), (5, 0.85)] {
+            capture.commit_region(
+                "/test.pdf",
+                &master,
+                field,
+                0,
+                Region {
+                    page: 0,
+                    bounds: [x, 0.2, x + 0.1, 0.3],
+                    turns: 0,
+                },
+                false,
+            );
+        }
+        (capture, region_info("test", 1))
+    }
+    #[test]
+    fn shift_click_releases_keep_selection_then_move_three_boxes_as_one_action() {
+        let ctx = egui::Context::default();
+        let (mut capture, info) = multi_select_fixture();
+        let click = |capture: &mut Capture, x, shift| {
+            region_frame(
+                &ctx,
+                capture,
+                &info,
+                vec![
+                    egui::Event::PointerMoved(egui::pos2(x, 25.0)),
+                    region_event(x, 25.0, true, shift),
+                ],
+            );
+            region_frame(
+                &ctx,
+                capture,
+                &info,
+                vec![region_event(x, 25.0, false, shift)],
+            );
+        };
+        click(&mut capture, 15.0, false);
+        assert_eq!(capture.selected_regions.len(), 1);
+        click(&mut capture, 40.0, true);
+        assert_eq!(capture.selected_regions.len(), 2);
+        click(&mut capture, 65.0, true);
+        assert_eq!(capture.selected_regions.len(), 3);
+        click(&mut capture, 65.0, true);
+        assert_eq!(capture.selected_regions.len(), 2);
+        click(&mut capture, 65.0, true);
+        assert_eq!(
+            capture.selected_regions,
+            BTreeSet::from([(2, 0), (3, 0), (4, 0)])
+        );
+        let before = serde_json::to_value(&capture.documents).unwrap();
+        let undo = capture.undo.len();
+        region_frame(
+            &ctx,
+            &mut capture,
+            &info,
+            vec![region_event(15.0, 25.0, true, false)],
+        );
+        region_frame(
+            &ctx,
+            &mut capture,
+            &info,
+            vec![egui::Event::PointerMoved(egui::pos2(20.0, 35.0))],
+        );
+        assert_eq!(serde_json::to_value(&capture.documents).unwrap(), before);
+        region_frame(
+            &ctx,
+            &mut capture,
+            &info,
+            vec![region_event(20.0, 35.0, false, false)],
+        );
+        for (field, x) in [(2, 0.1), (3, 0.35), (4, 0.6)] {
+            let f = &capture.documents["test"].fields[field];
+            assert!((f.overrides[&1].bounds[0] - (x + 0.05)).abs() < 1e-8);
+            assert!((f.overrides[&1].bounds[1] - 0.3).abs() < 1e-8);
+            assert_eq!(f.region.as_ref().unwrap().bounds[0], x);
+        }
+        assert!(capture.documents["test"].fields[5].overrides.is_empty());
+        assert_eq!(capture.undo.len(), undo + 1);
+        assert_eq!(capture.selected_regions.len(), 3);
+        capture.undo_regions();
+        assert_eq!(serde_json::to_value(&capture.documents).unwrap(), before);
+    }
+    #[test]
+    fn box_selection_replaces_adds_and_never_redraws_the_armed_field() {
+        let ctx = egui::Context::default();
+        let (mut capture, info) = multi_select_fixture();
+        let before = serde_json::to_value(&capture.documents).unwrap();
+        let drag = |capture: &mut Capture, start: (f32, f32), end: (f32, f32), shift| {
+            region_frame(
+                &ctx,
+                capture,
+                &info,
+                vec![region_event(start.0, start.1, true, shift)],
+            );
+            region_frame(
+                &ctx,
+                capture,
+                &info,
+                vec![egui::Event::PointerMoved(egui::pos2(end.0, end.1))],
+            );
+            region_frame(
+                &ctx,
+                capture,
+                &info,
+                vec![region_event(end.0, end.1, false, shift)],
+            );
+        };
+        drag(&mut capture, (8.0, 12.0), (50.0, 40.0), false);
+        assert_eq!(capture.selected_regions, BTreeSet::from([(2, 0), (3, 0)]));
+        capture.drawing = true;
+        capture.selected = 5;
+        drag(&mut capture, (52.0, 12.0), (75.0, 40.0), true);
+        assert_eq!(
+            capture.selected_regions,
+            BTreeSet::from([(2, 0), (3, 0), (4, 0)])
+        );
+        assert_eq!(serde_json::to_value(&capture.documents).unwrap(), before);
+        capture.drawing = false;
+        drag(&mut capture, (80.0, 12.0), (99.0, 40.0), false);
+        assert_eq!(capture.selected_regions, BTreeSet::from([(5, 0)]));
+        region_frame(
+            &ctx,
+            &mut capture,
+            &info,
+            vec![region_event(8.0, 12.0, true, false)],
+        );
+        region_frame(
+            &ctx,
+            &mut capture,
+            &info,
+            vec![
+                egui::Event::PointerMoved(egui::pos2(50.0, 40.0)),
+                egui::Event::PointerGone,
+            ],
+        );
+        assert!(capture.marquee.is_none());
+        assert_eq!(capture.selected_regions, BTreeSet::from([(5, 0)]));
+        assert_eq!(serde_json::to_value(&capture.documents).unwrap(), before);
+    }
+    #[test]
+    fn box_selection_uses_page_coordinates_on_rotated_sheets() {
+        for turns in 0..4 {
+            let ctx = egui::Context::default();
+            let (mut capture, info) = multi_select_fixture();
+            let screen = |p| {
+                let p = viewer::turn(p, [100.0, 100.0], turns);
+                egui::pos2(p[0] as f32, p[1] as f32)
+            };
+            let start = screen([12.0, 12.0]);
+            let end = screen([50.0, 40.0]);
+            region_frame_turns(
+                &ctx,
+                &mut capture,
+                &info,
+                vec![region_event(start.x, start.y, true, false)],
+                turns,
+            );
+            region_frame_turns(
+                &ctx,
+                &mut capture,
+                &info,
+                vec![egui::Event::PointerMoved(end)],
+                turns,
+            );
+            region_frame_turns(
+                &ctx,
+                &mut capture,
+                &info,
+                vec![region_event(end.x, end.y, false, false)],
+                turns,
+            );
+            assert_eq!(
+                capture.selected_regions,
+                BTreeSet::from([(2, 0), (3, 0)]),
+                "rotation {turns}"
+            );
+        }
     }
     #[test]
     fn select_text_ocr_is_transient_single_page_and_keeps_rotation() {

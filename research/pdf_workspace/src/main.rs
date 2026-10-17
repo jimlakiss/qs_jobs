@@ -619,19 +619,18 @@ impl eframe::App for App {
                 }
                 ui.separator();
                 if ui
-                    .selectable_value(&mut self.text_mode, false, "Pan")
+                    .selectable_label(!self.text_mode && !self.capture.open, "Pan")
                     .clicked()
                 {
-                    self.capture.drawing = false;
-                    self.capture.confirm_selection();
+                    self.text_mode = false;
+                    self.capture.set_open(false);
                     self.text_ocr = None;
                 }
                 if ui
                     .selectable_value(&mut self.text_mode, true, "Select text")
                     .clicked()
                 {
-                    self.capture.drawing = false;
-                    self.capture.confirm_selection();
+                    self.capture.set_open(false);
                     self.text_ocr = None;
                     if self.text_page.is_none() {
                         self.text_notice = "Loading embedded text…".into();
@@ -712,8 +711,8 @@ impl eframe::App for App {
         egui::TopBottomPanel::bottom("status").show(ctx, |ui| {
             ui.label(&self.status);
             if self.text_mode {ui.label(&self.text_notice); ui.small("Drag a text box · ⌘C: copy PDF text / OCR a scan · OCR selection: force recognition · Esc: clear");}
-            if !self.text_mode && self.capture.open { ui.small("Click a capture box to select · Shift-click: multiple · Delete / Backspace: remove on this sheet · ⌘Z: undo"); }
-            ui.small("Drag to pan · Wheel / pinch to zoom · Ctrl+wheel: left/right · Option+wheel: up/down · Arrow keys: sheets");
+            if !self.text_mode && self.capture.open { ui.small("Click / Shift-click boxes · Drag blank space: box-select · Space-drag: pan · ⌘A: all on sheet · Shift-click: multiple · Delete / Backspace: remove on this sheet · ⌘Z: undo"); }
+            ui.small("Pan mode: drag to pan · Wheel / pinch to zoom · Ctrl+wheel: left/right · Option+wheel: up/down · Arrow keys: sheets");
         });
         if copy_text && self.text_ocr.is_none() {
             let text = self
@@ -879,7 +878,7 @@ impl eframe::App for App {
         }
         self.capture
             .panel(ctx, &self.opened_path, self.info.as_ref());
-        if self.capture.drawing {
+        if self.capture.drawing || self.capture.focus_drawing {
             self.text_mode = false;
         }
         egui::CentralPanel::default().show(ctx, |ui| {
