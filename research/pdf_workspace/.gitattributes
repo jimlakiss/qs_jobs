@@ -1,0 +1,2 @@
+# Preserve PDF fixture bytes and cross-reference offsets.
+fixtures/*.pdf binary

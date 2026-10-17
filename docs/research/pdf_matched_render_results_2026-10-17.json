@@ -1,0 +1,2344 @@
+{
+  "kind": "matched_full_page_comparison",
+  "source_bytes": 3447925,
+  "dpi": 136,
+  "trials_per_page": 5,
+  "warm_renders_per_trial": 3,
+  "engine_order": [
+    "PDF.js 3.11.174",
+    "PDFium 7881 / Rust",
+    "PDF.js 5.6.205"
+  ],
+  "method": "same PDF, Mac and full-page pixel dimensions; no previews/tiles/UI; source bytes and engine/worker initialization before timers; fresh document per trial; five first renders and fifteen warm renders per page; readback reported separately; OS/font caches uncontrolled",
+  "engines": [
+    {
+      "engine": "PDF.js 3.11.174",
+      "pages": [
+        {
+          "page": 1,
+          "pages": 8,
+          "width": 2249,
+          "height": 1590,
+          "status": "success",
+          "trials": [
+            {
+              "open_ms": 3.9000000953674316,
+              "first_render_ms": 98.40000009536743,
+              "first_total_ms": 102.30000019073486,
+              "first_readback_ms": 21.5,
+              "warm": [
+                {
+                  "render_ms": 29.40000009536743,
+                  "readback_ms": 13.799999952316284
+                },
+                {
+                  "render_ms": 26.200000047683716,
+                  "readback_ms": 8.899999856948853
+                },
+                {
+                  "render_ms": 17.700000047683716,
+                  "readback_ms": 11.5
+                }
+              ]
+            },
+            {
+              "open_ms": 1.5,
+              "first_render_ms": 65.79999995231628,
+              "first_total_ms": 67.29999995231628,
+              "first_readback_ms": 10.700000047683716,
+              "warm": [
+                {
+                  "render_ms": 26.40000009536743,
+                  "readback_ms": 9.900000095367432
+                },
+                {
+                  "render_ms": 23.899999856948853,
+                  "readback_ms": 9
+                },
+                {
+                  "render_ms": 17.59999990463257,
+                  "readback_ms": 8.799999952316284
+                }
+              ]
+            },
+            {
+              "open_ms": 1.5999999046325684,
+              "first_render_ms": 63.299999952316284,
+              "first_total_ms": 64.89999985694885,
+              "first_readback_ms": 12.299999952316284,
+              "warm": [
+                {
+                  "render_ms": 33.59999990463257,
+                  "readback_ms": 16.100000143051147
+                },
+                {
+                  "render_ms": 17.59999990463257,
+                  "readback_ms": 10.300000190734863
+                },
+                {
+                  "render_ms": 20,
+                  "readback_ms": 11.299999952316284
+                }
+              ]
+            },
+            {
+              "open_ms": 0.7999999523162842,
+              "first_render_ms": 65.60000014305115,
+              "first_total_ms": 66.40000009536743,
+              "first_readback_ms": 11.599999904632568,
+              "warm": [
+                {
+                  "render_ms": 20.5,
+                  "readback_ms": 12.299999952316284
+                },
+                {
+                  "render_ms": 16.100000143051147,
+                  "readback_ms": 11.899999856948853
+                },
+                {
+                  "render_ms": 14.400000095367432,
+                  "readback_ms": 13.5
+                }
+              ]
+            },
+            {
+              "open_ms": 1.8999998569488525,
+              "first_render_ms": 59.700000047683716,
+              "first_total_ms": 61.59999990463257,
+              "first_readback_ms": 6.900000095367432,
+              "warm": [
+                {
+                  "render_ms": 22.40000009536743,
+                  "readback_ms": 11.199999809265137
+                },
+                {
+                  "render_ms": 22.700000047683716,
+                  "readback_ms": 12.400000095367432
+                },
+                {
+                  "render_ms": 23.299999952316284,
+                  "readback_ms": 14.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "status": "failure",
+          "error": "TypeError: Cannot read properties of undefined (reading 'restore')",
+          "errors": [
+            "TypeError: Cannot read properties of undefined (reading 'restore')\n    at CanvasGraphics.restore (<local-test-origin>/3/build/pdf.min.js:22:129959)\n    at #he (<local-test-origin>/3/build/pdf.min.js:22:122034)\n    at CanvasGraphics.endDrawing (<local-test-origin>/3/build/pdf.min.js:22:122284)\n    at InternalRenderTask.cancel (<local-test-origin>/3/build/pdf.min.js:22:52268)"
+          ]
+        },
+        {
+          "page": 3,
+          "status": "failure",
+          "error": "TypeError: Cannot read properties of undefined (reading 'restore')",
+          "errors": [
+            "TypeError: Cannot read properties of undefined (reading 'restore')\n    at CanvasGraphics.restore (<local-test-origin>/3/build/pdf.min.js:22:129959)\n    at #he (<local-test-origin>/3/build/pdf.min.js:22:122034)\n    at CanvasGraphics.endDrawing (<local-test-origin>/3/build/pdf.min.js:22:122284)\n    at InternalRenderTask.cancel (<local-test-origin>/3/build/pdf.min.js:22:52268)"
+          ]
+        },
+        {
+          "page": 4,
+          "status": "failure",
+          "error": "TypeError: Cannot read properties of undefined (reading 'restore')",
+          "errors": [
+            "TypeError: Cannot read properties of undefined (reading 'restore')\n    at CanvasGraphics.restore (<local-test-origin>/3/build/pdf.min.js:22:129959)\n    at #he (<local-test-origin>/3/build/pdf.min.js:22:122034)\n    at CanvasGraphics.endDrawing (<local-test-origin>/3/build/pdf.min.js:22:122284)\n    at InternalRenderTask.cancel (<local-test-origin>/3/build/pdf.min.js:22:52268)"
+          ]
+        },
+        {
+          "page": 5,
+          "pages": 8,
+          "width": 2248,
+          "height": 1589,
+          "status": "success",
+          "trials": [
+            {
+              "open_ms": 3.700000047683716,
+              "first_render_ms": 157.89999985694885,
+              "first_total_ms": 161.59999990463257,
+              "first_readback_ms": 24.600000143051147,
+              "warm": [
+                {
+                  "render_ms": 6.599999904632568,
+                  "readback_ms": 13.900000095367432
+                },
+                {
+                  "render_ms": 1.2999999523162842,
+                  "readback_ms": 11.800000190734863
+                },
+                {
+                  "render_ms": 5.200000047683716,
+                  "readback_ms": 14
+                }
+              ]
+            },
+            {
+              "open_ms": 1.5,
+              "first_render_ms": 116.20000004768372,
+              "first_total_ms": 117.70000004768372,
+              "first_readback_ms": 18.299999952316284,
+              "warm": [
+                {
+                  "render_ms": 15,
+                  "readback_ms": 10.799999952316284
+                },
+                {
+                  "render_ms": 5.699999809265137,
+                  "readback_ms": 10.600000143051147
+                },
+                {
+                  "render_ms": 6,
+                  "readback_ms": 11.100000143051147
+                }
+              ]
+            },
+            {
+              "open_ms": 2.0999999046325684,
+              "first_render_ms": 436.7000000476837,
+              "first_total_ms": 438.7999999523163,
+              "first_readback_ms": 10.5,
+              "warm": [
+                {
+                  "render_ms": 5.700000047683716,
+                  "readback_ms": 10.400000095367432
+                },
+                {
+                  "render_ms": 5.5,
+                  "readback_ms": 10.900000095367432
+                },
+                {
+                  "render_ms": 5.3999998569488525,
+                  "readback_ms": 10.299999952316284
+                }
+              ]
+            },
+            {
+              "open_ms": 1.7000000476837158,
+              "first_render_ms": 122.29999995231628,
+              "first_total_ms": 124,
+              "first_readback_ms": 10.700000047683716,
+              "warm": [
+                {
+                  "render_ms": 5.599999904632568,
+                  "readback_ms": 11.5
+                },
+                {
+                  "render_ms": 4.8999998569488525,
+                  "readback_ms": 10.400000095367432
+                },
+                {
+                  "render_ms": 5.6000001430511475,
+                  "readback_ms": 11.399999856948853
+                }
+              ]
+            },
+            {
+              "open_ms": 2,
+              "first_render_ms": 153.70000004768372,
+              "first_total_ms": 155.70000004768372,
+              "first_readback_ms": 11.199999809265137,
+              "warm": [
+                {
+                  "render_ms": 5.099999904632568,
+                  "readback_ms": 10.700000047683716
+                },
+                {
+                  "render_ms": 5.300000190734863,
+                  "readback_ms": 10.199999809265137
+                },
+                {
+                  "render_ms": 6,
+                  "readback_ms": 10.900000095367432
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "page": 6,
+          "pages": 8,
+          "width": 2248,
+          "height": 1589,
+          "status": "success",
+          "trials": [
+            {
+              "open_ms": 3.5,
+              "first_render_ms": 119.20000004768372,
+              "first_total_ms": 122.70000004768372,
+              "first_readback_ms": 11,
+              "warm": [
+                {
+                  "render_ms": 3.8999998569488525,
+                  "readback_ms": 8.900000095367432
+                },
+                {
+                  "render_ms": 7.700000047683716,
+                  "readback_ms": 8.199999809265137
+                },
+                {
+                  "render_ms": 8.299999952316284,
+                  "readback_ms": 8.799999952316284
+                }
+              ]
+            },
+            {
+              "open_ms": 1.5,
+              "first_render_ms": 105.40000009536743,
+              "first_total_ms": 106.90000009536743,
+              "first_readback_ms": 7.900000095367432,
+              "warm": [
+                {
+                  "render_ms": 8.300000190734863,
+                  "readback_ms": 8.699999809265137
+                },
+                {
+                  "render_ms": 7.700000047683716,
+                  "readback_ms": 10.399999856948853
+                },
+                {
+                  "render_ms": 6.400000095367432,
+                  "readback_ms": 9.5
+                }
+              ]
+            },
+            {
+              "open_ms": 2,
+              "first_render_ms": 421.2000000476837,
+              "first_total_ms": 423.2000000476837,
+              "first_readback_ms": 8.200000047683716,
+              "warm": [
+                {
+                  "render_ms": 8.599999904632568,
+                  "readback_ms": 8.700000047683716
+                },
+                {
+                  "render_ms": 7.900000095367432,
+                  "readback_ms": 8.299999952316284
+                },
+                {
+                  "render_ms": 8.400000095367432,
+                  "readback_ms": 10.399999856948853
+                }
+              ]
+            },
+            {
+              "open_ms": 1.7999999523162842,
+              "first_render_ms": 104.20000004768372,
+              "first_total_ms": 106,
+              "first_readback_ms": 8.699999809265137,
+              "warm": [
+                {
+                  "render_ms": 7.5,
+                  "readback_ms": 10
+                },
+                {
+                  "render_ms": 6.800000190734863,
+                  "readback_ms": 9.099999904632568
+                },
+                {
+                  "render_ms": 7.5,
+                  "readback_ms": 9.400000095367432
+                }
+              ]
+            },
+            {
+              "open_ms": 1.7999999523162842,
+              "first_render_ms": 138.30000019073486,
+              "first_total_ms": 140.10000014305115,
+              "first_readback_ms": 8.699999809265137,
+              "warm": [
+                {
+                  "render_ms": 8,
+                  "readback_ms": 9.300000190734863
+                },
+                {
+                  "render_ms": 7.599999904632568,
+                  "readback_ms": 11.5
+                },
+                {
+                  "render_ms": 4.900000095367432,
+                  "readback_ms": 8.900000095367432
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "page": 7,
+          "pages": 8,
+          "width": 2248,
+          "height": 1589,
+          "status": "success",
+          "trials": [
+            {
+              "open_ms": 3.1999998092651367,
+              "first_render_ms": 119.90000009536743,
+              "first_total_ms": 123.09999990463257,
+              "first_readback_ms": 13.400000095367432,
+              "warm": [
+                {
+                  "render_ms": 18.699999809265137,
+                  "readback_ms": 10.600000143051147
+                },
+                {
+                  "render_ms": 5.5,
+                  "readback_ms": 10.100000143051147
+                },
+                {
+                  "render_ms": 6.299999952316284,
+                  "readback_ms": 9.799999952316284
+                }
+              ]
+            },
+            {
+              "open_ms": 1.9000000953674316,
+              "first_render_ms": 103.89999985694885,
+              "first_total_ms": 105.79999995231628,
+              "first_readback_ms": 9.800000190734863,
+              "warm": [
+                {
+                  "render_ms": 5.8999998569488525,
+                  "readback_ms": 10.400000095367432
+                },
+                {
+                  "render_ms": 6.700000047683716,
+                  "readback_ms": 9.900000095367432
+                },
+                {
+                  "render_ms": 6.599999904632568,
+                  "readback_ms": 10.800000190734863
+                }
+              ]
+            },
+            {
+              "open_ms": 1.7000000476837158,
+              "first_render_ms": 237.70000004768372,
+              "first_total_ms": 239.40000009536743,
+              "first_readback_ms": 9,
+              "warm": [
+                {
+                  "render_ms": 7.099999904632568,
+                  "readback_ms": 9.700000047683716
+                },
+                {
+                  "render_ms": 6.800000190734863,
+                  "readback_ms": 9.699999809265137
+                },
+                {
+                  "render_ms": 6.5,
+                  "readback_ms": 9.700000047683716
+                }
+              ]
+            },
+            {
+              "open_ms": 1.3999998569488525,
+              "first_render_ms": 88.5,
+              "first_total_ms": 89.89999985694885,
+              "first_readback_ms": 10,
+              "warm": [
+                {
+                  "render_ms": 7.200000047683716,
+                  "readback_ms": 9.400000095367432
+                },
+                {
+                  "render_ms": 7.099999904632568,
+                  "readback_ms": 9.400000095367432
+                },
+                {
+                  "render_ms": 7.3999998569488525,
+                  "readback_ms": 9.700000047683716
+                }
+              ]
+            },
+            {
+              "open_ms": 1.5,
+              "first_render_ms": 138,
+              "first_total_ms": 139.5,
+              "first_readback_ms": 13.899999856948853,
+              "warm": [
+                {
+                  "render_ms": 2.6000001430511475,
+                  "readback_ms": 9.899999856948853
+                },
+                {
+                  "render_ms": 6.400000095367432,
+                  "readback_ms": 9.900000095367432
+                },
+                {
+                  "render_ms": 7.5,
+                  "readback_ms": 9.799999952316284
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "page": 8,
+          "pages": 8,
+          "width": 2248,
+          "height": 1589,
+          "status": "success",
+          "trials": [
+            {
+              "open_ms": 3.5999999046325684,
+              "first_render_ms": 122.40000009536743,
+              "first_total_ms": 126,
+              "first_readback_ms": 10.5,
+              "warm": [
+                {
+                  "render_ms": 4.400000095367432,
+                  "readback_ms": 11.199999809265137
+                },
+                {
+                  "render_ms": 5.3999998569488525,
+                  "readback_ms": 9.100000143051147
+                },
+                {
+                  "render_ms": 7.599999904632568,
+                  "readback_ms": 9.200000047683716
+                }
+              ]
+            },
+            {
+              "open_ms": 1.7000000476837158,
+              "first_render_ms": 86.79999995231628,
+              "first_total_ms": 88.5,
+              "first_readback_ms": 8.599999904632568,
+              "warm": [
+                {
+                  "render_ms": 7.700000047683716,
+                  "readback_ms": 9.599999904632568
+                },
+                {
+                  "render_ms": 7.200000047683716,
+                  "readback_ms": 8.099999904632568
+                },
+                {
+                  "render_ms": 8.399999856948853,
+                  "readback_ms": 10.5
+                }
+              ]
+            },
+            {
+              "open_ms": 2,
+              "first_render_ms": 420.7999999523163,
+              "first_total_ms": 422.7999999523163,
+              "first_readback_ms": 9.099999904632568,
+              "warm": [
+                {
+                  "render_ms": 7.200000047683716,
+                  "readback_ms": 9.5
+                },
+                {
+                  "render_ms": 7,
+                  "readback_ms": 9.400000095367432
+                },
+                {
+                  "render_ms": 7.200000047683716,
+                  "readback_ms": 9.099999904632568
+                }
+              ]
+            },
+            {
+              "open_ms": 1.4000000953674316,
+              "first_render_ms": 89,
+              "first_total_ms": 90.40000009536743,
+              "first_readback_ms": 8.899999856948853,
+              "warm": [
+                {
+                  "render_ms": 7.799999952316284,
+                  "readback_ms": 9.400000095367432
+                },
+                {
+                  "render_ms": 7.5,
+                  "readback_ms": 9.799999952316284
+                },
+                {
+                  "render_ms": 6.5,
+                  "readback_ms": 9.900000095367432
+                }
+              ]
+            },
+            {
+              "open_ms": 1.5,
+              "first_render_ms": 138.79999995231628,
+              "first_total_ms": 140.29999995231628,
+              "first_readback_ms": 8.600000143051147,
+              "warm": [
+                {
+                  "render_ms": 7.700000047683716,
+                  "readback_ms": 8.899999856948853
+                },
+                {
+                  "render_ms": 7.599999904632568,
+                  "readback_ms": 9.700000047683716
+                },
+                {
+                  "render_ms": 7,
+                  "readback_ms": 10.099999904632568
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dpi": 136,
+      "engine": "PDFium 7881 / Rust release",
+      "kind": "matched_full_page_raster",
+      "method": "source bytes in memory before timing; fresh document per trial; engine startup and source disk IO excluded; full-page render without readback, with readback reported separately",
+      "pages": [
+        {
+          "height": 1590,
+          "page": 1,
+          "trials": [
+            {
+              "first_readback_ms": 0.8681249999999999,
+              "first_render_ms": 97.747209,
+              "first_total_ms": 97.824209,
+              "open_ms": 0.077,
+              "warm": [
+                {
+                  "readback_ms": 0.485084,
+                  "render_ms": 15.744083999999999
+                },
+                {
+                  "readback_ms": 0.292792,
+                  "render_ms": 15.243666
+                },
+                {
+                  "readback_ms": 0.266042,
+                  "render_ms": 15.589083
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.262042,
+              "first_render_ms": 27.575166000000003,
+              "first_total_ms": 27.666208000000005,
+              "open_ms": 0.091042,
+              "warm": [
+                {
+                  "readback_ms": 0.24558400000000002,
+                  "render_ms": 14.997417
+                },
+                {
+                  "readback_ms": 0.297209,
+                  "render_ms": 15.094541
+                },
+                {
+                  "readback_ms": 0.290375,
+                  "render_ms": 15.078332999999999
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.203125,
+              "first_render_ms": 27.019792000000002,
+              "first_total_ms": 27.117959000000003,
+              "open_ms": 0.09816699999999999,
+              "warm": [
+                {
+                  "readback_ms": 0.239417,
+                  "render_ms": 14.969375
+                },
+                {
+                  "readback_ms": 0.221292,
+                  "render_ms": 14.953042
+                },
+                {
+                  "readback_ms": 0.279459,
+                  "render_ms": 15.394
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.220791,
+              "first_render_ms": 27.309459,
+              "first_total_ms": 27.4065,
+              "open_ms": 0.09704099999999999,
+              "warm": [
+                {
+                  "readback_ms": 0.284625,
+                  "render_ms": 15.351334
+                },
+                {
+                  "readback_ms": 0.260583,
+                  "render_ms": 14.786292
+                },
+                {
+                  "readback_ms": 0.297959,
+                  "render_ms": 15.0975
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.2325,
+              "first_render_ms": 27.000458000000002,
+              "first_total_ms": 27.112166000000002,
+              "open_ms": 0.111708,
+              "warm": [
+                {
+                  "readback_ms": 0.229583,
+                  "render_ms": 15.250875
+                },
+                {
+                  "readback_ms": 0.265209,
+                  "render_ms": 14.923917
+                },
+                {
+                  "readback_ms": 0.23616600000000001,
+                  "render_ms": 15.002792
+                }
+              ]
+            }
+          ],
+          "width": 2249,
+          "status": "success"
+        },
+        {
+          "height": 1590,
+          "page": 2,
+          "trials": [
+            {
+              "first_readback_ms": 0.191541,
+              "first_render_ms": 69.47,
+              "first_total_ms": 69.560375,
+              "open_ms": 0.090375,
+              "warm": [
+                {
+                  "readback_ms": 0.198541,
+                  "render_ms": 32.437417
+                },
+                {
+                  "readback_ms": 0.209583,
+                  "render_ms": 32.209875
+                },
+                {
+                  "readback_ms": 0.1865,
+                  "render_ms": 32.700084
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 1.136125,
+              "first_render_ms": 70.25075,
+              "first_total_ms": 70.360209,
+              "open_ms": 0.109459,
+              "warm": [
+                {
+                  "readback_ms": 0.6319589999999999,
+                  "render_ms": 32.705417
+                },
+                {
+                  "readback_ms": 0.27295899999999995,
+                  "render_ms": 32.946042
+                },
+                {
+                  "readback_ms": 0.228292,
+                  "render_ms": 32.692417
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.259792,
+              "first_render_ms": 66.544667,
+              "first_total_ms": 66.64225,
+              "open_ms": 0.097583,
+              "warm": [
+                {
+                  "readback_ms": 0.253042,
+                  "render_ms": 32.637167000000005
+                },
+                {
+                  "readback_ms": 0.25083300000000003,
+                  "render_ms": 32.526417
+                },
+                {
+                  "readback_ms": 0.21025,
+                  "render_ms": 31.881832999999997
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.21225000000000002,
+              "first_render_ms": 67.847833,
+              "first_total_ms": 67.942791,
+              "open_ms": 0.094958,
+              "warm": [
+                {
+                  "readback_ms": 0.20174999999999998,
+                  "render_ms": 32.770167
+                },
+                {
+                  "readback_ms": 0.212,
+                  "render_ms": 32.526125
+                },
+                {
+                  "readback_ms": 0.219333,
+                  "render_ms": 32.504583
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.28820799999999996,
+              "first_render_ms": 67.978375,
+              "first_total_ms": 68.081833,
+              "open_ms": 0.103458,
+              "warm": [
+                {
+                  "readback_ms": 0.237209,
+                  "render_ms": 32.180834
+                },
+                {
+                  "readback_ms": 0.21954200000000001,
+                  "render_ms": 32.438834
+                },
+                {
+                  "readback_ms": 0.199958,
+                  "render_ms": 32.307
+                }
+              ]
+            }
+          ],
+          "width": 2249,
+          "status": "success"
+        },
+        {
+          "height": 1590,
+          "page": 3,
+          "trials": [
+            {
+              "first_readback_ms": 0.268625,
+              "first_render_ms": 638.163125,
+              "first_total_ms": 638.2676670000001,
+              "open_ms": 0.104542,
+              "warm": [
+                {
+                  "readback_ms": 0.252375,
+                  "render_ms": 591.768208
+                },
+                {
+                  "readback_ms": 0.212084,
+                  "render_ms": 589.8469170000001
+                },
+                {
+                  "readback_ms": 0.21125000000000002,
+                  "render_ms": 589.331375
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.225708,
+              "first_render_ms": 640.014833,
+              "first_total_ms": 640.116916,
+              "open_ms": 0.10208300000000001,
+              "warm": [
+                {
+                  "readback_ms": 0.220166,
+                  "render_ms": 587.903208
+                },
+                {
+                  "readback_ms": 0.304792,
+                  "render_ms": 587.271208
+                },
+                {
+                  "readback_ms": 0.213625,
+                  "render_ms": 588.9595410000001
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.27,
+              "first_render_ms": 631.361958,
+              "first_total_ms": 631.4689159999999,
+              "open_ms": 0.106958,
+              "warm": [
+                {
+                  "readback_ms": 0.21350000000000002,
+                  "render_ms": 584.385625
+                },
+                {
+                  "readback_ms": 0.234334,
+                  "render_ms": 588.166334
+                },
+                {
+                  "readback_ms": 0.20541600000000002,
+                  "render_ms": 587.75075
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.23875,
+              "first_render_ms": 631.130167,
+              "first_total_ms": 631.234042,
+              "open_ms": 0.10387500000000001,
+              "warm": [
+                {
+                  "readback_ms": 0.222,
+                  "render_ms": 587.736417
+                },
+                {
+                  "readback_ms": 0.22975,
+                  "render_ms": 585.5571659999999
+                },
+                {
+                  "readback_ms": 0.242083,
+                  "render_ms": 585.6828750000001
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.268791,
+              "first_render_ms": 634.4991669999999,
+              "first_total_ms": 634.607,
+              "open_ms": 0.107833,
+              "warm": [
+                {
+                  "readback_ms": 0.317625,
+                  "render_ms": 595.917
+                },
+                {
+                  "readback_ms": 0.320125,
+                  "render_ms": 593.1413749999999
+                },
+                {
+                  "readback_ms": 0.231625,
+                  "render_ms": 592.3061250000001
+                }
+              ]
+            }
+          ],
+          "width": 2249,
+          "status": "success"
+        },
+        {
+          "height": 1590,
+          "page": 4,
+          "trials": [
+            {
+              "first_readback_ms": 0.186417,
+              "first_render_ms": 669.9548749999999,
+              "first_total_ms": 670.0584579999999,
+              "open_ms": 0.103583,
+              "warm": [
+                {
+                  "readback_ms": 0.18954200000000002,
+                  "render_ms": 622.6979580000001
+                },
+                {
+                  "readback_ms": 0.19020800000000002,
+                  "render_ms": 622.0795
+                },
+                {
+                  "readback_ms": 0.253792,
+                  "render_ms": 624.577333
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.9055829999999999,
+              "first_render_ms": 674.054208,
+              "first_total_ms": 674.166541,
+              "open_ms": 0.112333,
+              "warm": [
+                {
+                  "readback_ms": 0.700333,
+                  "render_ms": 628.442541
+                },
+                {
+                  "readback_ms": 0.29329099999999997,
+                  "render_ms": 621.9885830000001
+                },
+                {
+                  "readback_ms": 0.188792,
+                  "render_ms": 624.71725
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.195083,
+              "first_render_ms": 671.394625,
+              "first_total_ms": 671.500166,
+              "open_ms": 0.105541,
+              "warm": [
+                {
+                  "readback_ms": 0.290208,
+                  "render_ms": 622.92275
+                },
+                {
+                  "readback_ms": 0.197458,
+                  "render_ms": 626.193958
+                },
+                {
+                  "readback_ms": 0.189167,
+                  "render_ms": 622.677334
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.19325,
+              "first_render_ms": 669.772375,
+              "first_total_ms": 669.881792,
+              "open_ms": 0.109417,
+              "warm": [
+                {
+                  "readback_ms": 0.191209,
+                  "render_ms": 623.7465840000001
+                },
+                {
+                  "readback_ms": 0.306708,
+                  "render_ms": 625.725291
+                },
+                {
+                  "readback_ms": 0.187416,
+                  "render_ms": 626.118667
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.19287500000000002,
+              "first_render_ms": 678.64075,
+              "first_total_ms": 678.746042,
+              "open_ms": 0.105292,
+              "warm": [
+                {
+                  "readback_ms": 0.204167,
+                  "render_ms": 627.084834
+                },
+                {
+                  "readback_ms": 0.188084,
+                  "render_ms": 628.2088329999999
+                },
+                {
+                  "readback_ms": 0.187709,
+                  "render_ms": 624.021709
+                }
+              ]
+            }
+          ],
+          "width": 2249,
+          "status": "success"
+        },
+        {
+          "height": 1589,
+          "page": 5,
+          "trials": [
+            {
+              "first_readback_ms": 1.0154590000000001,
+              "first_render_ms": 75.621709,
+              "first_total_ms": 75.725459,
+              "open_ms": 0.10375,
+              "warm": [
+                {
+                  "readback_ms": 0.203583,
+                  "render_ms": 66.493833
+                },
+                {
+                  "readback_ms": 0.2075,
+                  "render_ms": 65.52904099999999
+                },
+                {
+                  "readback_ms": 0.203791,
+                  "render_ms": 66.42720800000001
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.229042,
+              "first_render_ms": 74.425834,
+              "first_total_ms": 74.52354299999999,
+              "open_ms": 0.09770899999999999,
+              "warm": [
+                {
+                  "readback_ms": 0.28870799999999996,
+                  "render_ms": 65.933375
+                },
+                {
+                  "readback_ms": 0.20149999999999998,
+                  "render_ms": 65.975584
+                },
+                {
+                  "readback_ms": 0.210208,
+                  "render_ms": 65.753375
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.207291,
+              "first_render_ms": 74.320834,
+              "first_total_ms": 74.422667,
+              "open_ms": 0.10183299999999999,
+              "warm": [
+                {
+                  "readback_ms": 0.20637499999999998,
+                  "render_ms": 66.0935
+                },
+                {
+                  "readback_ms": 0.21141700000000002,
+                  "render_ms": 66.029625
+                },
+                {
+                  "readback_ms": 0.197792,
+                  "render_ms": 65.48287499999999
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.207125,
+              "first_render_ms": 75.760042,
+              "first_total_ms": 75.859625,
+              "open_ms": 0.099583,
+              "warm": [
+                {
+                  "readback_ms": 0.208541,
+                  "render_ms": 68.531959
+                },
+                {
+                  "readback_ms": 0.20325000000000001,
+                  "render_ms": 67.471292
+                },
+                {
+                  "readback_ms": 0.204625,
+                  "render_ms": 66.003
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.20633300000000002,
+              "first_render_ms": 77.978458,
+              "first_total_ms": 78.085249,
+              "open_ms": 0.106791,
+              "warm": [
+                {
+                  "readback_ms": 0.212834,
+                  "render_ms": 67.854709
+                },
+                {
+                  "readback_ms": 0.208167,
+                  "render_ms": 67.607583
+                },
+                {
+                  "readback_ms": 0.228708,
+                  "render_ms": 66.94075
+                }
+              ]
+            }
+          ],
+          "width": 2248,
+          "status": "success"
+        },
+        {
+          "height": 1589,
+          "page": 6,
+          "trials": [
+            {
+              "first_readback_ms": 0.215,
+              "first_render_ms": 52.671875,
+              "first_total_ms": 52.780375,
+              "open_ms": 0.1085,
+              "warm": [
+                {
+                  "readback_ms": 0.194166,
+                  "render_ms": 43.107
+                },
+                {
+                  "readback_ms": 0.19225,
+                  "render_ms": 43.455458
+                },
+                {
+                  "readback_ms": 0.194959,
+                  "render_ms": 41.894458
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.232125,
+              "first_render_ms": 50.899542,
+              "first_total_ms": 51.000707999999996,
+              "open_ms": 0.101166,
+              "warm": [
+                {
+                  "readback_ms": 0.233584,
+                  "render_ms": 42.036958999999996
+                },
+                {
+                  "readback_ms": 0.195541,
+                  "render_ms": 41.791792
+                },
+                {
+                  "readback_ms": 0.20675000000000002,
+                  "render_ms": 41.710042
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.217167,
+              "first_render_ms": 52.602083,
+              "first_total_ms": 52.704416,
+              "open_ms": 0.102333,
+              "warm": [
+                {
+                  "readback_ms": 0.191208,
+                  "render_ms": 42.369499999999995
+                },
+                {
+                  "readback_ms": 0.1885,
+                  "render_ms": 43.116791
+                },
+                {
+                  "readback_ms": 0.201708,
+                  "render_ms": 42.21975
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.204583,
+              "first_render_ms": 52.494875,
+              "first_total_ms": 52.598917,
+              "open_ms": 0.10404200000000001,
+              "warm": [
+                {
+                  "readback_ms": 0.250625,
+                  "render_ms": 42.033208
+                },
+                {
+                  "readback_ms": 0.194792,
+                  "render_ms": 41.204875
+                },
+                {
+                  "readback_ms": 0.195584,
+                  "render_ms": 42.096375
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.195417,
+              "first_render_ms": 52.645375,
+              "first_total_ms": 52.743833,
+              "open_ms": 0.098458,
+              "warm": [
+                {
+                  "readback_ms": 0.721792,
+                  "render_ms": 44.056625000000004
+                },
+                {
+                  "readback_ms": 0.21725,
+                  "render_ms": 40.770832999999996
+                },
+                {
+                  "readback_ms": 0.187125,
+                  "render_ms": 41.074208
+                }
+              ]
+            }
+          ],
+          "width": 2248,
+          "status": "success"
+        },
+        {
+          "height": 1589,
+          "page": 7,
+          "trials": [
+            {
+              "first_readback_ms": 0.204416,
+              "first_render_ms": 57.369499999999995,
+              "first_total_ms": 57.470915999999995,
+              "open_ms": 0.101416,
+              "warm": [
+                {
+                  "readback_ms": 0.230292,
+                  "render_ms": 50.5275
+                },
+                {
+                  "readback_ms": 0.21087499999999998,
+                  "render_ms": 51.072792
+                },
+                {
+                  "readback_ms": 0.19666599999999998,
+                  "render_ms": 47.798292
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.208125,
+              "first_render_ms": 55.957,
+              "first_total_ms": 56.056792,
+              "open_ms": 0.09979199999999999,
+              "warm": [
+                {
+                  "readback_ms": 0.201833,
+                  "render_ms": 48.585416
+                },
+                {
+                  "readback_ms": 0.230792,
+                  "render_ms": 47.748290999999995
+                },
+                {
+                  "readback_ms": 0.195708,
+                  "render_ms": 47.681041
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.211792,
+              "first_render_ms": 58.5425,
+              "first_total_ms": 58.642208,
+              "open_ms": 0.099708,
+              "warm": [
+                {
+                  "readback_ms": 0.210291,
+                  "render_ms": 47.210334
+                },
+                {
+                  "readback_ms": 0.21962500000000001,
+                  "render_ms": 49.11575
+                },
+                {
+                  "readback_ms": 0.203875,
+                  "render_ms": 47.917125
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.211708,
+              "first_render_ms": 56.294792,
+              "first_total_ms": 56.397084,
+              "open_ms": 0.10229200000000001,
+              "warm": [
+                {
+                  "readback_ms": 0.20066699999999998,
+                  "render_ms": 49.514125
+                },
+                {
+                  "readback_ms": 0.201625,
+                  "render_ms": 47.827
+                },
+                {
+                  "readback_ms": 0.19045800000000002,
+                  "render_ms": 47.711417
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.19725,
+              "first_render_ms": 56.13725,
+              "first_total_ms": 56.228958,
+              "open_ms": 0.091708,
+              "warm": [
+                {
+                  "readback_ms": 0.20149999999999998,
+                  "render_ms": 50.629875
+                },
+                {
+                  "readback_ms": 0.193084,
+                  "render_ms": 47.536125
+                },
+                {
+                  "readback_ms": 0.19225,
+                  "render_ms": 47.570333
+                }
+              ]
+            }
+          ],
+          "width": 2248,
+          "status": "success"
+        },
+        {
+          "height": 1589,
+          "page": 8,
+          "trials": [
+            {
+              "first_readback_ms": 0.20525,
+              "first_render_ms": 48.83862499999999,
+              "first_total_ms": 48.93487499999999,
+              "open_ms": 0.09624999999999999,
+              "warm": [
+                {
+                  "readback_ms": 0.18645799999999998,
+                  "render_ms": 40.896209000000006
+                },
+                {
+                  "readback_ms": 0.19737500000000002,
+                  "render_ms": 40.616167000000004
+                },
+                {
+                  "readback_ms": 0.210208,
+                  "render_ms": 40.786916999999995
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.193375,
+              "first_render_ms": 49.24875,
+              "first_total_ms": 49.355584,
+              "open_ms": 0.106834,
+              "warm": [
+                {
+                  "readback_ms": 0.18637499999999999,
+                  "render_ms": 40.591875
+                },
+                {
+                  "readback_ms": 0.190292,
+                  "render_ms": 41.729042
+                },
+                {
+                  "readback_ms": 0.187625,
+                  "render_ms": 41.070042
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.185583,
+              "first_render_ms": 49.365416,
+              "first_total_ms": 49.46275,
+              "open_ms": 0.097334,
+              "warm": [
+                {
+                  "readback_ms": 0.198667,
+                  "render_ms": 40.843375
+                },
+                {
+                  "readback_ms": 0.196625,
+                  "render_ms": 40.831834
+                },
+                {
+                  "readback_ms": 0.219875,
+                  "render_ms": 40.577917
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.186791,
+              "first_render_ms": 48.709833,
+              "first_total_ms": 48.808208,
+              "open_ms": 0.098375,
+              "warm": [
+                {
+                  "readback_ms": 0.20475,
+                  "render_ms": 40.588917
+                },
+                {
+                  "readback_ms": 0.213875,
+                  "render_ms": 40.388042
+                },
+                {
+                  "readback_ms": 0.207708,
+                  "render_ms": 40.48575
+                }
+              ]
+            },
+            {
+              "first_readback_ms": 0.20375,
+              "first_render_ms": 49.021834,
+              "first_total_ms": 49.119834,
+              "open_ms": 0.098,
+              "warm": [
+                {
+                  "readback_ms": 0.196625,
+                  "render_ms": 40.320208
+                },
+                {
+                  "readback_ms": 0.19924999999999998,
+                  "render_ms": 40.469875
+                },
+                {
+                  "readback_ms": 0.198209,
+                  "render_ms": 40.414166
+                }
+              ]
+            }
+          ],
+          "width": 2248,
+          "status": "success"
+        }
+      ],
+      "trials_per_page": 5,
+      "warm_renders_per_trial": 3
+    },
+    {
+      "engine": "PDF.js 5.6.205",
+      "pages": [
+        {
+          "page": 1,
+          "pages": 8,
+          "width": 2249,
+          "height": 1590,
+          "status": "success",
+          "trials": [
+            {
+              "open_ms": 3.4000000953674316,
+              "first_render_ms": 110.29999995231628,
+              "first_total_ms": 113.70000004768372,
+              "first_readback_ms": 11.299999952316284,
+              "warm": [
+                {
+                  "render_ms": 26.100000143051147,
+                  "readback_ms": 9.700000047683716
+                },
+                {
+                  "render_ms": 23.899999856948853,
+                  "readback_ms": 9.5
+                },
+                {
+                  "render_ms": 21.40000009536743,
+                  "readback_ms": 9.099999904632568
+                }
+              ]
+            },
+            {
+              "open_ms": 1.2000000476837158,
+              "first_render_ms": 80.79999995231628,
+              "first_total_ms": 82,
+              "first_readback_ms": 9.700000047683716,
+              "warm": [
+                {
+                  "render_ms": 25,
+                  "readback_ms": 7.599999904632568
+                },
+                {
+                  "render_ms": 24.600000143051147,
+                  "readback_ms": 6.8999998569488525
+                },
+                {
+                  "render_ms": 25,
+                  "readback_ms": 6.700000047683716
+                }
+              ]
+            },
+            {
+              "open_ms": 0.7999999523162842,
+              "first_render_ms": 62,
+              "first_total_ms": 62.799999952316284,
+              "first_readback_ms": 10.400000095367432,
+              "warm": [
+                {
+                  "render_ms": 20.799999952316284,
+                  "readback_ms": 6.799999952316284
+                },
+                {
+                  "render_ms": 26.5,
+                  "readback_ms": 7.200000047683716
+                },
+                {
+                  "render_ms": 25.700000047683716,
+                  "readback_ms": 7
+                }
+              ]
+            },
+            {
+              "open_ms": 0.6999998092651367,
+              "first_render_ms": 73.5,
+              "first_total_ms": 74.19999980926514,
+              "first_readback_ms": 9.100000143051147,
+              "warm": [
+                {
+                  "render_ms": 25.799999952316284,
+                  "readback_ms": 7.800000190734863
+                },
+                {
+                  "render_ms": 25,
+                  "readback_ms": 7.599999904632568
+                },
+                {
+                  "render_ms": 25.700000047683716,
+                  "readback_ms": 6.6000001430511475
+                }
+              ]
+            },
+            {
+              "open_ms": 0.6000001430511475,
+              "first_render_ms": 75,
+              "first_total_ms": 75.60000014305115,
+              "first_readback_ms": 11.299999952316284,
+              "warm": [
+                {
+                  "render_ms": 22.299999952316284,
+                  "readback_ms": 7.700000047683716
+                },
+                {
+                  "render_ms": 25.100000143051147,
+                  "readback_ms": 6.799999952316284
+                },
+                {
+                  "render_ms": 28.59999990463257,
+                  "readback_ms": 9.400000095367432
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pages": 8,
+          "width": 2249,
+          "height": 1590,
+          "status": "success",
+          "trials": [
+            {
+              "open_ms": 3.6000001430511475,
+              "first_render_ms": 264.59999990463257,
+              "first_total_ms": 268.2000000476837,
+              "first_readback_ms": 12.299999952316284,
+              "warm": [
+                {
+                  "render_ms": 79.5,
+                  "readback_ms": 9.799999952316284
+                },
+                {
+                  "render_ms": 80.10000014305115,
+                  "readback_ms": 8.299999952316284
+                },
+                {
+                  "render_ms": 81.90000009536743,
+                  "readback_ms": 7.799999952316284
+                }
+              ]
+            },
+            {
+              "open_ms": 1.1999998092651367,
+              "first_render_ms": 224.10000014305115,
+              "first_total_ms": 225.29999995231628,
+              "first_readback_ms": 10.299999952316284,
+              "warm": [
+                {
+                  "render_ms": 75.20000004768372,
+                  "readback_ms": 8.899999856948853
+                },
+                {
+                  "render_ms": 73.20000004768372,
+                  "readback_ms": 7.799999952316284
+                },
+                {
+                  "render_ms": 73.40000009536743,
+                  "readback_ms": 8.900000095367432
+                }
+              ]
+            },
+            {
+              "open_ms": 1.2000000476837158,
+              "first_render_ms": 225.59999990463257,
+              "first_total_ms": 226.79999995231628,
+              "first_readback_ms": 10.299999952316284,
+              "warm": [
+                {
+                  "render_ms": 78.59999990463257,
+                  "readback_ms": 6.799999952316284
+                },
+                {
+                  "render_ms": 74.19999980926514,
+                  "readback_ms": 8.5
+                },
+                {
+                  "render_ms": 71.30000019073486,
+                  "readback_ms": 7.8999998569488525
+                }
+              ]
+            },
+            {
+              "open_ms": 1.4000000953674316,
+              "first_render_ms": 222.59999990463257,
+              "first_total_ms": 224,
+              "first_readback_ms": 8.600000143051147,
+              "warm": [
+                {
+                  "render_ms": 78.39999985694885,
+                  "readback_ms": 8
+                },
+                {
+                  "render_ms": 78.89999985694885,
+                  "readback_ms": 7.6000001430511475
+                },
+                {
+                  "render_ms": 74.39999985694885,
+                  "readback_ms": 8.799999952316284
+                }
+              ]
+            },
+            {
+              "open_ms": 1.4000000953674316,
+              "first_render_ms": 209.90000009536743,
+              "first_total_ms": 211.30000019073486,
+              "first_readback_ms": 11.299999952316284,
+              "warm": [
+                {
+                  "render_ms": 80.70000004768372,
+                  "readback_ms": 6.799999952316284
+                },
+                {
+                  "render_ms": 69.29999995231628,
+                  "readback_ms": 8.099999904632568
+                },
+                {
+                  "render_ms": 69.20000004768372,
+                  "readback_ms": 7.700000047683716
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "page": 3,
+          "pages": 8,
+          "width": 2249,
+          "height": 1590,
+          "status": "success",
+          "trials": [
+            {
+              "open_ms": 3.6999998092651367,
+              "first_render_ms": 373.2000000476837,
+              "first_total_ms": 376.89999985694885,
+              "first_readback_ms": 9.700000047683716,
+              "warm": [
+                {
+                  "render_ms": 133,
+                  "readback_ms": 8.900000095367432
+                },
+                {
+                  "render_ms": 125.19999980926514,
+                  "readback_ms": 7.400000095367432
+                },
+                {
+                  "render_ms": 130.09999990463257,
+                  "readback_ms": 7.5
+                }
+              ]
+            },
+            {
+              "open_ms": 1.6000001430511475,
+              "first_render_ms": 330.89999985694885,
+              "first_total_ms": 332.5,
+              "first_readback_ms": 7.799999952316284,
+              "warm": [
+                {
+                  "render_ms": 135.09999990463257,
+                  "readback_ms": 7.299999952316284
+                },
+                {
+                  "render_ms": 121.20000004768372,
+                  "readback_ms": 6.6000001430511475
+                },
+                {
+                  "render_ms": 125.89999985694885,
+                  "readback_ms": 7
+                }
+              ]
+            },
+            {
+              "open_ms": 3.5,
+              "first_render_ms": 327.60000014305115,
+              "first_total_ms": 331.10000014305115,
+              "first_readback_ms": 8.399999856948853,
+              "warm": [
+                {
+                  "render_ms": 125,
+                  "readback_ms": 6.400000095367432
+                },
+                {
+                  "render_ms": 136.59999990463257,
+                  "readback_ms": 7.5
+                },
+                {
+                  "render_ms": 124.79999995231628,
+                  "readback_ms": 7.5
+                }
+              ]
+            },
+            {
+              "open_ms": 1,
+              "first_render_ms": 322.60000014305115,
+              "first_total_ms": 323.60000014305115,
+              "first_readback_ms": 9.799999952316284,
+              "warm": [
+                {
+                  "render_ms": 138,
+                  "readback_ms": 8.099999904632568
+                },
+                {
+                  "render_ms": 126.59999990463257,
+                  "readback_ms": 8.099999904632568
+                },
+                {
+                  "render_ms": 131,
+                  "readback_ms": 7.299999952316284
+                }
+              ]
+            },
+            {
+              "open_ms": 4.200000047683716,
+              "first_render_ms": 326.5,
+              "first_total_ms": 330.7000000476837,
+              "first_readback_ms": 10.099999904632568,
+              "warm": [
+                {
+                  "render_ms": 124.79999995231628,
+                  "readback_ms": 6.799999952316284
+                },
+                {
+                  "render_ms": 140.90000009536743,
+                  "readback_ms": 7.200000047683716
+                },
+                {
+                  "render_ms": 127.89999985694885,
+                  "readback_ms": 7.1000001430511475
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "page": 4,
+          "pages": 8,
+          "width": 2249,
+          "height": 1590,
+          "status": "success",
+          "trials": [
+            {
+              "open_ms": 3.5,
+              "first_render_ms": 370.59999990463257,
+              "first_total_ms": 374.09999990463257,
+              "first_readback_ms": 11.200000047683716,
+              "warm": [
+                {
+                  "render_ms": 126.10000014305115,
+                  "readback_ms": 10.399999856948853
+                },
+                {
+                  "render_ms": 136.29999995231628,
+                  "readback_ms": 9
+                },
+                {
+                  "render_ms": 119.90000009536743,
+                  "readback_ms": 8.5
+                }
+              ]
+            },
+            {
+              "open_ms": 1.2999999523162842,
+              "first_render_ms": 334.90000009536743,
+              "first_total_ms": 336.2000000476837,
+              "first_readback_ms": 10.099999904632568,
+              "warm": [
+                {
+                  "render_ms": 117.5,
+                  "readback_ms": 7.6000001430511475
+                },
+                {
+                  "render_ms": 144.39999985694885,
+                  "readback_ms": 8.200000047683716
+                },
+                {
+                  "render_ms": 137.79999995231628,
+                  "readback_ms": 8.299999952316284
+                }
+              ]
+            },
+            {
+              "open_ms": 1.2000000476837158,
+              "first_render_ms": 409.5,
+              "first_total_ms": 410.7000000476837,
+              "first_readback_ms": 7.799999952316284,
+              "warm": [
+                {
+                  "render_ms": 117,
+                  "readback_ms": 8.399999856948853
+                },
+                {
+                  "render_ms": 121.59999990463257,
+                  "readback_ms": 7.299999952316284
+                },
+                {
+                  "render_ms": 125.29999995231628,
+                  "readback_ms": 13.5
+                }
+              ]
+            },
+            {
+              "open_ms": 1.0999999046325684,
+              "first_render_ms": 407.5,
+              "first_total_ms": 408.59999990463257,
+              "first_readback_ms": 9.700000047683716,
+              "warm": [
+                {
+                  "render_ms": 116.5,
+                  "readback_ms": 7.200000047683716
+                },
+                {
+                  "render_ms": 118.20000004768372,
+                  "readback_ms": 7.799999952316284
+                },
+                {
+                  "render_ms": 114.5,
+                  "readback_ms": 7.5
+                }
+              ]
+            },
+            {
+              "open_ms": 1.2000000476837158,
+              "first_render_ms": 314,
+              "first_total_ms": 315.2000000476837,
+              "first_readback_ms": 10.399999856948853,
+              "warm": [
+                {
+                  "render_ms": 110.40000009536743,
+                  "readback_ms": 7.099999904632568
+                },
+                {
+                  "render_ms": 118,
+                  "readback_ms": 7.800000190734863
+                },
+                {
+                  "render_ms": 106.69999980926514,
+                  "readback_ms": 7.900000095367432
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "page": 5,
+          "pages": 8,
+          "width": 2248,
+          "height": 1589,
+          "status": "success",
+          "trials": [
+            {
+              "open_ms": 3.4000000953674316,
+              "first_render_ms": 175.59999990463257,
+              "first_total_ms": 179,
+              "first_readback_ms": 9.300000190734863,
+              "warm": [
+                {
+                  "render_ms": 23.199999809265137,
+                  "readback_ms": 6.700000047683716
+                },
+                {
+                  "render_ms": 21.799999952316284,
+                  "readback_ms": 5.800000190734863
+                },
+                {
+                  "render_ms": 23.5,
+                  "readback_ms": 5.700000047683716
+                }
+              ]
+            },
+            {
+              "open_ms": 1.5999999046325684,
+              "first_render_ms": 137.60000014305115,
+              "first_total_ms": 139.20000004768372,
+              "first_readback_ms": 6.599999904632568,
+              "warm": [
+                {
+                  "render_ms": 24.40000009536743,
+                  "readback_ms": 7.299999952316284
+                },
+                {
+                  "render_ms": 31.59999990463257,
+                  "readback_ms": 5.6000001430511475
+                },
+                {
+                  "render_ms": 23.399999856948853,
+                  "readback_ms": 5.800000190734863
+                }
+              ]
+            },
+            {
+              "open_ms": 2,
+              "first_render_ms": 243.09999990463257,
+              "first_total_ms": 245.09999990463257,
+              "first_readback_ms": 6.900000095367432,
+              "warm": [
+                {
+                  "render_ms": 26.5,
+                  "readback_ms": 6
+                },
+                {
+                  "render_ms": 25.299999952316284,
+                  "readback_ms": 5.799999952316284
+                },
+                {
+                  "render_ms": 26.40000009536743,
+                  "readback_ms": 6.3999998569488525
+                }
+              ]
+            },
+            {
+              "open_ms": 0.7999999523162842,
+              "first_render_ms": 125.70000004768372,
+              "first_total_ms": 126.5,
+              "first_readback_ms": 6.3999998569488525,
+              "warm": [
+                {
+                  "render_ms": 28.5,
+                  "readback_ms": 6.6000001430511475
+                },
+                {
+                  "render_ms": 27.899999856948853,
+                  "readback_ms": 6.6000001430511475
+                },
+                {
+                  "render_ms": 26.09999990463257,
+                  "readback_ms": 6.200000047683716
+                }
+              ]
+            },
+            {
+              "open_ms": 1.3999998569488525,
+              "first_render_ms": 178,
+              "first_total_ms": 179.39999985694885,
+              "first_readback_ms": 7.1000001430511475,
+              "warm": [
+                {
+                  "render_ms": 23.399999856948853,
+                  "readback_ms": 5.200000047683716
+                },
+                {
+                  "render_ms": 24.700000047683716,
+                  "readback_ms": 5.5
+                },
+                {
+                  "render_ms": 28.5,
+                  "readback_ms": 5.8999998569488525
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "page": 6,
+          "pages": 8,
+          "width": 2248,
+          "height": 1589,
+          "status": "success",
+          "trials": [
+            {
+              "open_ms": 3.5,
+              "first_render_ms": 141.29999995231628,
+              "first_total_ms": 144.79999995231628,
+              "first_readback_ms": 10.400000095367432,
+              "warm": [
+                {
+                  "render_ms": 17.200000047683716,
+                  "readback_ms": 8.099999904632568
+                },
+                {
+                  "render_ms": 20.200000047683716,
+                  "readback_ms": 8.5
+                },
+                {
+                  "render_ms": 11.099999904632568,
+                  "readback_ms": 8.100000143051147
+                }
+              ]
+            },
+            {
+              "open_ms": 1.2000000476837158,
+              "first_render_ms": 104.29999995231628,
+              "first_total_ms": 105.5,
+              "first_readback_ms": 8.300000190734863,
+              "warm": [
+                {
+                  "render_ms": 13.599999904632568,
+                  "readback_ms": 7.099999904632568
+                },
+                {
+                  "render_ms": 12.200000047683716,
+                  "readback_ms": 7.799999952316284
+                },
+                {
+                  "render_ms": 12.799999952316284,
+                  "readback_ms": 7.299999952316284
+                }
+              ]
+            },
+            {
+              "open_ms": 1.2999999523162842,
+              "first_render_ms": 428.2999999523163,
+              "first_total_ms": 429.59999990463257,
+              "first_readback_ms": 7.799999952316284,
+              "warm": [
+                {
+                  "render_ms": 11.799999952316284,
+                  "readback_ms": 7.400000095367432
+                },
+                {
+                  "render_ms": 11.700000047683716,
+                  "readback_ms": 8.5
+                },
+                {
+                  "render_ms": 11.799999952316284,
+                  "readback_ms": 8.200000047683716
+                }
+              ]
+            },
+            {
+              "open_ms": 1.9000000953674316,
+              "first_render_ms": 112.79999995231628,
+              "first_total_ms": 114.70000004768372,
+              "first_readback_ms": 7.900000095367432,
+              "warm": [
+                {
+                  "render_ms": 10.799999952316284,
+                  "readback_ms": 8.200000047683716
+                },
+                {
+                  "render_ms": 11.900000095367432,
+                  "readback_ms": 7.5
+                },
+                {
+                  "render_ms": 11.200000047683716,
+                  "readback_ms": 7
+                }
+              ]
+            },
+            {
+              "open_ms": 1,
+              "first_render_ms": 149.60000014305115,
+              "first_total_ms": 150.60000014305115,
+              "first_readback_ms": 7.3999998569488525,
+              "warm": [
+                {
+                  "render_ms": 10.400000095367432,
+                  "readback_ms": 7.8999998569488525
+                },
+                {
+                  "render_ms": 10.700000047683716,
+                  "readback_ms": 8
+                },
+                {
+                  "render_ms": 10.799999952316284,
+                  "readback_ms": 7.800000190734863
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "page": 7,
+          "pages": 8,
+          "width": 2248,
+          "height": 1589,
+          "status": "success",
+          "trials": [
+            {
+              "open_ms": 3.3000001907348633,
+              "first_render_ms": 131,
+              "first_total_ms": 134.30000019073486,
+              "first_readback_ms": 9.199999809265137,
+              "warm": [
+                {
+                  "render_ms": 16,
+                  "readback_ms": 6
+                },
+                {
+                  "render_ms": 25.100000143051147,
+                  "readback_ms": 6.099999904632568
+                },
+                {
+                  "render_ms": 27.299999952316284,
+                  "readback_ms": 8.700000047683716
+                }
+              ]
+            },
+            {
+              "open_ms": 1.1999998092651367,
+              "first_render_ms": 104.80000019073486,
+              "first_total_ms": 106,
+              "first_readback_ms": 6.099999904632568,
+              "warm": [
+                {
+                  "render_ms": 25.59999990463257,
+                  "readback_ms": 6.1000001430511475
+                },
+                {
+                  "render_ms": 15.200000047683716,
+                  "readback_ms": 6.700000047683716
+                },
+                {
+                  "render_ms": 15.399999856948853,
+                  "readback_ms": 6.300000190734863
+                }
+              ]
+            },
+            {
+              "open_ms": 1.6000001430511475,
+              "first_render_ms": 299,
+              "first_total_ms": 300.60000014305115,
+              "first_readback_ms": 6.599999904632568,
+              "warm": [
+                {
+                  "render_ms": 24.299999952316284,
+                  "readback_ms": 6.5
+                },
+                {
+                  "render_ms": 15,
+                  "readback_ms": 6.299999952316284
+                },
+                {
+                  "render_ms": 14.299999952316284,
+                  "readback_ms": 5.900000095367432
+                }
+              ]
+            },
+            {
+              "open_ms": 1,
+              "first_render_ms": 119.69999980926514,
+              "first_total_ms": 120.69999980926514,
+              "first_readback_ms": 6.200000047683716,
+              "warm": [
+                {
+                  "render_ms": 23.799999952316284,
+                  "readback_ms": 6.400000095367432
+                },
+                {
+                  "render_ms": 14.299999952316284,
+                  "readback_ms": 6.200000047683716
+                },
+                {
+                  "render_ms": 14.799999952316284,
+                  "readback_ms": 6
+                }
+              ]
+            },
+            {
+              "open_ms": 1.2999999523162842,
+              "first_render_ms": 135.20000004768372,
+              "first_total_ms": 136.5,
+              "first_readback_ms": 6,
+              "warm": [
+                {
+                  "render_ms": 26,
+                  "readback_ms": 6.200000047683716
+                },
+                {
+                  "render_ms": 14.799999952316284,
+                  "readback_ms": 6.300000190734863
+                },
+                {
+                  "render_ms": 14.199999809265137,
+                  "readback_ms": 7.1000001430511475
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "page": 8,
+          "pages": 8,
+          "width": 2248,
+          "height": 1589,
+          "status": "success",
+          "trials": [
+            {
+              "open_ms": 3.5,
+              "first_render_ms": 131.79999995231628,
+              "first_total_ms": 135.29999995231628,
+              "first_readback_ms": 10.700000047683716,
+              "warm": [
+                {
+                  "render_ms": 14.799999952316284,
+                  "readback_ms": 9.900000095367432
+                },
+                {
+                  "render_ms": 13.799999952316284,
+                  "readback_ms": 8
+                },
+                {
+                  "render_ms": 14.600000143051147,
+                  "readback_ms": 7.3999998569488525
+                }
+              ]
+            },
+            {
+              "open_ms": 1.3999998569488525,
+              "first_render_ms": 92.90000009536743,
+              "first_total_ms": 94.29999995231628,
+              "first_readback_ms": 9.700000047683716,
+              "warm": [
+                {
+                  "render_ms": 13.599999904632568,
+                  "readback_ms": 7.400000095367432
+                },
+                {
+                  "render_ms": 12.5,
+                  "readback_ms": 7.599999904632568
+                },
+                {
+                  "render_ms": 12.200000047683716,
+                  "readback_ms": 7
+                }
+              ]
+            },
+            {
+              "open_ms": 1,
+              "first_render_ms": 411.2000000476837,
+              "first_total_ms": 412.2000000476837,
+              "first_readback_ms": 9.5,
+              "warm": [
+                {
+                  "render_ms": 13.299999952316284,
+                  "readback_ms": 7.700000047683716
+                },
+                {
+                  "render_ms": 13.700000047683716,
+                  "readback_ms": 7.700000047683716
+                },
+                {
+                  "render_ms": 14,
+                  "readback_ms": 8.200000047683716
+                }
+              ]
+            },
+            {
+              "open_ms": 1.2000000476837158,
+              "first_render_ms": 106.5,
+              "first_total_ms": 107.70000004768372,
+              "first_readback_ms": 9.200000047683716,
+              "warm": [
+                {
+                  "render_ms": 12.900000095367432,
+                  "readback_ms": 7.5
+                },
+                {
+                  "render_ms": 12.799999952316284,
+                  "readback_ms": 8.200000047683716
+                },
+                {
+                  "render_ms": 12.299999952316284,
+                  "readback_ms": 8.5
+                }
+              ]
+            },
+            {
+              "open_ms": 1,
+              "first_render_ms": 142,
+              "first_total_ms": 143,
+              "first_readback_ms": 8.400000095367432,
+              "warm": [
+                {
+                  "render_ms": 12.399999856948853,
+                  "readback_ms": 7.799999952316284
+                },
+                {
+                  "render_ms": 12.400000095367432,
+                  "readback_ms": 7.700000047683716
+                },
+                {
+                  "render_ms": 12.399999856948853,
+                  "readback_ms": 8.200000047683716
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "browser": "155.0.8059.80",
+  "source_sha256": "2dcf56426741707f5c3dde115f29707b5499e509b318ccf179cdb45351749677",
+  "hardware": "Apple M4 Max / 128 GiB / macOS 26.6.2",
+  "date": "2026-10-17"
+}

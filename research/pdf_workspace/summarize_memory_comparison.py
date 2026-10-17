@@ -1,0 +1,38 @@
+"""Publish compact results; user PDFs and raw process samples stay outside tracked docs."""
+import json, statistics
+from pathlib import Path
+ROOT=Path(__file__).resolve().parent
+DOCS=ROOT.parent.parent/'docs/research'
+outputs={}
+engine_labels={'rust':'Rust / PDFium','pdfjs3':'Current Jobs / PDF.js 3.11.174','pdfjs5':'Jobs / PDF.js 5.6.205'}
+for pages,label in [(8,'Structural sketches'),(45,'Grove Street architectural')]:
+    d=json.loads((ROOT/'results'/f'memory-comparison-footprint-{pages}.json').read_text())
+    summary={'source':d['runs'][0]['source'],'source_bytes':d['source_bytes'],'source_sha256':d['source_sha256'],'workflow':d['workflow'],'engines':{}}
+    for engine in dict.fromkeys(r['engine'] for r in d['runs']):
+        runs=[r for r in d['runs'] if r['engine']==engine]
+        summary['engines'][engine]=[{'trial':r['trial'],'success':r['success'],'footprint_peak_bytes':r['footprint_peak_bytes'],'footprint_baseline_bytes':r['footprint_baseline_bytes'],'rss_peak_bytes':r['peak_bytes'],'phases':r['phases'],'events':[e for e in r['events'] if e.get('event') in ['failed','browser_version','complete']]} for r in runs]
+    outputs[label]=summary
+old=json.loads((ROOT/'results/memory-comparison-8.json').read_text())
+outputs['Structural sketches']['current_pdfjs_failure']=[{'trial':r['trial'],'success':r['success'],'failure':[e for e in r['events'] if e.get('event')=='failed']} for r in old['runs'] if r['engine']=='pdfjs3']
+report={'method':'macOS footprint combined total for selected process trees; samples ~0.5 seconds; RSS retained separately; two fresh sequential trials with reversed engine order; no forced GC; native + PDFium worker versus dedicated headed Chrome + descendants; controllers excluded','viewport':[900,650],'fit_width_fraction':.95,'overlays':False,'snapping':False,'results':outputs}
+(DOCS/'pdf_viewing_memory_results_2026-10-17.json').write_text(json.dumps(report,indent=2)+'\n')
+lines=['# PDF viewing memory comparison — 17 October 2026','', 'Same viewing workload on the current Mac: open, fit width, visit pages 1/2/3/4/last, zoom 2× and 4× with pan endpoints, revisit sheets twice, then idle eight seconds. Two fresh runs per engine/file; engine order reversed on run two. No overlays or snapping. All figures below are MiB (1,048,576 bytes).','', 'Memory is macOS `footprint` combined `total footprint` for the viewer process tree. Native includes the PDFium worker; browser includes a fresh dedicated headed Chrome and all descendants. Python/Node controllers and the user’s existing browser/app sessions are excluded. Peak means the largest sampled simultaneous total, not the sum of each process’s separate historical peak.','', '| File | Engine | Completed | Empty baseline | Workflow peak | After idle |','|---|---|---|---:|---:|---:|']
+def span(values):
+    values=[v/1048576 for v in values if v is not None]
+    return f'{min(values):.0f}–{max(values):.0f}' if values else '—'
+for label,d in outputs.items():
+    for engine,runs in d['engines'].items():
+        success=[r for r in runs if r['success']]
+        lines.append(f"| {label} | {engine_labels[engine]} | {len(success)}/{len(runs)} | {span([r['footprint_baseline_bytes'] for r in runs])} | {span([r['footprint_peak_bytes'] for r in runs])} | {span([r['phases'].get('idle_after_navigation',{}).get('footprint_settled_bytes') for r in success])} |")
+lines += ['', 'Across these two runs, Rust used about **52% less peak footprint than current Jobs on Grove Street**, and about **70% less than the upgraded PDF.js workflow on the structural set**. Grove Street idle footprint was about 33% lower. The fixed empty-viewer baseline contributes to the total difference; the per-phase figures and baseline make that visible. These are results for these workloads and implementations, not an intrinsic language comparison.', '', '## Memory by phase', '', 'Ranges across both runs. Opening and zoom/pan are phase peaks; idle is the median footprint after returning to sheet 1.', '', '| File | Engine | Opening peak | Zoom/pan peak | After idle |', '|---|---|---:|---:|---:|']
+for label,d in outputs.items():
+    for engine,runs in d['engines'].items():
+        runs=[r for r in runs if r['success']]
+        if not runs:continue
+        opening=[r['phases']['open_fit_width']['footprint_peak_bytes'] for r in runs]
+        zoom=[max(p['footprint_peak_bytes'] or 0 for n,p in r['phases'].items() if n.startswith(('zoom_','pan_'))) for r in runs]
+        idle=[r['phases']['idle_after_navigation']['footprint_settled_bytes'] for r in runs]
+        lines.append(f'| {label} | {engine_labels[engine]} | {span(opening)} | {span(zoom)} | {span(idle)} |')
+lines += ['', 'Current Jobs uses PDF.js 3.11.174. PDF.js 5.6.205 is a separate diagnostic substitution using the Jobs viewer code, not a deployed upgrade. Current Jobs again failed to finish structural-PDF opening in both preliminary trials; no completed-workflow memory ratio is assigned to that failure.', '', 'The empty baseline is reported to expose the dedicated browser’s fixed overhead. Peak minus baseline can help compare the workload’s additional cost, but is not an isolated PDF-engine allocation measurement.', '', '## Interpretation limits','', '- The same 900 × 650 logical-pixel drawing viewport, page dimensions and fit-relative zoom positions are used. Normal native high-DPI tiled backing and normal browser canvas backing remain different; bitmap allocation is an architectural difference under test. Browser scrollbars are hidden in the final footprint runs so client dimensions remain exactly 900 × 650.', '- Jobs retains its normal thumbnail loading and initial default-DPI render before the requested fit-width view. Rust opens directly at fit width. This compares the application workflows, not just parsers or equal-sized bitmap renders.', '- Native phases wait for visible tile work to settle; browser phases await Jobs rendering. Pan-only browser steps scroll its existing canvas. Subsequent phases wait two seconds (three on open and baseline; eight on final idle).', '- `footprint` accounts for memory differently from summed RSS and includes allocations that RSS does not describe well. It is still an OS accounting snapshot, not a complete inventory of every graphics-driver allocation. Samples can miss short peaks.', '- Two short runs and eight seconds of idle do not establish leak-free long-term operation. No 2D/3D measurement load, text extraction, OCR, splitting or multi-document session is included.', '- The browser harness uses actual Jobs HTML/JS with local pinned assets, imported-document configuration, no Rails write endpoints and nonlocal page requests blocked. This does not measure a live authenticated Rails session or an ordinary multi-tab browser session.', '', '## Reproduce','', 'Use `research/pdf_workspace/run_memory_comparison.py SOURCE --pages N --trials 2 --engines rust pdfjs3 pdfjs5` with the environment described in its README. Structural completed-workflow footprint runs select `rust pdfjs5`; the current-engine failure is retained from the earlier two trials. The opt-in native workflow does not change normal interactive behavior.', '', 'Raw samples and per-run logs stay under ignored `research/pdf_workspace/results`. Source PDFs remain at the user-supplied Dropbox paths and were not copied into the repository or uploaded externally. Compact per-phase results, engine versions and source checksums are in [the recorded results](pdf_viewing_memory_results_2026-10-17.json).']
+(DOCS/'pdf_viewing_memory_comparison_2026-10-17.md').write_text('\n'.join(lines)+'\n')
+print('\n'.join(lines[:18]))

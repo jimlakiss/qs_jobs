@@ -1,0 +1,35 @@
+# Extractor behaviour port, 17 October 2026
+
+Reference implementation (read directly): `public/pdf_viewer/pdf_viewer.js` region drawing, template/override resolution, ghost exclusions, dragging, clipboard, undo; `public/pdf_viewer/pdf_splitter.js` staging state, inline editing, row drag/drop, filename generation, export; `app/views/project_documents/viewer.html.erb` toolbar and staging layout.
+
+The reference, rather than the first native increment, defines behaviour:
+
+- Field selection arms drawing. First repeating region defines an inherited template. Later sheets show editable inherited regions; moving/redrawing on another sheet creates a local override. Page exclusions suppress a ghost without destroying the template. Navigation must never replace a shared template with a page's partial local state.
+- Document fields (prepared by/project ID) are read once for the selected document set. Repeating fields are resolved per sheet, including multiple regions in top-to-bottom/left-to-right order.
+- Staging uses single-line inputs, a wide description/filename, inclusion checkboxes, readiness status, filename presets/custom tokens, sequence prefix and separator, original-order reset, and drag handles with above/below insertion. Reordering refreshes generated sequence names; manual filenames stay manual. Field edits refresh generated names automatically.
+- CSV/JSON use reviewed rows in display order and omit excluded rows. Export must not rerun OCR over reviewed values.
+- Current native scope remains local files and selected sets; the Rails-only Finalise / Create Working Docs endpoints cannot be reproduced without an authenticated integration. Those are distinct from local data export and must not be presented as implemented.
+
+Validation must exercise navigation across real distinct source hashes, partial region definitions, edits on inherited sheets, reopening earlier sheets, exclusion and reset, actual pointer row dragging, long input layout, filename override/sequence behaviour, and exported order/values. A test merely looking for a painted label does not establish propagation correctness.
+
+## Verified port increment
+
+Master definitions no longer come from a navigation write-back. Per-sheet overrides, exclusions and multi-box regions are independent. Pointer tests cover inherited moves, row drag/drop with above/below insertion, and column resizing. Native rendering exposed and fixed cell/header misalignment and missing drag-handle glyphs. Once fields now follow Jobs' document-set scope. Filename/status differential cases are executed from the Jobs source. Workspace state (including set and staging) restores locally across normal restarts.
+
+Remaining differences from the entire Jobs viewer: authenticated Rails finalisation/working-document uploads; local PDF splitting/ZIP packaging; vector snapping. These are not claimed as exact parity. CSV/JSON staging and the reported region/row/layout behaviours are covered by this increment.
+
+Final validation for this increment: 36 Rust tests and Clippy with warnings denied pass; the bundled worker passes the OCR/exclusion/multi-box/document-field cases and the supplied structural PDF; a 100-row native rendering screenshot verifies aligned headers, visible six-dot grips and wide single-line descriptions. Original Jobs CSV field order/default IDs and global sheet numbering are retained, with source metadata added for the native selected-set model. The app bundle is rebuilt and its ad-hoc signature verified.
+
+## Region shortcuts and Select Text OCR
+
+Shift-click toggles individual region selections, group dragging clamps the entire selection to page bounds, and Cmd+C / Cmd+V copies field-identified boxes between sheets. Delete/Backspace removes selected boxes locally; Cmd+Z / Shift+Cmd+Z restores a group action as a single history step. Enter or a blank click clears yellow selection without discarding the committed edit. Pointer/clipboard tests cover multi-field and same-field groups, inherited overrides, page-edge clamping, deletion, paste after deletion and undo.
+
+Select Text now offers explicit OCR plus automatic fallback when copying a box without embedded text. It reuses the isolated, cancellable capture worker with one forced-OCR Once region on the selected page, without writing capture/session data. An editable modal provides review/copy. Sheet changes and new selections cancel pending recognition. The native OCR worker passes vector, raster-only and rotated fixtures outside the restricted sandbox (Apple Vision requires normal macOS services).
+
+Direct selection correction: visible boxes now accept clicks in Pan mode even when no field is armed or the capture panel is closed. Add-another-box mode no longer disables selection. A five-pixel border tolerance helps select small regions. Capture gestures consume the pan gesture; blank-space drags still pan and never create boxes until a field is armed. A Delete selected toolbar action complements Delete/Backspace. The 38-test suite covers these unarmed/closed-panel states, inherited-sheet deletion and Undo.
+
+Capture tool boundary correction: Capture Fields must be selected for regions to paint or accept selection, dragging or keyboard deletion. Toggling it off clears transient selection/drawing state only; master definitions, exclusions, overrides and captured values are unchanged. Pan remains available within the active capture tool, without needing to arm a field. Regression tests verify visibility, interaction blocking and unchanged Every-page resolution while capture mode is off (39 tests).
+
+A saved-session diagnosis found Sheet ID, Description and Issue ID explicitly excluded on sheets 2–8 of the active eight-sheet structural PDF; the worker correctly skipped those exclusions. Recovery restores only these inherited exclusions and re-extracts those fields; unrelated exclusions and local overrides remain intact.
+
+Plain-text CSV correction: recognition, manual review and both data export formats normalise layout whitespace. Multiple PDF text runs are verified through local OCR to avoid returning both hidden superseded labels and their visible replacements. Unambiguous numeric dates become DD/MM/YYYY; conflicting/invalid dates are marked for review. Staging checks every defined field for missing values, exposes Date and Issue Description by default, and refreshes generated filenames after re-extraction. Excluded sheets are now called out beside the field with a restore action. Validation: 43 Rust tests, native hidden-revision/vector/raster/rotated/exclusion regressions, and all eight supplied sheets through the actual staging CSV exporter (nine physical lines including the header, correct titles, dates and issue descriptions).

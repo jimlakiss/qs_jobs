@@ -1,0 +1,223 @@
+{
+  "utc_time": "2026-10-17T01:45:50.180090+00:00",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "build": "release/Cargo.lock",
+  "checks": {
+    "pipeline": {
+      "cancel_to_new_document_ready_ms": 22.365292,
+      "cpu_budget_bytes": 16777216,
+      "kind": "progressive_pipeline_validation",
+      "malformed_recovery": true,
+      "pipeline": {
+        "cache_hits": 3,
+        "cancel_kill_ms": [
+          0.009583
+        ],
+        "cancellations": 1,
+        "cpu_cache_peak": 16777216,
+        "rendered": 51,
+        "restarts": 7,
+        "stale_dropped": 1,
+        "worker_errors": 1
+      },
+      "success": true,
+      "tile_comparisons": [
+        {
+          "crop": null,
+          "file": "vector.pdf",
+          "height": 2048,
+          "mean_channel_delta": 0.0,
+          "rotation": 0,
+          "tiles": 16,
+          "width": 2048
+        },
+        {
+          "crop": [
+            36.0,
+            36.0,
+            684.0,
+            684.0
+          ],
+          "file": "rotated_crop.pdf",
+          "height": 2048,
+          "mean_channel_delta": 0.0,
+          "rotation": 90,
+          "tiles": 16,
+          "width": 2048
+        },
+        {
+          "crop": null,
+          "file": "raster.pdf",
+          "height": 2048,
+          "mean_channel_delta": 0.0,
+          "rotation": 0,
+          "tiles": 16,
+          "width": 2048
+        }
+      ],
+      "memory_sampling": {
+        "parent_peak_bytes": 66584576,
+        "workers_peak_bytes": 17203200,
+        "combined_sampled_peak_bytes": 73711616,
+        "interval_ms": 100,
+        "method": "ps RSS for this test process and its direct worker children; sampled peaks can miss spikes; excludes GPU driver allocations"
+      }
+    },
+    "dense_viewport": {
+      "busy_frame_interval_p95_ms": 23.148625,
+      "busy_frames": 91,
+      "cpu_budget_bytes": 16777216,
+      "first_preview_upload_ms": 232.961958,
+      "frame_interval_p50_ms": 16.640791,
+      "frame_interval_p95_ms": 19.464499999999997,
+      "frame_interval_p99_ms": 26.147042,
+      "frames": 530,
+      "gpu_budget_bytes": 33554432,
+      "gpu_texture_peak_bytes": 33554432,
+      "kind": "progressive_viewport_smoke",
+      "method": "paced UI update intervals; scripted view/overlay changes during worker rendering; not GPU or input latency",
+      "overlay_edits": 120,
+      "overlay_survived_restart": true,
+      "page": 1,
+      "pipeline": {
+        "cache_hits": 0,
+        "cancel_kill_ms": [],
+        "cancellations": 0,
+        "cpu_cache_peak": 16777216,
+        "rendered": 33,
+        "restarts": 2,
+        "stale_dropped": 0,
+        "worker_errors": 0
+      },
+      "success": true,
+      "tile_render_p95_ms": 61.663666,
+      "tiles_received": 32,
+      "memory_sampling": {
+        "parent_peak_bytes": 149422080,
+        "workers_peak_bytes": 26574848,
+        "combined_sampled_peak_bytes": 175996928,
+        "interval_ms": 100,
+        "method": "ps RSS for this test process and its direct worker children; sampled peaks can miss spikes; excludes GPU driver allocations"
+      }
+    },
+    "project_samples": {
+      "bytes": 84541144,
+      "initial_open_and_metadata_ms": 183.499542,
+      "kind": "project_pdf_sample",
+      "method": "read-only source; persistent child; five sampled pages; 512px preview and one 512px centre tile at 4096px long-edge; uncontrolled caches",
+      "pages": 45,
+      "pipeline": {
+        "cache_hits": 0,
+        "cancel_kill_ms": [],
+        "cancellations": 0,
+        "cpu_cache_peak": 8949760,
+        "rendered": 10,
+        "restarts": 1,
+        "stale_dropped": 0,
+        "worker_errors": 0
+      },
+      "samples": [
+        {
+          "centre_tile_render_ms": 4.565083,
+          "centre_tile_roundtrip_ms": 9.877125000000001,
+          "height": 1683.780029296875,
+          "page": 1,
+          "preview_render_ms": 8.817,
+          "preview_roundtrip_ms": 14.715333000000001,
+          "rotation": 0,
+          "width": 2383.93994140625
+        },
+        {
+          "centre_tile_render_ms": 17.359750000000002,
+          "centre_tile_roundtrip_ms": 22.572958,
+          "height": 1683.780029296875,
+          "page": 12,
+          "preview_render_ms": 36.919209,
+          "preview_roundtrip_ms": 43.585209,
+          "rotation": 0,
+          "width": 2383.93994140625
+        },
+        {
+          "centre_tile_render_ms": 24.38725,
+          "centre_tile_roundtrip_ms": 30.095541,
+          "height": 1683.780029296875,
+          "page": 23,
+          "preview_render_ms": 47.416583,
+          "preview_roundtrip_ms": 54.695125,
+          "rotation": 0,
+          "width": 2383.93994140625
+        },
+        {
+          "centre_tile_render_ms": 31.522667,
+          "centre_tile_roundtrip_ms": 39.352625,
+          "height": 1683.780029296875,
+          "page": 34,
+          "preview_render_ms": 59.981874999999995,
+          "preview_roundtrip_ms": 65.4895,
+          "rotation": 0,
+          "width": 2383.93994140625
+        },
+        {
+          "centre_tile_render_ms": 48.580958,
+          "centre_tile_roundtrip_ms": 55.097083999999995,
+          "height": 1683.780029296875,
+          "page": 45,
+          "preview_render_ms": 91.282334,
+          "preview_roundtrip_ms": 97.47200000000001,
+          "rotation": 0,
+          "width": 2383.93994140625
+        }
+      ],
+      "source_sha256": "a4c13c20fd4f983b748964d6087633dbac4236e6a1ea3038155f7c1e08fb844f",
+      "success": true,
+      "memory_sampling": {
+        "parent_peak_bytes": 17301504,
+        "workers_peak_bytes": 162529280,
+        "combined_sampled_peak_bytes": 179830784,
+        "interval_ms": 100,
+        "method": "ps RSS for this test process and its direct worker children; sampled peaks can miss spikes; excludes GPU driver allocations"
+      }
+    },
+    "project_viewport": {
+      "busy_frame_interval_p95_ms": 18.804958,
+      "busy_frames": 206,
+      "cpu_budget_bytes": 16777216,
+      "first_preview_upload_ms": 349.710416,
+      "frame_interval_p50_ms": 16.607917,
+      "frame_interval_p95_ms": 19.6025,
+      "frame_interval_p99_ms": 25.176875000000003,
+      "frames": 532,
+      "gpu_budget_bytes": 33554432,
+      "gpu_texture_peak_bytes": 33247232,
+      "kind": "progressive_viewport_smoke",
+      "method": "paced UI update intervals; scripted view/overlay changes during worker rendering; not GPU or input latency",
+      "overlay_edits": 120,
+      "overlay_survived_restart": true,
+      "page": 45,
+      "pipeline": {
+        "cache_hits": 0,
+        "cancel_kill_ms": [
+          0.010041
+        ],
+        "cancellations": 1,
+        "cpu_cache_peak": 16777216,
+        "rendered": 61,
+        "restarts": 2,
+        "stale_dropped": 1,
+        "worker_errors": 0
+      },
+      "success": true,
+      "tile_render_p95_ms": 56.391375,
+      "tiles_received": 60,
+      "memory_sampling": {
+        "parent_peak_bytes": 176783360,
+        "workers_peak_bytes": 152256512,
+        "combined_sampled_peak_bytes": 328630272,
+        "interval_ms": 100,
+        "method": "ps RSS for this test process and its direct worker children; sampled peaks can miss spikes; excludes GPU driver allocations"
+      }
+    }
+  },
+  "source_description": "User-supplied architectural tender PDF; original remains outside the repository",
+  "hardware": "Apple M4 Max / 128 GiB RAM / macOS 26.6.2"
+}

@@ -1,0 +1,773 @@
+{
+  "date": "2026-10-17",
+  "hardware": "Apple M4 Max / macOS 26.6.2",
+  "source": "User-supplied structural sketch PDF; retained outside repository",
+  "native_all_pages": {
+    "kind": "structural_pdf_all_pages",
+    "success": true,
+    "bytes": 3447925,
+    "sha256": "2dcf56426741707f5c3dde115f29707b5499e509b318ccf179cdb45351749677",
+    "pages": 8,
+    "open_and_metadata_ms": 84.75112495943904,
+    "samples": [
+      {
+        "page": 1,
+        "preview_render_ms": 18.561,
+        "preview_roundtrip_ms": 18.854625057429075,
+        "centre_tile_render_ms": 7.371667,
+        "centre_tile_roundtrip_ms": 7.591458037495613,
+        "width": 1191.0,
+        "height": 842.0,
+        "rotation": 0
+      },
+      {
+        "page": 2,
+        "preview_render_ms": 57.179916999999996,
+        "preview_roundtrip_ms": 57.42737487889826,
+        "centre_tile_render_ms": 36.805834000000004,
+        "centre_tile_roundtrip_ms": 37.17674990184605,
+        "width": 1191.0,
+        "height": 842.0,
+        "rotation": 90
+      },
+      {
+        "page": 3,
+        "preview_render_ms": 111.26941599999999,
+        "preview_roundtrip_ms": 111.53329210355878,
+        "centre_tile_render_ms": 57.306749999999994,
+        "centre_tile_roundtrip_ms": 57.59154190309346,
+        "width": 1191.0,
+        "height": 842.0,
+        "rotation": 0
+      },
+      {
+        "page": 4,
+        "preview_render_ms": 117.856166,
+        "preview_roundtrip_ms": 118.07495797984302,
+        "centre_tile_render_ms": 61.846333,
+        "centre_tile_roundtrip_ms": 62.12904094718397,
+        "width": 1191.0,
+        "height": 842.0,
+        "rotation": 0
+      },
+      {
+        "page": 5,
+        "preview_render_ms": 37.95625,
+        "preview_roundtrip_ms": 38.2129168137908,
+        "centre_tile_render_ms": 13.230042,
+        "centre_tile_roundtrip_ms": 13.515708036720753,
+        "width": 1190.4000244140625,
+        "height": 841.4400024414062,
+        "rotation": 0
+      },
+      {
+        "page": 6,
+        "preview_render_ms": 23.575916999999997,
+        "preview_roundtrip_ms": 23.772249929606915,
+        "centre_tile_render_ms": 10.086540999999999,
+        "centre_tile_roundtrip_ms": 10.405374923720956,
+        "width": 1190.4000244140625,
+        "height": 841.4400024414062,
+        "rotation": 0
+      },
+      {
+        "page": 7,
+        "preview_render_ms": 27.351875,
+        "preview_roundtrip_ms": 27.61608292348683,
+        "centre_tile_render_ms": 13.075708,
+        "centre_tile_roundtrip_ms": 13.391375076025724,
+        "width": 1190.4000244140625,
+        "height": 841.4400024414062,
+        "rotation": 0
+      },
+      {
+        "page": 8,
+        "preview_render_ms": 24.422,
+        "preview_roundtrip_ms": 24.647708050906658,
+        "centre_tile_render_ms": 11.798333,
+        "centre_tile_roundtrip_ms": 12.182042002677917,
+        "width": 1190.4000244140625,
+        "height": 841.4400024414062,
+        "rotation": 0
+      }
+    ]
+  },
+  "native_page1_viewport": {
+    "busy_frame_interval_p95_ms": 16.819417,
+    "busy_frames": 32,
+    "cpu_budget_bytes": 16777216,
+    "first_preview_upload_ms": 153.92975,
+    "frame_interval_p50_ms": 16.672625,
+    "frame_interval_p95_ms": 17.5365,
+    "frame_interval_p99_ms": 21.731375,
+    "frames": 533,
+    "gpu_budget_bytes": 33554432,
+    "gpu_texture_peak_bytes": 33247232,
+    "kind": "progressive_viewport_smoke",
+    "method": "paced UI update intervals; scripted view/overlay changes during worker rendering; not GPU or input latency",
+    "overlay_edits": 120,
+    "overlay_survived_restart": true,
+    "page": 1,
+    "pipeline": {
+      "cache_hits": 0,
+      "cancel_kill_ms": [],
+      "cancellations": 0,
+      "cpu_cache_peak": 16777216,
+      "rendered": 61,
+      "restarts": 2,
+      "stale_dropped": 0,
+      "worker_errors": 0
+    },
+    "success": true,
+    "tile_render_p95_ms": 13.237166,
+    "tiles_received": 60
+  },
+  "browser_comparisons": {
+    "legacy": {
+      "kind": "jobs_browser_pdf_diagnostic",
+      "pdfjs": "3.11.174",
+      "skip_thumbnails": false,
+      "source_basename": "26046_SDA_260414_Initial Sketches_01_SH.pdf",
+      "source_bytes": 3447925,
+      "method": "actual viewer HTML and JS; ERB host config replaced; local pinned assets; no Rails/API writes; fresh headless Chrome profile; default DPI 136",
+      "stages": [],
+      "errors": [
+        "TypeError: Cannot read properties of undefined (reading 'restore')\n    at CanvasGraphics.restore (<local-test-origin>/assets/build/pdf.min.js:22:129948)\n    at #he (<local-test-origin>/assets/build/pdf.min.js:22:122023)\n    at CanvasGraphics.endDrawing (<local-test-origin>/assets/build/pdf.min.js:22:122273)\n    at InternalRenderTask.cancel (<local-test-origin>/assets/build/pdf.min.js:22:52257)"
+      ],
+      "browser": "155.0.8059.80",
+      "success": false,
+      "failed_stage": "initial load including thumbnails",
+      "failure": "TypeError: Cannot read properties of undefined (reading 'restore')",
+      "spans": [
+        {
+          "name": "handleSelectedPDFs",
+          "page": null,
+          "start": 579.9000000953674
+        },
+        {
+          "name": "buildThumbnails",
+          "page": null,
+          "start": 654.2000000476837
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 1,
+          "start": 654.5,
+          "end": 771.6000001430511,
+          "ms": 117.10000014305115
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 2,
+          "start": 771.6000001430511
+        }
+      ],
+      "heartbeat_max_gap_ms": 31,
+      "long_tasks": []
+    },
+    "legacy-no-thumbnails": {
+      "kind": "jobs_browser_pdf_diagnostic",
+      "pdfjs": "3.11.174",
+      "skip_thumbnails": true,
+      "source_basename": "26046_SDA_260414_Initial Sketches_01_SH.pdf",
+      "source_bytes": 3447925,
+      "method": "actual viewer HTML and JS; ERB host config replaced; local pinned assets; no Rails/API writes; fresh headless Chrome profile; default DPI 136",
+      "stages": [
+        {
+          "page": 1,
+          "render_ms": 51.799999952316284,
+          "width": 2249,
+          "height": 1590,
+          "two_canvas_rgba_bytes": 28607280,
+          "operators": {
+            "count": 49060,
+            "paths": 6806,
+            "maxPathOps": 540,
+            "maxPathArgs": 1080,
+            "totalPathOps": 20208,
+            "inspection_ms": 22.90000009536743
+          },
+          "snap": {
+            "build_ms": 5.299999952316284,
+            "points": 4749,
+            "segments": 7694,
+            "query_p95_ms": 0.5,
+            "query_max_ms": 1.5
+          }
+        }
+      ],
+      "errors": [
+        "TypeError: Cannot read properties of undefined (reading 'restore')\n    at CanvasGraphics.restore (<local-test-origin>/assets/build/pdf.min.js:22:129948)\n    at #he (<local-test-origin>/assets/build/pdf.min.js:22:122023)\n    at CanvasGraphics.endDrawing (<local-test-origin>/assets/build/pdf.min.js:22:122273)\n    at InternalRenderTask.cancel (<local-test-origin>/assets/build/pdf.min.js:22:52257)"
+      ],
+      "browser": "155.0.8059.80",
+      "initial_load_ms": 215,
+      "info": {
+        "pages": 8,
+        "screenDPI": 136,
+        "scale": 1.8888888888888888,
+        "width": 2249,
+        "height": 1590
+      },
+      "success": false,
+      "failed_stage": "render page 2",
+      "failure": "Error: render page 2 exceeded 20000ms",
+      "spans": [
+        {
+          "name": "handleSelectedPDFs",
+          "page": null,
+          "start": 585.4000000953674,
+          "end": 762.1000001430511,
+          "ms": 176.70000004768372
+        },
+        {
+          "name": "buildThumbnails",
+          "page": null,
+          "start": 657.1000001430511,
+          "end": 657.4000000953674,
+          "ms": 0.2999999523162842
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 1,
+          "start": 657.2999999523163,
+          "end": 657.4000000953674,
+          "ms": 0.10000014305114746
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 2,
+          "start": 657.4000000953674,
+          "end": 657.4000000953674,
+          "ms": 0
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 3,
+          "start": 657.4000000953674,
+          "end": 657.4000000953674,
+          "ms": 0
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 4,
+          "start": 657.4000000953674,
+          "end": 657.4000000953674,
+          "ms": 0
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 5,
+          "start": 657.4000000953674,
+          "end": 657.4000000953674,
+          "ms": 0
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 6,
+          "start": 657.4000000953674,
+          "end": 657.4000000953674,
+          "ms": 0
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 7,
+          "start": 657.4000000953674,
+          "end": 657.4000000953674,
+          "ms": 0
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 8,
+          "start": 657.4000000953674,
+          "end": 657.4000000953674,
+          "ms": 0
+        },
+        {
+          "name": "renderPage",
+          "page": 1,
+          "start": 657.4000000953674,
+          "end": 762,
+          "ms": 104.59999990463257
+        },
+        {
+          "name": "renderPage",
+          "page": 1,
+          "start": 778.5,
+          "end": 830.2999999523163,
+          "ms": 51.799999952316284
+        },
+        {
+          "name": "msrBuildSnapCache",
+          "page": 1,
+          "start": 855,
+          "end": 860.2999999523163,
+          "ms": 5.299999952316284
+        },
+        {
+          "name": "renderPage",
+          "page": 2,
+          "start": 869.4000000953674
+        }
+      ],
+      "heartbeat_max_gap_ms": 25.299999952316284,
+      "long_tasks": []
+    },
+    "modern": {
+      "kind": "jobs_browser_pdf_diagnostic",
+      "pdfjs": "5.6.205",
+      "skip_thumbnails": false,
+      "source_basename": "26046_SDA_260414_Initial Sketches_01_SH.pdf",
+      "source_bytes": 3447925,
+      "method": "actual viewer HTML and JS; ERB host config replaced; local pinned assets; no Rails/API writes; fresh headless Chrome profile; default DPI 136",
+      "stages": [
+        {
+          "page": 1,
+          "render_ms": 52.19999980926514,
+          "width": 2249,
+          "height": 1590,
+          "two_canvas_rgba_bytes": 28607280,
+          "operators": {
+            "count": 42314,
+            "paths": 6806,
+            "maxPathOps": 0,
+            "maxPathArgs": 1,
+            "totalPathOps": 0,
+            "inspection_ms": 32.799999952316284
+          },
+          "snap": {
+            "build_ms": 1.9000000953674316,
+            "points": 0,
+            "segments": 0,
+            "query_p95_ms": 0,
+            "query_max_ms": 0.09999990463256836
+          }
+        },
+        {
+          "page": 2,
+          "render_ms": 182.79999995231628,
+          "width": 2249,
+          "height": 1590,
+          "two_canvas_rgba_bytes": 28607280,
+          "operators": {
+            "count": 207266,
+            "paths": 34260,
+            "maxPathOps": 0,
+            "maxPathArgs": 1,
+            "totalPathOps": 0,
+            "inspection_ms": 121.40000009536743
+          },
+          "snap": {
+            "build_ms": 2.299999952316284,
+            "points": 0,
+            "segments": 0,
+            "query_p95_ms": 0,
+            "query_max_ms": 0
+          }
+        },
+        {
+          "page": 3,
+          "render_ms": 285.2000000476837,
+          "width": 2249,
+          "height": 1590,
+          "two_canvas_rgba_bytes": 28607280,
+          "operators": {
+            "count": 280158,
+            "paths": 46384,
+            "maxPathOps": 0,
+            "maxPathArgs": 1,
+            "totalPathOps": 0,
+            "inspection_ms": 171.59999990463257
+          },
+          "snap": {
+            "build_ms": 4.699999809265137,
+            "points": 0,
+            "segments": 0,
+            "query_p95_ms": 0,
+            "query_max_ms": 0.10000014305114746
+          }
+        },
+        {
+          "page": 4,
+          "render_ms": 276.09999990463257,
+          "width": 2249,
+          "height": 1590,
+          "two_canvas_rgba_bytes": 28607280,
+          "operators": {
+            "count": 289776,
+            "paths": 47989,
+            "maxPathOps": 0,
+            "maxPathArgs": 1,
+            "totalPathOps": 0,
+            "inspection_ms": 176.20000004768372
+          },
+          "snap": {
+            "build_ms": 2.799999952316284,
+            "points": 0,
+            "segments": 0,
+            "query_p95_ms": 0,
+            "query_max_ms": 0
+          }
+        },
+        {
+          "page": 5,
+          "render_ms": 118.60000014305115,
+          "width": 2248,
+          "height": 1589,
+          "two_canvas_rgba_bytes": 28576576,
+          "operators": {
+            "count": 261,
+            "paths": 5,
+            "maxPathOps": 0,
+            "maxPathArgs": 1,
+            "totalPathOps": 0,
+            "inspection_ms": 87.5
+          },
+          "snap": {
+            "build_ms": 0.09999990463256836,
+            "points": 0,
+            "segments": 0,
+            "query_p95_ms": 0,
+            "query_max_ms": 0.10000014305114746
+          }
+        },
+        {
+          "page": 6,
+          "render_ms": 77.59999990463257,
+          "width": 2248,
+          "height": 1589,
+          "two_canvas_rgba_bytes": 28576576,
+          "operators": {
+            "count": 249,
+            "paths": 5,
+            "maxPathOps": 0,
+            "maxPathArgs": 1,
+            "totalPathOps": 0,
+            "inspection_ms": 59
+          },
+          "snap": {
+            "build_ms": 0.19999980926513672,
+            "points": 0,
+            "segments": 0,
+            "query_p95_ms": 0,
+            "query_max_ms": 0
+          }
+        },
+        {
+          "page": 7,
+          "render_ms": 82.60000014305115,
+          "width": 2248,
+          "height": 1589,
+          "two_canvas_rgba_bytes": 28576576,
+          "operators": {
+            "count": 266,
+            "paths": 5,
+            "maxPathOps": 0,
+            "maxPathArgs": 1,
+            "totalPathOps": 0,
+            "inspection_ms": 63.60000014305115
+          },
+          "snap": {
+            "build_ms": 0.20000004768371582,
+            "points": 0,
+            "segments": 0,
+            "query_p95_ms": 0,
+            "query_max_ms": 0
+          }
+        },
+        {
+          "page": 8,
+          "render_ms": 74.09999990463257,
+          "width": 2248,
+          "height": 1589,
+          "two_canvas_rgba_bytes": 28576576,
+          "operators": {
+            "count": 137,
+            "paths": 6,
+            "maxPathOps": 0,
+            "maxPathArgs": 1,
+            "totalPathOps": 0,
+            "inspection_ms": 57.200000047683716
+          },
+          "snap": {
+            "build_ms": 0.10000014305114746,
+            "points": 0,
+            "segments": 0,
+            "query_p95_ms": 0,
+            "query_max_ms": 0
+          }
+        }
+      ],
+      "errors": [],
+      "browser": "155.0.8059.80",
+      "initial_load_ms": 2691,
+      "info": {
+        "pages": 8,
+        "screenDPI": 136,
+        "scale": 1.8888888888888888,
+        "width": 2249,
+        "height": 1590
+      },
+      "success": true,
+      "spans": [
+        {
+          "name": "handleSelectedPDFs",
+          "page": null,
+          "start": 720.3999998569489,
+          "end": 3384.5999999046326,
+          "ms": 2664.2000000476837
+        },
+        {
+          "name": "buildThumbnails",
+          "page": null,
+          "start": 768.7999999523163,
+          "end": 3333.899999856949,
+          "ms": 2565.0999999046326
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 1,
+          "start": 769,
+          "end": 1536.2999999523163,
+          "ms": 767.2999999523163
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 2,
+          "start": 1536.2999999523163,
+          "end": 1789.8999998569489,
+          "ms": 253.59999990463257
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 3,
+          "start": 1789.8999998569489,
+          "end": 2069.5999999046326,
+          "ms": 279.7000000476837
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 4,
+          "start": 2070,
+          "end": 2367.899999856949,
+          "ms": 297.89999985694885
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 5,
+          "start": 2367.899999856949,
+          "end": 2945.5,
+          "ms": 577.6000001430511
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 6,
+          "start": 2945.5,
+          "end": 3130,
+          "ms": 184.5
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 7,
+          "start": 3130.399999856949,
+          "end": 3246.5,
+          "ms": 116.10000014305115
+        },
+        {
+          "name": "loadThumbnail",
+          "page": 8,
+          "start": 3246.5,
+          "end": 3333.7999999523163,
+          "ms": 87.29999995231628
+        },
+        {
+          "name": "renderPage",
+          "page": 1,
+          "start": 3334,
+          "end": 3384.5999999046326,
+          "ms": 50.59999990463257
+        },
+        {
+          "name": "renderPage",
+          "page": 1,
+          "start": 3396,
+          "end": 3448.199999809265,
+          "ms": 52.19999980926514
+        },
+        {
+          "name": "msrBuildSnapCache",
+          "page": 1,
+          "start": 3482.699999809265,
+          "end": 3484.5999999046326,
+          "ms": 1.9000000953674316
+        },
+        {
+          "name": "renderPage",
+          "page": 2,
+          "start": 3485.5,
+          "end": 3668.2999999523163,
+          "ms": 182.79999995231628
+        },
+        {
+          "name": "msrBuildSnapCache",
+          "page": 2,
+          "start": 3791.2999999523163,
+          "end": 3793.5999999046326,
+          "ms": 2.299999952316284
+        },
+        {
+          "name": "renderPage",
+          "page": 3,
+          "start": 3794.199999809265,
+          "end": 4079.399999856949,
+          "ms": 285.2000000476837
+        },
+        {
+          "name": "msrBuildSnapCache",
+          "page": 3,
+          "start": 4252.5,
+          "end": 4257.199999809265,
+          "ms": 4.699999809265137
+        },
+        {
+          "name": "renderPage",
+          "page": 4,
+          "start": 4258.099999904633,
+          "end": 4534.099999904633,
+          "ms": 276
+        },
+        {
+          "name": "msrBuildSnapCache",
+          "page": 4,
+          "start": 4711.799999952316,
+          "end": 4714.599999904633,
+          "ms": 2.799999952316284
+        },
+        {
+          "name": "renderPage",
+          "page": 5,
+          "start": 4721.199999809265,
+          "end": 4839.799999952316,
+          "ms": 118.60000014305115
+        },
+        {
+          "name": "msrBuildSnapCache",
+          "page": 5,
+          "start": 4928.799999952316,
+          "end": 4928.899999856949,
+          "ms": 0.09999990463256836
+        },
+        {
+          "name": "renderPage",
+          "page": 6,
+          "start": 4929.5,
+          "end": 5007.099999904633,
+          "ms": 77.59999990463257
+        },
+        {
+          "name": "msrBuildSnapCache",
+          "page": 6,
+          "start": 5067.5,
+          "end": 5067.699999809265,
+          "ms": 0.19999980926513672
+        },
+        {
+          "name": "renderPage",
+          "page": 7,
+          "start": 5068.199999809265,
+          "end": 5150.799999952316,
+          "ms": 82.60000014305115
+        },
+        {
+          "name": "msrBuildSnapCache",
+          "page": 7,
+          "start": 5215.899999856949,
+          "end": 5216.099999904633,
+          "ms": 0.20000004768371582
+        },
+        {
+          "name": "renderPage",
+          "page": 8,
+          "start": 5217.299999952316,
+          "end": 5291.399999856949,
+          "ms": 74.09999990463257
+        },
+        {
+          "name": "msrBuildSnapCache",
+          "page": 8,
+          "start": 5350.699999809265,
+          "end": 5350.799999952316,
+          "ms": 0.10000014305114746
+        }
+      ],
+      "heartbeat_max_gap_ms": 500.7999999523163,
+      "long_tasks": [
+        {
+          "start": 774.2999999523163,
+          "duration": 89
+        },
+        {
+          "start": 1044.1999998092651,
+          "duration": 493
+        },
+        {
+          "start": 2694,
+          "duration": 90
+        },
+        {
+          "start": 2784.0999999046326,
+          "duration": 79
+        },
+        {
+          "start": 2863.5999999046326,
+          "duration": 82
+        }
+      ]
+    },
+    "minimal_raw_page2": {
+      "kind": "jobs_browser_pdf_diagnostic",
+      "pdfjs": "3.11.174",
+      "skip_thumbnails": false,
+      "source_basename": "26046_SDA_260414_Initial Sketches_01_SH.pdf",
+      "source_bytes": 3447925,
+      "method": "minimal PDF.js 3.11.174 renderer; no Jobs code, thumbnails, snapping or prior page renders",
+      "stages": [],
+      "errors": [
+        "TypeError: Cannot read properties of undefined (reading 'restore')\n    at CanvasGraphics.restore (<local-test-origin>/assets/build/pdf.min.js:22:129959)\n    at #he (<local-test-origin>/assets/build/pdf.min.js:22:122034)\n    at CanvasGraphics.endDrawing (<local-test-origin>/assets/build/pdf.min.js:22:122284)\n    at InternalRenderTask.cancel (<local-test-origin>/assets/build/pdf.min.js:22:52268)"
+      ],
+      "browser": "155.0.8059.80",
+      "success": false,
+      "failed_stage": "minimal PDF.js page 2 render",
+      "failure": "TypeError: Cannot read properties of undefined (reading 'restore')"
+    }
+  },
+  "native_page2_viewport": {
+    "busy_frame_interval_p95_ms": 17.07125,
+    "busy_frames": 136,
+    "cpu_budget_bytes": 16777216,
+    "first_preview_upload_ms": 217.51379200000002,
+    "frame_interval_p50_ms": 16.656125,
+    "frame_interval_p95_ms": 17.346958,
+    "frame_interval_p99_ms": 20.934874999999998,
+    "frames": 531,
+    "gpu_budget_bytes": 33554432,
+    "gpu_texture_peak_bytes": 33247232,
+    "kind": "progressive_viewport_smoke",
+    "method": "paced UI update intervals; scripted view/overlay changes during worker rendering; not GPU or input latency",
+    "overlay_edits": 120,
+    "overlay_survived_restart": true,
+    "page": 2,
+    "pipeline": {
+      "cache_hits": 0,
+      "cancel_kill_ms": [],
+      "cancellations": 0,
+      "cpu_cache_peak": 16777216,
+      "rendered": 61,
+      "restarts": 2,
+      "stale_dropped": 0,
+      "worker_errors": 0
+    },
+    "success": true,
+    "tile_render_p95_ms": 40.223041,
+    "tiles_received": 60
+  }
+}

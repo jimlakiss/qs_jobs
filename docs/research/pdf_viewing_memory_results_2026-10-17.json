@@ -1,0 +1,2140 @@
+{
+  "method": "macOS footprint combined total for selected process trees; samples ~0.5 seconds; RSS retained separately; two fresh sequential trials with reversed engine order; no forced GC; native + PDFium worker versus dedicated headed Chrome + descendants; controllers excluded",
+  "viewport": [
+    900,
+    650
+  ],
+  "fit_width_fraction": 0.95,
+  "overlays": false,
+  "snapping": false,
+  "results": {
+    "Structural sketches": {
+      "source": "26046_SDA_260414_Initial Sketches_01_SH.pdf",
+      "source_bytes": 3447925,
+      "source_sha256": "2dcf56426741707f5c3dde115f29707b5499e509b318ccf179cdb45351749677",
+      "workflow": [
+        {
+          "name": "baseline",
+          "page": 0,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 3
+        },
+        {
+          "name": "open_fit_width",
+          "page": 1,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 3
+        },
+        {
+          "name": "first_sheet_2",
+          "page": 2,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "first_sheet_3",
+          "page": 3,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "first_sheet_4",
+          "page": 4,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "first_sheet_8",
+          "page": 8,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "first_sheet_1",
+          "page": 1,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "zoom_2x",
+          "page": 1,
+          "zoom": 2,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "pan_2x",
+          "page": 1,
+          "zoom": 2,
+          "pan": [
+            -0.2,
+            -0.15
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "zoom_4x",
+          "page": 1,
+          "zoom": 4,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "pan_4x",
+          "page": 1,
+          "zoom": 4,
+          "pan": [
+            0.2,
+            0.15
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "return_0_sheet_2",
+          "page": 2,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "return_0_sheet_8",
+          "page": 8,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "return_0_sheet_1",
+          "page": 1,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "return_1_sheet_2",
+          "page": 2,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "return_1_sheet_8",
+          "page": 8,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "return_1_sheet_1",
+          "page": 1,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "idle_after_navigation",
+          "page": 1,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 8
+        }
+      ],
+      "engines": {
+        "rust": [
+          {
+            "trial": 1,
+            "success": true,
+            "footprint_peak_bytes": 643237448,
+            "footprint_baseline_bytes": 507184112,
+            "rss_peak_bytes": 252231680,
+            "phases": {
+              "startup": {
+                "footprint_peak_bytes": 34292672,
+                "footprint_settled_bytes": null,
+                "peak_bytes": 69337088,
+                "settled_median_bytes": null,
+                "last_bytes": 69337088,
+                "samples": 1
+              },
+              "baseline": {
+                "footprint_peak_bytes": 507216880,
+                "footprint_settled_bytes": 507184112,
+                "peak_bytes": 113164288,
+                "settled_median_bytes": 113098752.0,
+                "last_bytes": 113147904,
+                "samples": 24
+              },
+              "open_fit_width": {
+                "footprint_peak_bytes": 559908352,
+                "footprint_settled_bytes": 559859200.0,
+                "peak_bytes": 167280640,
+                "settled_median_bytes": 163495936,
+                "last_bytes": 163545088,
+                "samples": 25
+              },
+              "first_sheet_2": {
+                "footprint_peak_bytes": 579470872,
+                "footprint_settled_bytes": 579470872.0,
+                "peak_bytes": 193527808,
+                "settled_median_bytes": 192512000.0,
+                "last_bytes": 192512000,
+                "samples": 20
+              },
+              "first_sheet_3": {
+                "footprint_peak_bytes": 601392688,
+                "footprint_settled_bytes": 601392688.0,
+                "peak_bytes": 207437824,
+                "settled_median_bytes": 206471168.0,
+                "last_bytes": 206471168,
+                "samples": 23
+              },
+              "first_sheet_4": {
+                "footprint_peak_bytes": 624674376,
+                "footprint_settled_bytes": 624166472,
+                "peak_bytes": 230178816,
+                "settled_median_bytes": 229228544.0,
+                "last_bytes": 229228544,
+                "samples": 23
+              },
+              "first_sheet_8": {
+                "footprint_peak_bytes": 641893984,
+                "footprint_settled_bytes": 637601352,
+                "peak_bytes": 245448704,
+                "settled_median_bytes": 242663424.0,
+                "last_bytes": 242761728,
+                "samples": 18
+              },
+              "first_sheet_1": {
+                "footprint_peak_bytes": 641861192,
+                "footprint_settled_bytes": 640140872,
+                "peak_bytes": 249380864,
+                "settled_median_bytes": 245202944.0,
+                "last_bytes": 245202944,
+                "samples": 18
+              },
+              "zoom_2x": {
+                "footprint_peak_bytes": 642074184,
+                "footprint_settled_bytes": 642074184.0,
+                "peak_bytes": 252018688,
+                "settled_median_bytes": 247824384.0,
+                "last_bytes": 247824384,
+                "samples": 18
+              },
+              "pan_2x": {
+                "footprint_peak_bytes": 643237448,
+                "footprint_settled_bytes": 643237448.0,
+                "peak_bytes": 250331136,
+                "settled_median_bytes": 247906304.0,
+                "last_bytes": 247906304,
+                "samples": 17
+              },
+              "zoom_4x": {
+                "footprint_peak_bytes": 642877000,
+                "footprint_settled_bytes": 642877000.0,
+                "peak_bytes": 252149760,
+                "settled_median_bytes": 247955456.0,
+                "last_bytes": 247955456,
+                "samples": 18
+              },
+              "pan_4x": {
+                "footprint_peak_bytes": 642680392,
+                "footprint_settled_bytes": 642680392.0,
+                "peak_bytes": 252231680,
+                "settled_median_bytes": 248037376.0,
+                "last_bytes": 248037376,
+                "samples": 18
+              },
+              "return_0_sheet_2": {
+                "footprint_peak_bytes": 635176520,
+                "footprint_settled_bytes": 621053512.0,
+                "peak_bytes": 230408192,
+                "settled_median_bytes": 229376000.0,
+                "last_bytes": 229376000,
+                "samples": 21
+              },
+              "return_0_sheet_8": {
+                "footprint_peak_bytes": 637044296,
+                "footprint_settled_bytes": 637044296.0,
+                "peak_bytes": 249151488,
+                "settled_median_bytes": 245137408.0,
+                "last_bytes": 245137408,
+                "samples": 18
+              },
+              "return_0_sheet_1": {
+                "footprint_peak_bytes": 637634120,
+                "footprint_settled_bytes": 637601352.0,
+                "peak_bytes": 248987648,
+                "settled_median_bytes": 245153792.0,
+                "last_bytes": 245186560,
+                "samples": 17
+              },
+              "return_1_sheet_2": {
+                "footprint_peak_bytes": 637634120,
+                "footprint_settled_bytes": 637634120.0,
+                "peak_bytes": 246235136,
+                "settled_median_bytes": 245186560.0,
+                "last_bytes": 245186560,
+                "samples": 18
+              },
+              "return_1_sheet_8": {
+                "footprint_peak_bytes": 637650504,
+                "footprint_settled_bytes": 637650504.0,
+                "peak_bytes": 248348672,
+                "settled_median_bytes": 245202944.0,
+                "last_bytes": 245202944,
+                "samples": 17
+              },
+              "return_1_sheet_1": {
+                "footprint_peak_bytes": 629524040,
+                "footprint_settled_bytes": 629524040.0,
+                "peak_bytes": 249397248,
+                "settled_median_bytes": 245202944.0,
+                "last_bytes": 245202944,
+                "samples": 17
+              },
+              "idle_after_navigation": {
+                "footprint_peak_bytes": 629524040,
+                "footprint_settled_bytes": 629524040.0,
+                "peak_bytes": 245202944,
+                "settled_median_bytes": 245202944.0,
+                "last_bytes": 245153792,
+                "samples": 60
+              }
+            },
+            "events": [
+              {
+                "event": "complete",
+                "success": true,
+                "time": 49.33239612495527
+              }
+            ]
+          },
+          {
+            "trial": 2,
+            "success": true,
+            "footprint_peak_bytes": 641893960,
+            "footprint_baseline_bytes": 508658672,
+            "rss_peak_bytes": 251822080,
+            "phases": {
+              "startup": {
+                "footprint_peak_bytes": 26690496,
+                "footprint_settled_bytes": null,
+                "peak_bytes": 69206016,
+                "settled_median_bytes": null,
+                "last_bytes": 69206016,
+                "samples": 1
+              },
+              "baseline": {
+                "footprint_peak_bytes": 508773360,
+                "footprint_settled_bytes": 508658672,
+                "peak_bytes": 112836608,
+                "settled_median_bytes": 112672768.0,
+                "last_bytes": 112836608,
+                "samples": 24
+              },
+              "open_fit_width": {
+                "footprint_peak_bytes": 559564336,
+                "footprint_settled_bytes": 559564336,
+                "peak_bytes": 166969344,
+                "settled_median_bytes": 163201024.0,
+                "last_bytes": 163201024,
+                "samples": 26
+              },
+              "first_sheet_2": {
+                "footprint_peak_bytes": 589710896,
+                "footprint_settled_bytes": 589710896.0,
+                "peak_bytes": 204079104,
+                "settled_median_bytes": 203227136.0,
+                "last_bytes": 203227136,
+                "samples": 20
+              },
+              "first_sheet_3": {
+                "footprint_peak_bytes": 615040584,
+                "footprint_settled_bytes": 615040584.0,
+                "peak_bytes": 221462528,
+                "settled_median_bytes": 220545024.0,
+                "last_bytes": 220545024,
+                "samples": 23
+              },
+              "first_sheet_4": {
+                "footprint_peak_bytes": 620299848,
+                "footprint_settled_bytes": 620275272.0,
+                "peak_bytes": 226852864,
+                "settled_median_bytes": 225755136.0,
+                "last_bytes": 225755136,
+                "samples": 23
+              },
+              "first_sheet_8": {
+                "footprint_peak_bytes": 635029064,
+                "footprint_settled_bytes": 635029064.0,
+                "peak_bytes": 243318784,
+                "settled_median_bytes": 240533504.0,
+                "last_bytes": 240533504,
+                "samples": 18
+              },
+              "first_sheet_1": {
+                "footprint_peak_bytes": 639436360,
+                "footprint_settled_bytes": 639428168.0,
+                "peak_bytes": 247709696,
+                "settled_median_bytes": 244940800.0,
+                "last_bytes": 244940800,
+                "samples": 18
+              },
+              "zoom_2x": {
+                "footprint_peak_bytes": 639862344,
+                "footprint_settled_bytes": 639862344.0,
+                "peak_bytes": 250249216,
+                "settled_median_bytes": 246054912.0,
+                "last_bytes": 246054912,
+                "samples": 18
+              },
+              "pan_2x": {
+                "footprint_peak_bytes": 641025608,
+                "footprint_settled_bytes": 641025608.0,
+                "peak_bytes": 248561664,
+                "settled_median_bytes": 246136832.0,
+                "last_bytes": 246136832,
+                "samples": 17
+              },
+              "zoom_4x": {
+                "footprint_peak_bytes": 641893960,
+                "footprint_settled_bytes": 641893960.0,
+                "peak_bytes": 251559936,
+                "settled_median_bytes": 247414784.0,
+                "last_bytes": 247414784,
+                "samples": 18
+              },
+              "pan_4x": {
+                "footprint_peak_bytes": 641713736,
+                "footprint_settled_bytes": 641713736.0,
+                "peak_bytes": 251674624,
+                "settled_median_bytes": 247513088.0,
+                "last_bytes": 247513088,
+                "samples": 18
+              },
+              "return_0_sheet_2": {
+                "footprint_peak_bytes": 621463112,
+                "footprint_settled_bytes": 621463112.0,
+                "peak_bytes": 235536384,
+                "settled_median_bytes": 234504192.0,
+                "last_bytes": 234504192,
+                "samples": 20
+              },
+              "return_0_sheet_8": {
+                "footprint_peak_bytes": 638027360,
+                "footprint_settled_bytes": 634816072,
+                "peak_bytes": 250527744,
+                "settled_median_bytes": 247595008.0,
+                "last_bytes": 247595008,
+                "samples": 18
+              },
+              "return_0_sheet_1": {
+                "footprint_peak_bytes": 637126216,
+                "footprint_settled_bytes": 635389512,
+                "peak_bytes": 251822080,
+                "settled_median_bytes": 247627776.0,
+                "last_bytes": 247660544,
+                "samples": 18
+              },
+              "return_1_sheet_2": {
+                "footprint_peak_bytes": 636470856,
+                "footprint_settled_bytes": 635422280,
+                "peak_bytes": 248709120,
+                "settled_median_bytes": 247660544.0,
+                "last_bytes": 247660544,
+                "samples": 19
+              },
+              "return_1_sheet_8": {
+                "footprint_peak_bytes": 635438664,
+                "footprint_settled_bytes": 635438664.0,
+                "peak_bytes": 250822656,
+                "settled_median_bytes": 247676928.0,
+                "last_bytes": 247676928,
+                "samples": 17
+              },
+              "return_1_sheet_1": {
+                "footprint_peak_bytes": 629868104,
+                "footprint_settled_bytes": 629868104.0,
+                "peak_bytes": 248070144,
+                "settled_median_bytes": 244924416.0,
+                "last_bytes": 244924416,
+                "samples": 17
+              },
+              "idle_after_navigation": {
+                "footprint_peak_bytes": 629868104,
+                "footprint_settled_bytes": 629786184.0,
+                "peak_bytes": 244924416,
+                "settled_median_bytes": 244842496,
+                "last_bytes": 244842496,
+                "samples": 59
+              }
+            },
+            "events": [
+              {
+                "event": "complete",
+                "success": true,
+                "time": 49.39038691599853
+              }
+            ]
+          }
+        ],
+        "pdfjs5": [
+          {
+            "trial": 1,
+            "success": true,
+            "footprint_peak_bytes": 2045897504,
+            "footprint_baseline_bytes": 928523648,
+            "rss_peak_bytes": 2337193984,
+            "phases": {
+              "startup": {
+                "footprint_peak_bytes": 848389432,
+                "footprint_settled_bytes": null,
+                "peak_bytes": 1033584640,
+                "settled_median_bytes": null,
+                "last_bytes": 1033584640,
+                "samples": 7
+              },
+              "baseline": {
+                "footprint_peak_bytes": 960882072,
+                "footprint_settled_bytes": 928523648,
+                "peak_bytes": 1054867456,
+                "settled_median_bytes": 1052180480.0,
+                "last_bytes": 1054703616,
+                "samples": 21
+              },
+              "open_fit_width": {
+                "footprint_peak_bytes": 2045897504,
+                "footprint_settled_bytes": 1471785856,
+                "peak_bytes": 2324627456,
+                "settled_median_bytes": 2279800832.0,
+                "last_bytes": 2051735552,
+                "samples": 32
+              },
+              "first_sheet_2": {
+                "footprint_peak_bytes": 1611704976,
+                "footprint_settled_bytes": 1400244880.0,
+                "peak_bytes": 2051883008,
+                "settled_median_bytes": 2014429184,
+                "last_bytes": 2006237184,
+                "samples": 15
+              },
+              "first_sheet_3": {
+                "footprint_peak_bytes": 1665575640,
+                "footprint_settled_bytes": 1653934808.0,
+                "peak_bytes": 2098593792,
+                "settled_median_bytes": 2097856512.0,
+                "last_bytes": 2098561024,
+                "samples": 17
+              },
+              "first_sheet_4": {
+                "footprint_peak_bytes": 1709894408,
+                "footprint_settled_bytes": 1709878024,
+                "peak_bytes": 2150645760,
+                "settled_median_bytes": 2150563840,
+                "last_bytes": 2145386496,
+                "samples": 15
+              },
+              "first_sheet_8": {
+                "footprint_peak_bytes": 1950346088,
+                "footprint_settled_bytes": 1950346088,
+                "peak_bytes": 2337193984,
+                "settled_median_bytes": 2337161216,
+                "last_bytes": 2237775872,
+                "samples": 14
+              },
+              "first_sheet_1": {
+                "footprint_peak_bytes": 1806986064,
+                "footprint_settled_bytes": 1642933036.0,
+                "peak_bytes": 2237792256,
+                "settled_median_bytes": 2234826752.0,
+                "last_bytes": 2226536448,
+                "samples": 15
+              },
+              "zoom_2x": {
+                "footprint_peak_bytes": 1698147080,
+                "footprint_settled_bytes": 1697803016,
+                "peak_bytes": 2127527936,
+                "settled_median_bytes": 2127495168,
+                "last_bytes": 2127446016,
+                "samples": 13
+              },
+              "pan_2x": {
+                "footprint_peak_bytes": 1263086344,
+                "footprint_settled_bytes": 1263069960,
+                "peak_bytes": 2116321280,
+                "settled_median_bytes": 2116288512,
+                "last_bytes": 2116288512,
+                "samples": 14
+              },
+              "zoom_4x": {
+                "footprint_peak_bytes": 1797204768,
+                "footprint_settled_bytes": 1553820448.0,
+                "peak_bytes": 2138685440,
+                "settled_median_bytes": 2138669056,
+                "last_bytes": 2138669056,
+                "samples": 14
+              },
+              "pan_4x": {
+                "footprint_peak_bytes": 1309027080,
+                "footprint_settled_bytes": 1309027080,
+                "peak_bytes": 2117910528,
+                "settled_median_bytes": 2117844992.0,
+                "last_bytes": 2117844992,
+                "samples": 15
+              },
+              "return_0_sheet_2": {
+                "footprint_peak_bytes": 1736780552,
+                "footprint_settled_bytes": 1734028040,
+                "peak_bytes": 2131247104,
+                "settled_median_bytes": 2130984960,
+                "last_bytes": 2122760192,
+                "samples": 15
+              },
+              "return_0_sheet_8": {
+                "footprint_peak_bytes": 1895607192,
+                "footprint_settled_bytes": 1709239204.0,
+                "peak_bytes": 2302083072,
+                "settled_median_bytes": 2295988224.0,
+                "last_bytes": 2196832256,
+                "samples": 15
+              },
+              "return_0_sheet_1": {
+                "footprint_peak_bytes": 1744087960,
+                "footprint_settled_bytes": 1730505624,
+                "peak_bytes": 2181185536,
+                "settled_median_bytes": 2181136384,
+                "last_bytes": 2181136384,
+                "samples": 13
+              },
+              "return_1_sheet_2": {
+                "footprint_peak_bytes": 1691085648,
+                "footprint_settled_bytes": 1482787664.0,
+                "peak_bytes": 2172764160,
+                "settled_median_bytes": 2141716480,
+                "last_bytes": 2133344256,
+                "samples": 15
+              },
+              "return_1_sheet_8": {
+                "footprint_peak_bytes": 1874815920,
+                "footprint_settled_bytes": 1874815920,
+                "peak_bytes": 2322726912,
+                "settled_median_bytes": 2322677760.0,
+                "last_bytes": 2223570944,
+                "samples": 15
+              },
+              "return_1_sheet_1": {
+                "footprint_peak_bytes": 1769319320,
+                "footprint_settled_bytes": 1556229016.0,
+                "peak_bytes": 2233647104,
+                "settled_median_bytes": 2233614336.0,
+                "last_bytes": 2233647104,
+                "samples": 15
+              },
+              "idle_after_navigation": {
+                "footprint_peak_bytes": 1330310040,
+                "footprint_settled_bytes": 1130408784,
+                "peak_bytes": 2225274880,
+                "settled_median_bytes": 2037989376,
+                "last_bytes": 499564544,
+                "samples": 53
+              }
+            },
+            "events": [
+              {
+                "event": "browser_version",
+                "version": "155.0.8059.80",
+                "engine": "5.6.205",
+                "time": 0.5173002500087023
+              },
+              {
+                "event": "complete",
+                "success": true,
+                "time": 48.850259457947686
+              }
+            ]
+          },
+          {
+            "trial": 2,
+            "success": true,
+            "footprint_peak_bytes": 2201447008,
+            "footprint_baseline_bytes": 972989416,
+            "rss_peak_bytes": 2483781632,
+            "phases": {
+              "startup": {
+                "footprint_peak_bytes": 858792864,
+                "footprint_settled_bytes": null,
+                "peak_bytes": 1033617408,
+                "settled_median_bytes": null,
+                "last_bytes": 1033617408,
+                "samples": 7
+              },
+              "baseline": {
+                "footprint_peak_bytes": 989864960,
+                "footprint_settled_bytes": 972989416,
+                "peak_bytes": 1058553856,
+                "settled_median_bytes": 1055801344,
+                "last_bytes": 1058373632,
+                "samples": 22
+              },
+              "open_fit_width": {
+                "footprint_peak_bytes": 2201447008,
+                "footprint_settled_bytes": 1516235360,
+                "peak_bytes": 2483781632,
+                "settled_median_bytes": 2350956544.0,
+                "last_bytes": 2124562432,
+                "samples": 32
+              },
+              "first_sheet_2": {
+                "footprint_peak_bytes": 1668933952,
+                "footprint_settled_bytes": 1635625280,
+                "peak_bytes": 2124693504,
+                "settled_median_bytes": 2086764544,
+                "last_bytes": 2078474240,
+                "samples": 15
+              },
+              "first_sheet_3": {
+                "footprint_peak_bytes": 1626188096,
+                "footprint_settled_bytes": 1223502144,
+                "peak_bytes": 2118402048,
+                "settled_median_bytes": 2111602688,
+                "last_bytes": 2103099392,
+                "samples": 16
+              },
+              "first_sheet_4": {
+                "footprint_peak_bytes": 1633790272,
+                "footprint_settled_bytes": 1231104320,
+                "peak_bytes": 2121990144,
+                "settled_median_bytes": 2121891840,
+                "last_bytes": 2113519616,
+                "samples": 16
+              },
+              "first_sheet_8": {
+                "footprint_peak_bytes": 1826040248,
+                "footprint_settled_bytes": 1667525048.0,
+                "peak_bytes": 2300510208,
+                "settled_median_bytes": 2300477440.0,
+                "last_bytes": 2201681920,
+                "samples": 15
+              },
+              "first_sheet_1": {
+                "footprint_peak_bytes": 1713482168,
+                "footprint_settled_bytes": 1297983928,
+                "peak_bytes": 2179629056,
+                "settled_median_bytes": 2179596288,
+                "last_bytes": 2179612672,
+                "samples": 13
+              },
+              "zoom_2x": {
+                "footprint_peak_bytes": 1656547720,
+                "footprint_settled_bytes": 1437141384.0,
+                "peak_bytes": 2171240448,
+                "settled_median_bytes": 2085912576.0,
+                "last_bytes": 2085896192,
+                "samples": 15
+              },
+              "pan_2x": {
+                "footprint_peak_bytes": 1208035720,
+                "footprint_settled_bytes": 1208035720,
+                "peak_bytes": 2074607616,
+                "settled_median_bytes": 2074574848,
+                "last_bytes": 2074574848,
+                "samples": 13
+              },
+              "zoom_4x": {
+                "footprint_peak_bytes": 1705470344,
+                "footprint_settled_bytes": 1705470344,
+                "peak_bytes": 2099527680,
+                "settled_median_bytes": 2099462144.0,
+                "last_bytes": 2079129600,
+                "samples": 15
+              },
+              "pan_4x": {
+                "footprint_peak_bytes": 1250650504,
+                "footprint_settled_bytes": 1250617736.0,
+                "peak_bytes": 2078769152,
+                "settled_median_bytes": 2078736384,
+                "last_bytes": 2078736384,
+                "samples": 13
+              },
+              "return_0_sheet_2": {
+                "footprint_peak_bytes": 1694296456,
+                "footprint_settled_bytes": 1598540192.0,
+                "peak_bytes": 2094612480,
+                "settled_median_bytes": 2094366720,
+                "last_bytes": 2086076416,
+                "samples": 17
+              },
+              "return_0_sheet_8": {
+                "footprint_peak_bytes": 1812605416,
+                "footprint_settled_bytes": 1810246120,
+                "peak_bytes": 2255142912,
+                "settled_median_bytes": 2251603968,
+                "last_bytes": 2249523200,
+                "samples": 13
+              },
+              "return_0_sheet_1": {
+                "footprint_peak_bytes": 1714924008,
+                "footprint_settled_bytes": 1495271912.0,
+                "peak_bytes": 2161999872,
+                "settled_median_bytes": 2161967104.0,
+                "last_bytes": 2161967104,
+                "samples": 15
+              },
+              "return_1_sheet_2": {
+                "footprint_peak_bytes": 1654188448,
+                "footprint_settled_bytes": 1643473312,
+                "peak_bytes": 2118123520,
+                "settled_median_bytes": 2118090752.0,
+                "last_bytes": 2109636608,
+                "samples": 15
+              },
+              "return_1_sheet_8": {
+                "footprint_peak_bytes": 1790962152,
+                "footprint_settled_bytes": 1579772392.0,
+                "peak_bytes": 2253848576,
+                "settled_median_bytes": 2253815808.0,
+                "last_bytes": 2150465536,
+                "samples": 15
+              },
+              "return_1_sheet_1": {
+                "footprint_peak_bytes": 1693116904,
+                "footprint_settled_bytes": 1693018600,
+                "peak_bytes": 2160394240,
+                "settled_median_bytes": 2160361472.0,
+                "last_bytes": 2152120320,
+                "samples": 14
+              },
+              "idle_after_navigation": {
+                "footprint_peak_bytes": 1259923944,
+                "footprint_settled_bytes": 1259907560,
+                "peak_bytes": 2152022016,
+                "settled_median_bytes": 2021113856,
+                "last_bytes": 1739751424,
+                "samples": 53
+              }
+            },
+            "events": [
+              {
+                "event": "browser_version",
+                "version": "155.0.8059.80",
+                "engine": "5.6.205",
+                "time": 0.5234870410058647
+              },
+              {
+                "event": "complete",
+                "success": true,
+                "time": 48.70247866585851
+              }
+            ]
+          }
+        ]
+      },
+      "current_pdfjs_failure": [
+        {
+          "trial": 1,
+          "success": false,
+          "failure": [
+            {
+              "event": "failed",
+              "message": "TimeoutError: page.waitForFunction: Timeout 45000ms exceeded.",
+              "time": 49.9938334999606
+            }
+          ]
+        },
+        {
+          "trial": 2,
+          "success": false,
+          "failure": [
+            {
+              "event": "failed",
+              "message": "TimeoutError: page.waitForFunction: Timeout 45000ms exceeded.",
+              "time": 49.30633100005798
+            }
+          ]
+        }
+      ]
+    },
+    "Grove Street architectural": {
+      "source": "231025 TENDER GROVE ST.pdf",
+      "source_bytes": 84541144,
+      "source_sha256": "a4c13c20fd4f983b748964d6087633dbac4236e6a1ea3038155f7c1e08fb844f",
+      "workflow": [
+        {
+          "name": "baseline",
+          "page": 0,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 3
+        },
+        {
+          "name": "open_fit_width",
+          "page": 1,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 3
+        },
+        {
+          "name": "first_sheet_2",
+          "page": 2,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "first_sheet_3",
+          "page": 3,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "first_sheet_4",
+          "page": 4,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "first_sheet_45",
+          "page": 45,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "first_sheet_1",
+          "page": 1,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "zoom_2x",
+          "page": 1,
+          "zoom": 2,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "pan_2x",
+          "page": 1,
+          "zoom": 2,
+          "pan": [
+            -0.2,
+            -0.15
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "zoom_4x",
+          "page": 1,
+          "zoom": 4,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "pan_4x",
+          "page": 1,
+          "zoom": 4,
+          "pan": [
+            0.2,
+            0.15
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "return_0_sheet_2",
+          "page": 2,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "return_0_sheet_45",
+          "page": 45,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "return_0_sheet_1",
+          "page": 1,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "return_1_sheet_2",
+          "page": 2,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "return_1_sheet_45",
+          "page": 45,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "return_1_sheet_1",
+          "page": 1,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 2
+        },
+        {
+          "name": "idle_after_navigation",
+          "page": 1,
+          "zoom": 1,
+          "pan": [
+            0,
+            0
+          ],
+          "dwell": 8
+        }
+      ],
+      "engines": {
+        "rust": [
+          {
+            "trial": 1,
+            "success": true,
+            "footprint_peak_bytes": 796509912,
+            "footprint_baseline_bytes": 517587928,
+            "rss_peak_bytes": 377733120,
+            "phases": {
+              "startup": {
+                "footprint_peak_bytes": 25740200,
+                "footprint_settled_bytes": null,
+                "peak_bytes": 65290240,
+                "settled_median_bytes": null,
+                "last_bytes": 65290240,
+                "samples": 1
+              },
+              "baseline": {
+                "footprint_peak_bytes": 517637080,
+                "footprint_settled_bytes": 517587928,
+                "peak_bytes": 113524736,
+                "settled_median_bytes": 113410048.0,
+                "last_bytes": 113524736,
+                "samples": 25
+              },
+              "open_fit_width": {
+                "footprint_peak_bytes": 649872968,
+                "footprint_settled_bytes": 649856584,
+                "peak_bytes": 249430016,
+                "settled_median_bytes": 245645312.0,
+                "last_bytes": 245694464,
+                "samples": 27
+              },
+              "first_sheet_2": {
+                "footprint_peak_bytes": 689555064,
+                "footprint_settled_bytes": 688686712,
+                "peak_bytes": 272826368,
+                "settled_median_bytes": 271777792.0,
+                "last_bytes": 271777792,
+                "samples": 19
+              },
+              "first_sheet_3": {
+                "footprint_peak_bytes": 699532944,
+                "footprint_settled_bytes": 699532944.0,
+                "peak_bytes": 278544384,
+                "settled_median_bytes": 274710528.0,
+                "last_bytes": 274710528,
+                "samples": 17
+              },
+              "first_sheet_4": {
+                "footprint_peak_bytes": 796509912,
+                "footprint_settled_bytes": 796509912.0,
+                "peak_bytes": 377569280,
+                "settled_median_bytes": 375832576.0,
+                "last_bytes": 375783424,
+                "samples": 21
+              },
+              "first_sheet_45": {
+                "footprint_peak_bytes": 729646784,
+                "footprint_settled_bytes": 728778432,
+                "peak_bytes": 377733120,
+                "settled_median_bytes": 331808768.0,
+                "last_bytes": 331808768,
+                "samples": 23
+              },
+              "first_sheet_1": {
+                "footprint_peak_bytes": 731334336,
+                "footprint_settled_bytes": 731334336.0,
+                "peak_bytes": 338378752,
+                "settled_median_bytes": 334364672.0,
+                "last_bytes": 334364672,
+                "samples": 18
+              },
+              "zoom_2x": {
+                "footprint_peak_bytes": 732972736,
+                "footprint_settled_bytes": 732972736.0,
+                "peak_bytes": 340885504,
+                "settled_median_bytes": 336691200.0,
+                "last_bytes": 336691200,
+                "samples": 18
+              },
+              "pan_2x": {
+                "footprint_peak_bytes": 734185152,
+                "footprint_settled_bytes": 734185152.0,
+                "peak_bytes": 339935232,
+                "settled_median_bytes": 336822272.0,
+                "last_bytes": 336822272,
+                "samples": 17
+              },
+              "zoom_4x": {
+                "footprint_peak_bytes": 735299264,
+                "footprint_settled_bytes": 734250688.0,
+                "peak_bytes": 341491712,
+                "settled_median_bytes": 337297408.0,
+                "last_bytes": 337297408,
+                "samples": 18
+              },
+              "pan_4x": {
+                "footprint_peak_bytes": 735020736,
+                "footprint_settled_bytes": 735020736.0,
+                "peak_bytes": 341491712,
+                "settled_median_bytes": 337297408.0,
+                "last_bytes": 337297408,
+                "samples": 18
+              },
+              "return_0_sheet_2": {
+                "footprint_peak_bytes": 733611712,
+                "footprint_settled_bytes": 733611712.0,
+                "peak_bytes": 340393984,
+                "settled_median_bytes": 337461248.0,
+                "last_bytes": 337461248,
+                "samples": 18
+              },
+              "return_0_sheet_45": {
+                "footprint_peak_bytes": 734561984,
+                "footprint_settled_bytes": 734037696.0,
+                "peak_bytes": 338657280,
+                "settled_median_bytes": 337608704.0,
+                "last_bytes": 337608704,
+                "samples": 22
+              },
+              "return_0_sheet_1": {
+                "footprint_peak_bytes": 734578368,
+                "footprint_settled_bytes": 734578368.0,
+                "peak_bytes": 340393984,
+                "settled_median_bytes": 337608704.0,
+                "last_bytes": 337608704,
+                "samples": 18
+              },
+              "return_1_sheet_2": {
+                "footprint_peak_bytes": 736347840,
+                "footprint_settled_bytes": 736347840.0,
+                "peak_bytes": 341475328,
+                "settled_median_bytes": 339378176.0,
+                "last_bytes": 339378176,
+                "samples": 18
+              },
+              "return_1_sheet_45": {
+                "footprint_peak_bytes": 736446144,
+                "footprint_settled_bytes": 736446144.0,
+                "peak_bytes": 340508672,
+                "settled_median_bytes": 339476480.0,
+                "last_bytes": 339476480,
+                "samples": 19
+              },
+              "return_1_sheet_1": {
+                "footprint_peak_bytes": 736462528,
+                "footprint_settled_bytes": 736462528.0,
+                "peak_bytes": 342638592,
+                "settled_median_bytes": 339492864.0,
+                "last_bytes": 339492864,
+                "samples": 17
+              },
+              "idle_after_navigation": {
+                "footprint_peak_bytes": 736462528,
+                "footprint_settled_bytes": 736462528.0,
+                "peak_bytes": 339492864,
+                "settled_median_bytes": 339492864.0,
+                "last_bytes": 339492864,
+                "samples": 60
+              }
+            },
+            "events": [
+              {
+                "event": "complete",
+                "success": true,
+                "time": 49.13442312506959
+              }
+            ]
+          },
+          {
+            "trial": 2,
+            "success": true,
+            "footprint_peak_bytes": 813450968,
+            "footprint_baseline_bytes": 519865280,
+            "rss_peak_bytes": 356597760,
+            "phases": {
+              "startup": {
+                "footprint_peak_bytes": 485786560,
+                "footprint_settled_bytes": null,
+                "peak_bytes": 101531648,
+                "settled_median_bytes": null,
+                "last_bytes": 101531648,
+                "samples": 1
+              },
+              "baseline": {
+                "footprint_peak_bytes": 519996376,
+                "footprint_settled_bytes": 519865280,
+                "peak_bytes": 106496000,
+                "settled_median_bytes": 106348544,
+                "last_bytes": 106496000,
+                "samples": 23
+              },
+              "open_fit_width": {
+                "footprint_peak_bytes": 654722632,
+                "footprint_settled_bytes": 654657096,
+                "peak_bytes": 242122752,
+                "settled_median_bytes": 238239744,
+                "last_bytes": 238256128,
+                "samples": 26
+              },
+              "first_sheet_2": {
+                "footprint_peak_bytes": 679413344,
+                "footprint_settled_bytes": 679405152.0,
+                "peak_bytes": 252690432,
+                "settled_median_bytes": 251068416.0,
+                "last_bytes": 251183104,
+                "samples": 18
+              },
+              "first_sheet_3": {
+                "footprint_peak_bytes": 694634104,
+                "footprint_settled_bytes": 694634104.0,
+                "peak_bytes": 262193152,
+                "settled_median_bytes": 258375680.0,
+                "last_bytes": 258375680,
+                "samples": 17
+              },
+              "first_sheet_4": {
+                "footprint_peak_bytes": 813450968,
+                "footprint_settled_bytes": 792037056.0,
+                "peak_bytes": 356597760,
+                "settled_median_bytes": 355729408.0,
+                "last_bytes": 355729408,
+                "samples": 21
+              },
+              "first_sheet_45": {
+                "footprint_peak_bytes": 728467112,
+                "footprint_settled_bytes": 727361192.0,
+                "peak_bytes": 312672256,
+                "settled_median_bytes": 311779328.0,
+                "last_bytes": 311984128,
+                "samples": 22
+              },
+              "first_sheet_1": {
+                "footprint_peak_bytes": 727811752,
+                "footprint_settled_bytes": 727778984,
+                "peak_bytes": 314425344,
+                "settled_median_bytes": 312721408.0,
+                "last_bytes": 312721408,
+                "samples": 17
+              },
+              "zoom_2x": {
+                "footprint_peak_bytes": 732104360,
+                "footprint_settled_bytes": 727762600,
+                "peak_bytes": 317554688,
+                "settled_median_bytes": 313376768.0,
+                "last_bytes": 313376768,
+                "samples": 17
+              },
+              "pan_2x": {
+                "footprint_peak_bytes": 728958632,
+                "footprint_settled_bytes": 728958632.0,
+                "peak_bytes": 316604416,
+                "settled_median_bytes": 313491456.0,
+                "last_bytes": 313491456,
+                "samples": 17
+              },
+              "zoom_4x": {
+                "footprint_peak_bytes": 728827560,
+                "footprint_settled_bytes": 728827560.0,
+                "peak_bytes": 316932096,
+                "settled_median_bytes": 313786368.0,
+                "last_bytes": 313786368,
+                "samples": 17
+              },
+              "pan_4x": {
+                "footprint_peak_bytes": 728630952,
+                "footprint_settled_bytes": 728630952.0,
+                "peak_bytes": 318062592,
+                "settled_median_bytes": 313868288.0,
+                "last_bytes": 313868288,
+                "samples": 17
+              },
+              "return_0_sheet_2": {
+                "footprint_peak_bytes": 707610280,
+                "footprint_settled_bytes": 707610280.0,
+                "peak_bytes": 312557568,
+                "settled_median_bytes": 311640064.0,
+                "last_bytes": 311640064,
+                "samples": 18
+              },
+              "return_0_sheet_45": {
+                "footprint_peak_bytes": 722290344,
+                "footprint_settled_bytes": 712500904.0,
+                "peak_bytes": 315686912,
+                "settled_median_bytes": 315457536.0,
+                "last_bytes": 315686912,
+                "samples": 22
+              },
+              "return_0_sheet_1": {
+                "footprint_peak_bytes": 737396392,
+                "footprint_settled_bytes": 737396392,
+                "peak_bytes": 333053952,
+                "settled_median_bytes": 330268672.0,
+                "last_bytes": 330268672,
+                "samples": 17
+              },
+              "return_1_sheet_2": {
+                "footprint_peak_bytes": 741721768,
+                "footprint_settled_bytes": 741607080,
+                "peak_bytes": 336576512,
+                "settled_median_bytes": 334479360.0,
+                "last_bytes": 334479360,
+                "samples": 17
+              },
+              "return_1_sheet_45": {
+                "footprint_peak_bytes": 745015000,
+                "footprint_settled_bytes": 741820072.0,
+                "peak_bytes": 336281600,
+                "settled_median_bytes": 335233024.0,
+                "last_bytes": 335216640,
+                "samples": 19
+              },
+              "return_1_sheet_1": {
+                "footprint_peak_bytes": 743016128,
+                "footprint_settled_bytes": 743016128,
+                "peak_bytes": 336412672,
+                "settled_median_bytes": 336297984,
+                "last_bytes": 336297984,
+                "samples": 15
+              },
+              "idle_after_navigation": {
+                "footprint_peak_bytes": 746145472,
+                "footprint_settled_bytes": 743016128,
+                "peak_bytes": 336887808,
+                "settled_median_bytes": 336297984.0,
+                "last_bytes": 336887808,
+                "samples": 62
+              }
+            },
+            "events": [
+              {
+                "event": "complete",
+                "success": true,
+                "time": 49.29477700009011
+              }
+            ]
+          }
+        ],
+        "pdfjs3": [
+          {
+            "trial": 1,
+            "success": true,
+            "footprint_peak_bytes": 1687480568,
+            "footprint_baseline_bytes": 949904480,
+            "rss_peak_bytes": 1963589632,
+            "phases": {
+              "startup": {
+                "footprint_peak_bytes": 892642304,
+                "footprint_settled_bytes": null,
+                "peak_bytes": 1041072128,
+                "settled_median_bytes": null,
+                "last_bytes": 1041072128,
+                "samples": 7
+              },
+              "baseline": {
+                "footprint_peak_bytes": 977478776,
+                "footprint_settled_bytes": 949904480,
+                "peak_bytes": 1126432768,
+                "settled_median_bytes": 1059962880,
+                "last_bytes": 1060306944,
+                "samples": 22
+              },
+              "open_fit_width": {
+                "footprint_peak_bytes": 1424271080,
+                "footprint_settled_bytes": 1016506088,
+                "peak_bytes": 1464434688,
+                "settled_median_bytes": 1460731904,
+                "last_bytes": 1443201024,
+                "samples": 41
+              },
+              "first_sheet_2": {
+                "footprint_peak_bytes": 1361880784,
+                "footprint_settled_bytes": 1138067152.0,
+                "peak_bytes": 1465696256,
+                "settled_median_bytes": 1465688064.0,
+                "last_bytes": 1465679872,
+                "samples": 15
+              },
+              "first_sheet_3": {
+                "footprint_peak_bytes": 1644882096,
+                "footprint_settled_bytes": 1633446064,
+                "peak_bytes": 1814888448,
+                "settled_median_bytes": 1814593536,
+                "last_bytes": 1707294720,
+                "samples": 15
+              },
+              "first_sheet_4": {
+                "footprint_peak_bytes": 1687480568,
+                "footprint_settled_bytes": 1687480568,
+                "peak_bytes": 1884192768,
+                "settled_median_bytes": 1884184576.0,
+                "last_bytes": 1766916096,
+                "samples": 17
+              },
+              "first_sheet_45": {
+                "footprint_peak_bytes": 1590470880,
+                "footprint_settled_bytes": 1586784480,
+                "peak_bytes": 1963589632,
+                "settled_median_bytes": 1841332224.0,
+                "last_bytes": 1831960576,
+                "samples": 16
+              },
+              "first_sheet_1": {
+                "footprint_peak_bytes": 1571678408,
+                "footprint_settled_bytes": 1571662024,
+                "peak_bytes": 1836302336,
+                "settled_median_bytes": 1836269568.0,
+                "last_bytes": 1836236800,
+                "samples": 15
+              },
+              "zoom_2x": {
+                "footprint_peak_bytes": 1584343240,
+                "footprint_settled_bytes": 1561602248,
+                "peak_bytes": 1845493760,
+                "settled_median_bytes": 1845460992,
+                "last_bytes": 1845215232,
+                "samples": 14
+              },
+              "pan_2x": {
+                "footprint_peak_bytes": 1540499656,
+                "footprint_settled_bytes": 1110976712,
+                "peak_bytes": 1841987584,
+                "settled_median_bytes": 1837342720.0,
+                "last_bytes": 1841954816,
+                "samples": 15
+              },
+              "zoom_4x": {
+                "footprint_peak_bytes": 1560586464,
+                "footprint_settled_bytes": 1560553696,
+                "peak_bytes": 1844985856,
+                "settled_median_bytes": 1844969472.0,
+                "last_bytes": 1836466176,
+                "samples": 15
+              },
+              "pan_4x": {
+                "footprint_peak_bytes": 1119512800,
+                "footprint_settled_bytes": 1119496416,
+                "peak_bytes": 1836335104,
+                "settled_median_bytes": 1836318720.0,
+                "last_bytes": 1836335104,
+                "samples": 14
+              },
+              "return_0_sheet_2": {
+                "footprint_peak_bytes": 1635248352,
+                "footprint_settled_bytes": 1629251808,
+                "peak_bytes": 1853374464,
+                "settled_median_bytes": 1852145664,
+                "last_bytes": 1848852480,
+                "samples": 14
+              },
+              "return_0_sheet_45": {
+                "footprint_peak_bytes": 1508108512,
+                "footprint_settled_bytes": 1497442540.0,
+                "peak_bytes": 1841266688,
+                "settled_median_bytes": 1840709632.0,
+                "last_bytes": 1833140224,
+                "samples": 16
+              },
+              "return_0_sheet_1": {
+                "footprint_peak_bytes": 1514793208,
+                "footprint_settled_bytes": 1514793208,
+                "peak_bytes": 1847017472,
+                "settled_median_bytes": 1846984704,
+                "last_bytes": 1846984704,
+                "samples": 13
+              },
+              "return_1_sheet_2": {
+                "footprint_peak_bytes": 1546692856,
+                "footprint_settled_bytes": 1431374072.0,
+                "peak_bytes": 1846345728,
+                "settled_median_bytes": 1846312960.0,
+                "last_bytes": 1846312960,
+                "samples": 15
+              },
+              "return_1_sheet_45": {
+                "footprint_peak_bytes": 1566550288,
+                "footprint_settled_bytes": 1566533904,
+                "peak_bytes": 1899184128,
+                "settled_median_bytes": 1899167744.0,
+                "last_bytes": 1892368384,
+                "samples": 15
+              },
+              "return_1_sheet_1": {
+                "footprint_peak_bytes": 1558571256,
+                "footprint_settled_bytes": 1347963128.0,
+                "peak_bytes": 1893400576,
+                "settled_median_bytes": 1889206272.0,
+                "last_bytes": 1881456640,
+                "samples": 15
+              },
+              "idle_after_navigation": {
+                "footprint_peak_bytes": 1123412216,
+                "footprint_settled_bytes": 1123346680,
+                "peak_bytes": 1881079808,
+                "settled_median_bytes": 1881030656,
+                "last_bytes": 1548697600,
+                "samples": 53
+              }
+            },
+            "events": [
+              {
+                "event": "browser_version",
+                "version": "155.0.8059.80",
+                "engine": "3.11.174",
+                "time": 0.48111154208891094
+              },
+              {
+                "event": "complete",
+                "success": true,
+                "time": 49.67580237495713
+              }
+            ]
+          },
+          {
+            "trial": 2,
+            "success": true,
+            "footprint_peak_bytes": 1666836608,
+            "footprint_baseline_bytes": 861152160,
+            "rss_peak_bytes": 1895071744,
+            "phases": {
+              "startup": {
+                "footprint_peak_bytes": 856171424,
+                "footprint_settled_bytes": null,
+                "peak_bytes": 1023246336,
+                "settled_median_bytes": null,
+                "last_bytes": 1023246336,
+                "samples": 6
+              },
+              "baseline": {
+                "footprint_peak_bytes": 972186600,
+                "footprint_settled_bytes": 861152160,
+                "peak_bytes": 1048477696,
+                "settled_median_bytes": 1039196160.0,
+                "last_bytes": 1048297472,
+                "samples": 21
+              },
+              "open_fit_width": {
+                "footprint_peak_bytes": 1436558984,
+                "footprint_settled_bytes": 1000285808,
+                "peak_bytes": 1461436416,
+                "settled_median_bytes": 1457782784.0,
+                "last_bytes": 1440022528,
+                "samples": 40
+              },
+              "first_sheet_2": {
+                "footprint_peak_bytes": 1332029064,
+                "footprint_settled_bytes": 1326327432.0,
+                "peak_bytes": 1452556288,
+                "settled_median_bytes": 1452556288,
+                "last_bytes": 1439629312,
+                "samples": 16
+              },
+              "first_sheet_3": {
+                "footprint_peak_bytes": 1602119736,
+                "footprint_settled_bytes": 1601071160,
+                "peak_bytes": 1805107200,
+                "settled_median_bytes": 1805074432.0,
+                "last_bytes": 1697906688,
+                "samples": 14
+              },
+              "first_sheet_4": {
+                "footprint_peak_bytes": 1666836608,
+                "footprint_settled_bytes": 1630824600,
+                "peak_bytes": 1846919168,
+                "settled_median_bytes": 1846910976.0,
+                "last_bytes": 1729675264,
+                "samples": 18
+              },
+              "first_sheet_45": {
+                "footprint_peak_bytes": 1624025312,
+                "footprint_settled_bytes": 1534167144.0,
+                "peak_bytes": 1895071744,
+                "settled_median_bytes": 1825030144.0,
+                "last_bytes": 1816510464,
+                "samples": 16
+              },
+              "first_sheet_1": {
+                "footprint_peak_bytes": 1534191720,
+                "footprint_settled_bytes": 1111844968,
+                "peak_bytes": 1827995648,
+                "settled_median_bytes": 1827930112,
+                "last_bytes": 1827995648,
+                "samples": 13
+              },
+              "zoom_2x": {
+                "footprint_peak_bytes": 1547839592,
+                "footprint_settled_bytes": 1337346152.0,
+                "peak_bytes": 1834713088,
+                "settled_median_bytes": 1834696704.0,
+                "last_bytes": 1826881536,
+                "samples": 15
+              },
+              "pan_2x": {
+                "footprint_peak_bytes": 1087875176,
+                "footprint_settled_bytes": 1087858792,
+                "peak_bytes": 1827012608,
+                "settled_median_bytes": 1826504704.0,
+                "last_bytes": 1827012608,
+                "samples": 14
+              },
+              "zoom_4x": {
+                "footprint_peak_bytes": 1575282792,
+                "footprint_settled_bytes": 1575266408,
+                "peak_bytes": 1842413568,
+                "settled_median_bytes": 1842413568.0,
+                "last_bytes": 1842364416,
+                "samples": 15
+              },
+              "pan_4x": {
+                "footprint_peak_bytes": 1120774248,
+                "footprint_settled_bytes": 1120741480,
+                "peak_bytes": 1833828352,
+                "settled_median_bytes": 1833730048.0,
+                "last_bytes": 1833828352,
+                "samples": 15
+              },
+              "return_0_sheet_2": {
+                "footprint_peak_bytes": 1566681192,
+                "footprint_settled_bytes": 1566681192,
+                "peak_bytes": 1838858240,
+                "settled_median_bytes": 1837547520,
+                "last_bytes": 1806139392,
+                "samples": 16
+              },
+              "return_0_sheet_45": {
+                "footprint_peak_bytes": 1508255872,
+                "footprint_settled_bytes": 1506224256,
+                "peak_bytes": 1824096256,
+                "settled_median_bytes": 1824063488.0,
+                "last_bytes": 1816346624,
+                "samples": 16
+              },
+              "return_0_sheet_1": {
+                "footprint_peak_bytes": 1494263936,
+                "footprint_settled_bytes": 1494247552,
+                "peak_bytes": 1818755072,
+                "settled_median_bytes": 1818722304.0,
+                "last_bytes": 1818722304,
+                "samples": 15
+              },
+              "return_1_sheet_2": {
+                "footprint_peak_bytes": 1494608000,
+                "footprint_settled_bytes": 1492461696,
+                "peak_bytes": 1818460160,
+                "settled_median_bytes": 1818427392,
+                "last_bytes": 1818443776,
+                "samples": 14
+              },
+              "return_1_sheet_45": {
+                "footprint_peak_bytes": 1519282304,
+                "footprint_settled_bytes": 1315825792.0,
+                "peak_bytes": 1825783808,
+                "settled_median_bytes": 1825767424,
+                "last_bytes": 1817788416,
+                "samples": 15
+              },
+              "return_1_sheet_1": {
+                "footprint_peak_bytes": 1497278592,
+                "footprint_settled_bytes": 1497278592,
+                "peak_bytes": 1831862272,
+                "settled_median_bytes": 1831829504,
+                "last_bytes": 1824030720,
+                "samples": 16
+              },
+              "idle_after_navigation": {
+                "footprint_peak_bytes": 1069836416,
+                "footprint_settled_bytes": 1069721728,
+                "peak_bytes": 1823653888,
+                "settled_median_bytes": 1694613504,
+                "last_bytes": 1522614272,
+                "samples": 53
+              }
+            },
+            "events": [
+              {
+                "event": "browser_version",
+                "version": "155.0.8059.80",
+                "engine": "3.11.174",
+                "time": 0.4942872910760343
+              },
+              {
+                "event": "complete",
+                "success": true,
+                "time": 49.52103833295405
+              }
+            ]
+          }
+        ],
+        "pdfjs5": [
+          {
+            "trial": 1,
+            "success": true,
+            "footprint_peak_bytes": 1820174608,
+            "footprint_baseline_bytes": 932389864,
+            "rss_peak_bytes": 2060763136,
+            "phases": {
+              "startup": {
+                "footprint_peak_bytes": 861217696,
+                "footprint_settled_bytes": null,
+                "peak_bytes": 1023524864,
+                "settled_median_bytes": null,
+                "last_bytes": 1023524864,
+                "samples": 6
+              },
+              "baseline": {
+                "footprint_peak_bytes": 965190632,
+                "footprint_settled_bytes": 932389864,
+                "peak_bytes": 1045430272,
+                "settled_median_bytes": 1039958016.0,
+                "last_bytes": 1045233664,
+                "samples": 21
+              },
+              "open_fit_width": {
+                "footprint_peak_bytes": 1519888080,
+                "footprint_settled_bytes": 1067673296,
+                "peak_bytes": 1501904896,
+                "settled_median_bytes": 1498234880,
+                "last_bytes": 1479507968,
+                "samples": 41
+              },
+              "first_sheet_2": {
+                "footprint_peak_bytes": 1389635280,
+                "footprint_settled_bytes": 1384933072,
+                "peak_bytes": 1497858048,
+                "settled_median_bytes": 1497849856.0,
+                "last_bytes": 1490305024,
+                "samples": 15
+              },
+              "first_sheet_3": {
+                "footprint_peak_bytes": 1652598864,
+                "footprint_settled_bytes": 1652582480,
+                "peak_bytes": 1821605888,
+                "settled_median_bytes": 1821573120.0,
+                "last_bytes": 1679720448,
+                "samples": 15
+              },
+              "first_sheet_4": {
+                "footprint_peak_bytes": 1637656680,
+                "footprint_settled_bytes": 1218226280,
+                "peak_bytes": 1885044736,
+                "settled_median_bytes": 1885044736,
+                "last_bytes": 1731280896,
+                "samples": 17
+              },
+              "first_sheet_45": {
+                "footprint_peak_bytes": 1774430480,
+                "footprint_settled_bytes": 1710557408.0,
+                "peak_bytes": 2042462208,
+                "settled_median_bytes": 2042200064.0,
+                "last_bytes": 2034040832,
+                "samples": 16
+              },
+              "first_sheet_1": {
+                "footprint_peak_bytes": 1765239056,
+                "footprint_settled_bytes": 1765222672,
+                "peak_bytes": 2046836736,
+                "settled_median_bytes": 2046771200.0,
+                "last_bytes": 2038562816,
+                "samples": 14
+              },
+              "zoom_2x": {
+                "footprint_peak_bytes": 1770006800,
+                "footprint_settled_bytes": 1563052304.0,
+                "peak_bytes": 2053013504,
+                "settled_median_bytes": 2053013504.0,
+                "last_bytes": 2053013504,
+                "samples": 15
+              },
+              "pan_2x": {
+                "footprint_peak_bytes": 1317103888,
+                "footprint_settled_bytes": 1317087504,
+                "peak_bytes": 2044887040,
+                "settled_median_bytes": 2044837888.0,
+                "last_bytes": 2044837888,
+                "samples": 14
+              },
+              "zoom_4x": {
+                "footprint_peak_bytes": 1813981456,
+                "footprint_settled_bytes": 1598195984.0,
+                "peak_bytes": 2060763136,
+                "settled_median_bytes": 2060730368,
+                "last_bytes": 2052276224,
+                "samples": 16
+              },
+              "pan_4x": {
+                "footprint_peak_bytes": 1357867280,
+                "footprint_settled_bytes": 1357867280,
+                "peak_bytes": 2052145152,
+                "settled_median_bytes": 2052096000,
+                "last_bytes": 2052096000,
+                "samples": 13
+              },
+              "return_0_sheet_2": {
+                "footprint_peak_bytes": 1820174608,
+                "footprint_settled_bytes": 1820158224,
+                "peak_bytes": 2053505024,
+                "settled_median_bytes": 2032918528.0,
+                "last_bytes": 2018770944,
+                "samples": 15
+              },
+              "return_0_sheet_45": {
+                "footprint_peak_bytes": 1721198888,
+                "footprint_settled_bytes": 1318545704,
+                "peak_bytes": 2034286592,
+                "settled_median_bytes": 2032844800.0,
+                "last_bytes": 2025603072,
+                "samples": 15
+              },
+              "return_0_sheet_1": {
+                "footprint_peak_bytes": 1789962536,
+                "footprint_settled_bytes": 1721633064.0,
+                "peak_bytes": 2037596160,
+                "settled_median_bytes": 2037563392.0,
+                "last_bytes": 2029764608,
+                "samples": 15
+              },
+              "return_1_sheet_2": {
+                "footprint_peak_bytes": 1789258024,
+                "footprint_settled_bytes": 1788258600,
+                "peak_bytes": 2037170176,
+                "settled_median_bytes": 2037129216.0,
+                "last_bytes": 2032484352,
+                "samples": 14
+              },
+              "return_1_sheet_45": {
+                "footprint_peak_bytes": 1726834984,
+                "footprint_settled_bytes": 1518594344.0,
+                "peak_bytes": 2035367936,
+                "settled_median_bytes": 2034614272,
+                "last_bytes": 2014838784,
+                "samples": 15
+              },
+              "return_1_sheet_1": {
+                "footprint_peak_bytes": 1706895656,
+                "footprint_settled_bytes": 1706895656,
+                "peak_bytes": 2025177088,
+                "settled_median_bytes": 2025144320.0,
+                "last_bytes": 2017738752,
+                "samples": 15
+              },
+              "idle_after_navigation": {
+                "footprint_peak_bytes": 1280289064,
+                "footprint_settled_bytes": 1264363816,
+                "peak_bytes": 2017492992,
+                "settled_median_bytes": 1900380160,
+                "last_bytes": 1573011456,
+                "samples": 53
+              }
+            },
+            "events": [
+              {
+                "event": "browser_version",
+                "version": "155.0.8059.80",
+                "engine": "5.6.205",
+                "time": 0.4966893750242889
+              },
+              {
+                "event": "complete",
+                "success": true,
+                "time": 49.61550358403474
+              }
+            ]
+          },
+          {
+            "trial": 2,
+            "success": true,
+            "footprint_peak_bytes": 1818913472,
+            "footprint_baseline_bytes": 916595928,
+            "rss_peak_bytes": 2033876992,
+            "phases": {
+              "startup": {
+                "footprint_peak_bytes": 855565504,
+                "footprint_settled_bytes": null,
+                "peak_bytes": 1025638400,
+                "settled_median_bytes": null,
+                "last_bytes": 1025638400,
+                "samples": 6
+              },
+              "baseline": {
+                "footprint_peak_bytes": 961324272,
+                "footprint_settled_bytes": 916595928,
+                "peak_bytes": 1047478272,
+                "settled_median_bytes": 1039597568.0,
+                "last_bytes": 1047265280,
+                "samples": 21
+              },
+              "open_fit_width": {
+                "footprint_peak_bytes": 1464215536,
+                "footprint_settled_bytes": 923576304,
+                "peak_bytes": 1504116736,
+                "settled_median_bytes": 1500446720,
+                "last_bytes": 1482932224,
+                "samples": 41
+              },
+              "first_sheet_2": {
+                "footprint_peak_bytes": 1397630960,
+                "footprint_settled_bytes": 977610736,
+                "peak_bytes": 1507868672,
+                "settled_median_bytes": 1507868672.0,
+                "last_bytes": 1507868672,
+                "samples": 15
+              },
+              "first_sheet_3": {
+                "footprint_peak_bytes": 1695820240,
+                "footprint_settled_bytes": 1646381376.0,
+                "peak_bytes": 1857765376,
+                "settled_median_bytes": 1857732608.0,
+                "last_bytes": 1857732608,
+                "samples": 15
+              },
+              "first_sheet_4": {
+                "footprint_peak_bytes": 1657596536,
+                "footprint_settled_bytes": 1447848568.0,
+                "peak_bytes": 1977450496,
+                "settled_median_bytes": 1921998848.0,
+                "last_bytes": 1769897984,
+                "samples": 17
+              },
+              "first_sheet_45": {
+                "footprint_peak_bytes": 1734322904,
+                "footprint_settled_bytes": 1729137368.0,
+                "peak_bytes": 2003697664,
+                "settled_median_bytes": 2003681280,
+                "last_bytes": 1993654272,
+                "samples": 17
+              },
+              "first_sheet_1": {
+                "footprint_peak_bytes": 1723951832,
+                "footprint_settled_bytes": 1309354712,
+                "peak_bytes": 2020376576,
+                "settled_median_bytes": 2020311040,
+                "last_bytes": 2020376576,
+                "samples": 13
+              },
+              "zoom_2x": {
+                "footprint_peak_bytes": 1743874776,
+                "footprint_settled_bytes": 1743874776,
+                "peak_bytes": 2033876992,
+                "settled_median_bytes": 2033852416.0,
+                "last_bytes": 2026455040,
+                "samples": 15
+              },
+              "pan_2x": {
+                "footprint_peak_bytes": 1291512536,
+                "footprint_settled_bytes": 1291438808.0,
+                "peak_bytes": 2026110976,
+                "settled_median_bytes": 2026061824,
+                "last_bytes": 2026045440,
+                "samples": 13
+              },
+              "zoom_4x": {
+                "footprint_peak_bytes": 1765403352,
+                "footprint_settled_bytes": 1362750168,
+                "peak_bytes": 2029240320,
+                "settled_median_bytes": 2027307008,
+                "last_bytes": 2018885632,
+                "samples": 16
+              },
+              "pan_4x": {
+                "footprint_peak_bytes": 1817176768,
+                "footprint_settled_bytes": 1311181528.0,
+                "peak_bytes": 2018803712,
+                "settled_median_bytes": 2018656256.0,
+                "last_bytes": 2018803712,
+                "samples": 14
+              },
+              "return_0_sheet_2": {
+                "footprint_peak_bytes": 1818913472,
+                "footprint_settled_bytes": 1817799360,
+                "peak_bytes": 2023620608,
+                "settled_median_bytes": 2022359040.0,
+                "last_bytes": 2006269952,
+                "samples": 14
+              },
+              "return_0_sheet_45": {
+                "footprint_peak_bytes": 1688595160,
+                "footprint_settled_bytes": 1487252184.0,
+                "peak_bytes": 2026962944,
+                "settled_median_bytes": 2026946560.0,
+                "last_bytes": 2019983360,
+                "samples": 16
+              },
+              "return_0_sheet_1": {
+                "footprint_peak_bytes": 1703471832,
+                "footprint_settled_bytes": 1703455448,
+                "peak_bytes": 2033434624,
+                "settled_median_bytes": 2033418240.0,
+                "last_bytes": 2025947136,
+                "samples": 15
+              },
+              "return_1_sheet_2": {
+                "footprint_peak_bytes": 1719413464,
+                "footprint_settled_bytes": 1497787096.0,
+                "peak_bytes": 2028781568,
+                "settled_median_bytes": 2028748800.0,
+                "last_bytes": 2021081088,
+                "samples": 15
+              },
+              "return_1_sheet_45": {
+                "footprint_peak_bytes": 1699687128,
+                "footprint_settled_bytes": 1677241048,
+                "peak_bytes": 2031501312,
+                "settled_median_bytes": 2031468544.0,
+                "last_bytes": 2001027072,
+                "samples": 15
+              },
+              "return_1_sheet_1": {
+                "footprint_peak_bytes": 1677077208,
+                "footprint_settled_bytes": 1468025560.0,
+                "peak_bytes": 2012807168,
+                "settled_median_bytes": 2012774400.0,
+                "last_bytes": 2004942848,
+                "samples": 15
+              },
+              "idle_after_navigation": {
+                "footprint_peak_bytes": 1245047512,
+                "footprint_settled_bytes": 1120824024,
+                "peak_bytes": 2004566016,
+                "settled_median_bytes": 1886699520,
+                "last_bytes": 619773952,
+                "samples": 53
+              }
+            },
+            "events": [
+              {
+                "event": "browser_version",
+                "version": "155.0.8059.80",
+                "engine": "5.6.205",
+                "time": 0.49881741707213223
+              },
+              {
+                "event": "complete",
+                "success": true,
+                "time": 49.67794616706669
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
