@@ -563,3 +563,49 @@ body.app-shell {
     flex-direction: column;
   }
 }
+
+.project-board {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding: 0.25rem 0.25rem 1.5rem;
+}
+
+.project-board-column {
+  flex: 1 0 245px;
+  min-width: 245px;
+  background: rgba(221, 212, 198, 0.3);
+  border: 1px solid var(--qs-border);
+  border-radius: 1rem;
+}
+
+.project-board-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-bottom: 2px solid var(--qs-accent);
+  min-height: 5rem;
+}
+
+.project-board-cards {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.75rem;
+}
+
+.project-board-card {
+  padding: 1rem;
+  border: 1px solid var(--qs-border);
+  border-radius: 0.75rem;
+  background: var(--qs-surface);
+  box-shadow: 0 3px 10px rgba(47, 41, 34, 0.04);
+  overflow-wrap: anywhere;
+}
+
+.project-board-card summary {
+  color: var(--qs-accent);
+  cursor: pointer;
+}

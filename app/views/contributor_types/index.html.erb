@@ -6,7 +6,10 @@
       <p class="page-subtitle">These types drive the dropdowns used when assigning contributors to projects.</p>
     </div>
 
-    <%= link_to "New Contributor Type", new_contributor_type_path, class: "btn btn-primary" %>
+    <div class="stack-actions">
+      <%= link_to "Contributors", contributors_path, class: "btn btn-outline-secondary" %>
+      <%= link_to "New Contributor Type", new_contributor_type_path, class: "btn btn-primary" %>
+    </div>
   </div>
 
   <div class="app-card">

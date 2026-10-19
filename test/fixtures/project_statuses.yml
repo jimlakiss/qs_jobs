@@ -1,0 +1,15 @@
+entered:
+  name: Entered - Not Quoted
+  position: 0
+quoted:
+  name: Quoted - Waiting for Approval
+  position: 1
+approved:
+  name: Approved - To Be Completed
+  position: 2
+in_progress:
+  name: Job Being Completed
+  position: 3
+done:
+  name: Done - Not Invoiced
+  position: 4

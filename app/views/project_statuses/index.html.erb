@@ -1,0 +1,69 @@
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Project Statuses</h1>
+      <p class="page-subtitle">Rename, reorder, or delete stages. Lower positions appear first. New jobs start in the first stage.</p>
+    </div>
+    <%= link_to "Current Projects", current_projects_path, class: "btn btn-outline-secondary" %>
+  </div>
+  <div class="app-card">
+    <div class="app-card-body">
+      <% @statuses.each do |status| %>
+        <% project_count = @project_counts.fetch(status.id, 0) %>
+        <% delete_form_id = "delete_status_#{status.id}" %>
+        <%= form_with model: status, class: "row g-3 align-items-end mb-4" do |f| %>
+          <div class="col-md-7">
+            <%= f.label :name, "Status name", for: "status_#{status.id}_name", class: "form-label" %>
+            <%= f.text_field :name, id: "status_#{status.id}_name", class: "form-control", required: true %>
+          </div>
+          <div class="col-md-2">
+            <%= f.label :position, for: "status_#{status.id}_position", class: "form-label" %>
+            <%= f.number_field :position, id: "status_#{status.id}_position", class: "form-control", min: 0, required: true %>
+          </div>
+          <div class="col-md-3 d-flex gap-2">
+            <%= f.submit "Save", class: "btn btn-primary" %>
+            <% if @statuses.size == 1 %>
+              <button type="button" class="btn btn-outline-danger" disabled title="At least one project status must remain">Delete</button>
+            <% elsif project_count.positive? %>
+              <button type="button" class="btn btn-outline-danger" data-bs-toggle="collapse" data-bs-target="#<%= delete_form_id %>" aria-expanded="false" aria-controls="<%= delete_form_id %>">Delete</button>
+            <% else %>
+              <button type="submit" form="<%= delete_form_id %>" class="btn btn-outline-danger">Delete</button>
+            <% end %>
+          </div>
+        <% end %>
+        <% if @statuses.size > 1 %>
+          <%= form_with url: project_status_path(status), method: :delete, id: delete_form_id,
+                class: project_count.positive? ? "collapse mb-4" : nil,
+                data: { turbo_confirm: "Delete #{status.name}? Any assigned projects will move to the replacement status." } do %>
+            <% if project_count.positive? %>
+              <div class="border rounded p-3">
+                <p class="small"><%= pluralize(project_count, "project") %> use this status, including archived projects. Choose where to move them.</p>
+                <%= label_tag "replacement_status_#{status.id}", "Move projects to", class: "form-label" %>
+                <%= select_tag :replacement_status_id,
+                      options_from_collection_for_select(@statuses.reject { |other| other.id == status.id }, :id, :name),
+                      prompt: "Choose a replacement status", required: true,
+                      id: "replacement_status_#{status.id}", class: "form-select mb-3" %>
+                <%= submit_tag "Confirm Delete", class: "btn btn-outline-danger" %>
+              </div>
+            <% end %>
+          <% end %>
+        <% else %>
+          <p class="form-text">At least one project status must remain.</p>
+        <% end %>
+      <% end %>
+      <hr>
+      <h2 class="h4">Add a Status</h2>
+      <%= form_with model: @new_status, class: "row g-3 align-items-end" do |f| %>
+        <div class="col-md-7">
+          <%= f.label :name, class: "form-label" %>
+          <%= f.text_field :name, class: "form-control", required: true %>
+        </div>
+        <div class="col-md-2">
+          <%= f.label :position, class: "form-label" %>
+          <%= f.number_field :position, class: "form-control", min: 0, required: true %>
+        </div>
+        <div class="col-md-3"><%= f.submit "Add Status", class: "btn btn-primary" %></div>
+      <% end %>
+    </div>
+  </div>
+</section>

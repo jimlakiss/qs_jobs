@@ -1,0 +1,31 @@
+<div data-controller="project-schedule" class="row g-3">
+  <div class="col-12">
+    <%= f.label :schedule_from, "Schedule from", for: "#{field_prefix}_schedule_from", class: "form-label" %>
+    <%= f.select :schedule_from, [["Due date — calculate start", "due_date"], ["Start date — calculate due date", "start_date"]], {},
+          id: "#{field_prefix}_schedule_from", class: "form-select",
+          data: { project_schedule_target: "mode", action: "change->project-schedule#refresh" } %>
+  </div>
+  <div class="col-12">
+    <%= f.label :duration_days, "Duration (working days)", for: "#{field_prefix}_duration_days", class: "form-label" %>
+    <%= f.number_field :duration_days, id: "#{field_prefix}_duration_days", min: 1, step: 1, class: "form-control", required: project.scheduled_from_start?,
+          data: { project_schedule_target: "duration" } %>
+  </div>
+  <div class="col-12">
+    <%= f.label :start_date, "Scheduled start date", for: "#{field_prefix}_start_date", class: "form-label" %>
+    <%= f.date_field :start_date, value: project.scheduled_start_date || project.start_date,
+          id: "#{field_prefix}_start_date", class: "form-control", disabled: !project.scheduled_from_start?,
+          data: { project_schedule_target: "start" } %>
+  </div>
+  <div class="col-12">
+    <%= f.label :due_date, "Scheduled due date", for: "#{field_prefix}_due_date", class: "form-label" %>
+    <%= f.date_field :due_date, id: "#{field_prefix}_due_date", class: "form-control", disabled: project.scheduled_from_start?,
+          data: { project_schedule_target: "due" } %>
+    <div class="form-text">Client requested: <%= project.client_due_date&.strftime("%d %b %Y") || "Not set" %>. When scheduling from the due date, leave it blank to use the client requested date.</div>
+  </div>
+  <% if project.scheduled_finish_date %>
+    <div class="col-12 small">Planned finish: <%= project.scheduled_finish_date.strftime("%d %b %Y") %></div>
+  <% end %>
+  <div class="col-12">
+    <p class="form-text mb-0">Duration counts Monday–Friday only. Save to calculate the other date. A one-day job starts and finishes on the same weekday. Weekend deadlines plan work to finish on Friday.</p>
+  </div>
+</div>

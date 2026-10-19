@@ -1,7 +1,12 @@
 Rails.application.routes.draw do
   devise_for :users, skip: [:registrations]
 
+  resources :project_statuses, only: [ :index, :create, :update, :destroy ]
+
   resources :projects do
+    collection do
+      get :current
+    end
     resources :document_groups, only: [:update] do
       member do
         get :viewer
@@ -27,6 +32,9 @@ Rails.application.routes.draw do
 
     member do
       get :confirm_destroy
+      patch :schedule
+      patch :archive
+      patch :restore
     end
   end
 
@@ -59,5 +67,5 @@ Rails.application.routes.draw do
     end
   end
 
-  root "projects#index"
+  root "projects#current"
 end

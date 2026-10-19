@@ -1,11 +1,12 @@
+<% content_for :title, "Archived Projects | iQs Jobs" %>
 <% content_for :main_container_class, "app-container app-container-wide" %>
 
 <section class="app-page projects-page">
   <div class="page-header">
     <div>
       <span class="pill-note">Project register</span>
-      <h1 class="page-title">Projects</h1>
-      <p class="page-subtitle">Track jobs, key details, and the people attached to each project in one place.</p>
+      <h1 class="page-title">Archived Projects</h1>
+      <p class="page-subtitle">Archived jobs. Restore a project to return it to Current Projects.</p>
     </div>
 
     <%= link_to "New Project", new_project_path, class: "btn btn-primary" %>
@@ -13,7 +14,7 @@
 
   <div class="metric-grid">
     <div class="metric-card">
-      <div class="metric-label">Projects</div>
+      <div class="metric-label">Archived Projects</div>
       <div class="metric-value"><%= @project_count %></div>
     </div>
 
@@ -32,7 +33,7 @@
     <div class="app-card-body">
       <%= form_with url: projects_path, method: :get, local: true, class: "search-shell" do %>
         <div>
-          <label for="project-search" class="form-label">Search everything from home</label>
+          <label for="project-search" class="form-label">Search archived projects and contacts</label>
           <%= text_field_tag :q, @query, id: "project-search", class: "form-control", placeholder: "Search projects, contributors, or contributor types" %>
         </div>
         <div>

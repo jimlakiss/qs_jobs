@@ -10,7 +10,7 @@ class ApplicationController < ActionController::Base
   private
 
   def after_sign_in_path_for(resource)
-    resource.client? ? client_area_path : super
+    resource.client? ? client_area_path : current_projects_path
   end
 
   def admin_user?

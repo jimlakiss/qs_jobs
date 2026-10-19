@@ -14,7 +14,7 @@ class ProjectsController < ApplicationController
   }.freeze
 
   before_action :require_admin!
-  before_action :set_project, only: [:show, :edit, :update, :destroy, :confirm_destroy]
+  before_action :set_project, only: [:show, :edit, :update, :destroy, :confirm_destroy, :schedule, :archive, :restore]
   before_action :load_contributors, only: [:new, :edit]
 
   def index
@@ -26,7 +26,7 @@ class ProjectsController < ApplicationController
     @page_size_options = PAGE_SIZE_OPTIONS
     @project_filters = { q: @query.presence, sort: @sort, per_page: @page_size }.compact
 
-    projects_scope = Project.all
+    projects_scope = Project.archived
     projects_scope = projects_scope.where(
       "projects.code ILIKE :q OR projects.address ILIKE :q OR projects.description ILIKE :q",
       q: "%#{@query}%"
@@ -60,6 +60,31 @@ class ProjectsController < ApplicationController
         q: "%#{@query}%"
       ).order(:name).limit(10)
     end
+  end
+
+  def current
+    @statuses = ProjectStatus.ordered.to_a
+    @projects_by_status = Project.current.includes(:client_submissions)
+      .completion_order.group_by(&:project_status_id)
+    @current_project_count = @projects_by_status.values.sum(&:size)
+  end
+
+  def schedule
+    if @project.update(params.require(:project).permit(:project_status_id, :due_date, :duration_days, :start_date, :schedule_from))
+      redirect_to current_projects_path, notice: "Project schedule updated"
+    else
+      redirect_to current_projects_path, alert: @project.errors.full_messages.to_sentence
+    end
+  end
+
+  def archive
+    @project.update!(archived_at: Time.current)
+    redirect_to projects_path, notice: "Project archived"
+  end
+
+  def restore
+    @project.update!(archived_at: nil)
+    redirect_to current_projects_path, notice: "Project restored to Current Projects"
   end
 
   def show
@@ -127,7 +152,7 @@ class ProjectsController < ApplicationController
   end
 
   def project_params
-    params.require(:project).permit(:code, :date, :address, :description, :job_value, :fee_value)
+    params.require(:project).permit(:code, :date, :address, :description, :job_value, :fee_value, :project_status_id, :due_date, :duration_days, :start_date, :schedule_from)
   end
 
   def load_contributors

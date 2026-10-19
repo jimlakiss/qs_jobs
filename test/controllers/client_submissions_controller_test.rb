@@ -331,6 +331,7 @@ class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to project_path(project)
     assert submission.reload.converted?
     assert_equal project, submission.project
+    assert_equal submission.required_by, project.reload.completion_due_date
     assert_equal "CLIENT-001", project.client_submissions.first.client_reference_code
     assert_equal contributors(:citywide), project.project_contributors.find_by(role: "Client").contributor
     assert project.documents.attached?
@@ -372,6 +373,7 @@ class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to project_path(project)
     assert submission.reload.converted?
     assert_equal project, submission.project
+    assert_equal submission.required_by, project.reload.completion_due_date
     assert project.documents.attached?
     assert_equal "Client portal", project.project_documents.first.source
   end

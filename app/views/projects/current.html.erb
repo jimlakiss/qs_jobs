@@ -1,0 +1,69 @@
+<% content_for :main_container_class, "app-container app-container-wide" %>
+<% content_for :title, "Current Projects | iQs Jobs" %>
+
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note">Work in progress · <%= pluralize(@current_project_count, "job") %></span>
+      <h1 class="page-title">Current Projects</h1>
+      <p class="page-subtitle">Earliest due jobs appear first in each stage. Change the scheduled date to adjust the completion order.</p>
+    </div>
+    <div class="stack-actions">
+      <%= link_to "Edit Statuses", project_statuses_path, class: "btn btn-outline-secondary" %>
+      <%= link_to "New Project", new_project_path, class: "btn btn-primary" %>
+    </div>
+  </div>
+
+  <div class="project-board" role="region" aria-label="Current projects by status" tabindex="0">
+    <% @statuses.each do |status| %>
+      <% projects = @projects_by_status.fetch(status.id, []) %>
+      <section class="project-board-column" aria-labelledby="status-<%= status.id %>">
+        <header class="project-board-heading">
+          <h2 id="status-<%= status.id %>" class="h6 mb-0"><%= status.name %></h2>
+          <span class="badge rounded-pill text-bg-light" aria-label="<%= pluralize(projects.size, 'job') %>"><%= projects.size %></span>
+        </header>
+        <div class="project-board-cards">
+          <% projects.each do |project| %>
+            <% due = project.completion_due_date %>
+            <article class="project-board-card" id="project-<%= project.id %>">
+              <h3 class="h6"><%= link_to project.code, project, class: "text-decoration-none" %></h3>
+              <p class="small mb-2"><%= project.address.presence || "No address" %></p>
+              <% if project.description.present? %>
+                <p class="small text-muted mb-3"><%= truncate(project.description, length: 140) %></p>
+              <% end %>
+              <p class="small fw-semibold <%= 'text-danger' if due && due < Date.current %>">
+                <% if due %>
+                  Due <%= due.strftime("%d %b %Y") %><%= " · Overdue" if due < Date.current %>
+                <% else %>
+                  No due date
+                <% end %>
+              </p>
+              <% if project.duration_days %>
+                <p class="small text-muted mb-2"><%= pluralize(project.duration_days, "working day") %> duration</p>
+              <% end %>
+              <% if project.scheduled_start_date %>
+                <p class="small mb-3">Start <%= project.scheduled_start_date.strftime("%d %b %Y") %></p>
+              <% end %>
+              <% if project.scheduled_finish_date && project.scheduled_finish_date != due %>
+                <p class="small mb-3">Planned finish <%= project.scheduled_finish_date.strftime("%d %b %Y") %></p>
+              <% end %>
+              <details>
+                <summary class="small">Change status or schedule</summary>
+                <%= form_with model: project, url: schedule_project_path(project), method: :patch, class: "mt-3" do |f| %>
+                  <%= f.label :project_status_id, "Status", for: "project_#{project.id}_status", class: "form-label small" %>
+                  <%= f.collection_select :project_status_id, @statuses, :id, :name, {}, id: "project_#{project.id}_status", class: "form-select form-select-sm mb-2" %>
+                  <%= render "schedule_fields", f: f, project: project, field_prefix: "project_#{project.id}" %>
+                  <%= f.submit "Save", class: "btn btn-primary btn-sm mt-3" %>
+                <% end %>
+                <%= button_to "Archive Project", archive_project_path(project), method: :patch, class: "btn btn-outline-secondary btn-sm mt-2", data: { turbo_confirm: "Archive #{project.code}? It will move to Archived Projects." } %>
+              </details>
+            </article>
+          <% end %>
+          <% if projects.empty? %>
+            <p class="small text-muted p-3 mb-0">No jobs in this stage.</p>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  </div>
+</section>

@@ -10,4 +10,11 @@
 
 require_relative "seeds/support/spreadsheet_seed_loader"
 
+# Schema-loaded databases need the same initial workflow as migrated databases.
+if ProjectStatus.none?
+  ProjectStatus::DEFAULT_NAMES.each_with_index do |name, position|
+    ProjectStatus.create!(name: name, position: position)
+  end
+end
+
 SpreadsheetSeedLoader.run

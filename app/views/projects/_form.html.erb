@@ -23,6 +23,14 @@
           <%= f.date_field :date, class: "form-control" %>
         </div>
 
+        <div class="col-md-6">
+          <%= f.label :project_status_id, "Status", class: "form-label" %>
+          <%= f.collection_select :project_status_id, ProjectStatus.ordered, :id, :name, {}, class: "form-select" %>
+        </div>
+        <div class="col-12">
+          <%= render "schedule_fields", f: f, project: @project, field_prefix: "project" %>
+        </div>
+
         <div class="col-12">
           <%= f.label :address, class: "form-label" %>
           <%= f.text_area :address, class: "form-control", rows: 2, placeholder: "Site address" %>

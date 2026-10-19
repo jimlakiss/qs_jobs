@@ -7,6 +7,25 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:one)
   end
 
+  test "project forms accept duration and a start based schedule" do
+    post projects_path, params: { project: {
+      code: "FORM-SCHEDULE", schedule_from: "start_date", start_date: "2026-10-22", duration_days: 3
+    } }
+    project = Project.find_by!(code: "FORM-SCHEDULE")
+    assert_redirected_to project_path(project)
+    assert_equal Date.new(2026, 10, 26), project.due_date
+    get project_path(project)
+    assert_select "dd", text: "3 working days"
+    assert_select "dd", text: "22 Oct 2026"
+    patch project_path(project), params: { project: { duration_days: 4 } }
+    assert_redirected_to project_path(project)
+    assert_equal Date.new(2026, 10, 27), project.reload.due_date
+    get edit_project_path(project)
+    assert_response :success
+    assert_select "input#project_duration_days[value='4']"
+    assert_select "input#project_start_date[value='2026-10-22']"
+  end
+
   test "does not create a project with a duplicate code" do
     Project.create!(code: "JOB-001")
 
@@ -25,9 +44,9 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "projects default to code order from highest to lowest" do
-    Project.create!(code: "2627-010")
-    Project.create!(code: "2627-009")
-    Project.create!(code: "2627-007")
+    Project.create!(code: "2627-010", archived_at: Time.current)
+    Project.create!(code: "2627-009", archived_at: Time.current)
+    Project.create!(code: "2627-007", archived_at: Time.current)
 
     get projects_path
 
@@ -36,9 +55,9 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "projects can be sorted by code from highest to lowest" do
-    Project.create!(code: "2627-010")
-    Project.create!(code: "2627-009")
-    Project.create!(code: "2627-007")
+    Project.create!(code: "2627-010", archived_at: Time.current)
+    Project.create!(code: "2627-009", archived_at: Time.current)
+    Project.create!(code: "2627-007", archived_at: Time.current)
 
     get projects_path(sort: "code_desc")
 
@@ -48,7 +67,7 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
 
   test "projects index defaults to 25 projects per page" do
     30.times do |index|
-      Project.create!(code: "9900-%03d" % (index + 1))
+      Project.create!(code: "9900-%03d" % (index + 1), archived_at: Time.current)
     end
 
     get projects_path
@@ -63,7 +82,7 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
 
   test "projects index can show 50 projects per page" do
     30.times do |index|
-      Project.create!(code: "9800-%03d" % (index + 1))
+      Project.create!(code: "9800-%03d" % (index + 1), archived_at: Time.current)
     end
 
     get projects_path(per_page: 50)
@@ -75,7 +94,7 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
 
   test "projects index can move to the next page" do
     30.times do |index|
-      Project.create!(code: "9700-%03d" % (index + 1))
+      Project.create!(code: "9700-%03d" % (index + 1), archived_at: Time.current)
     end
 
     get projects_path(page: 2)

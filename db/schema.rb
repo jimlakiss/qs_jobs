@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_10_022000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_19_001000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -200,16 +200,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_10_022000) do
     t.index ["status"], name: "index_project_issues_on_status"
   end
 
+  create_table "project_statuses", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index "lower((name)::text)", name: "index_project_statuses_on_lower_name", unique: true
+  end
+
   create_table "projects", force: :cascade do |t|
     t.text "address"
+    t.datetime "archived_at"
     t.string "code"
     t.datetime "created_at", null: false
     t.date "date"
     t.text "description"
+    t.date "due_date"
+    t.integer "duration_days"
     t.decimal "fee_value"
     t.decimal "job_value"
+    t.bigint "project_status_id", null: false
+    t.string "schedule_from", default: "due_date", null: false
+    t.date "start_date"
     t.datetime "updated_at", null: false
     t.index "lower(btrim((code)::text))", name: "index_projects_on_normalized_code_unique", unique: true
+    t.index ["archived_at"], name: "index_projects_on_archived_at"
+    t.index ["project_status_id"], name: "index_projects_on_project_status_id"
+    t.check_constraint "duration_days IS NULL OR duration_days > 0", name: "projects_positive_duration"
+    t.check_constraint "schedule_from::text = ANY (ARRAY['due_date'::character varying, 'start_date'::character varying]::text[])", name: "projects_schedule_from"
   end
 
   create_table "solid_queue_blocked_executions", force: :cascade do |t|
@@ -368,6 +386,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_10_022000) do
   add_foreign_key "project_issues", "contributors"
   add_foreign_key "project_issues", "projects"
   add_foreign_key "project_issues", "users", column: "recipient_user_id"
+  add_foreign_key "projects", "project_statuses"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
