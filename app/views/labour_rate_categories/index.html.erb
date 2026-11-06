@@ -5,10 +5,21 @@
       <span class="pill-note">Admin settings</span>
       <h1 class="page-title">Rate Categories</h1>
       <p class="page-subtitle">Manage the roles available in every client’s hourly rate schedule.</p>
-      <p class="text-muted mb-0">Codes must be unique, up to 20 characters, using letters, numbers, dots and hyphens. Remove archives a category. Delete permanently deletes an unused category; categories in use are protected.</p>
+      <p class="text-muted mb-0">Codes must be unique, up to 20 characters, using letters, numbers, dots and hyphens. Remove archives a category. Delete is available only under Removed categories and permanently deletes unused records; categories in use are protected.</p>
     </div>
     <%= link_to "Hourly Rate Averages", labour_rate_averages_path, class: "btn btn-outline-secondary" %>
   </div>
+  <div class="app-card mb-4"><div class="app-card-body">
+    <h2 class="h4">Section order</h2>
+    <p class="text-muted">Lower numbers appear first. Role sort order applies within each section.</p>
+    <% @sections.each do |section| %>
+      <%= form_with model: section, class: "row g-2 align-items-end mb-3" do |f| %>
+        <div class="col-md-6"><%= f.label :position, section.name, for: "section-order-#{section.id}", class: "form-label" %></div>
+        <div class="col-md-3"><%= f.number_field :position, id: "section-order-#{section.id}", min: 0, step: 1, required: true, class: "form-control", aria: { label: "#{section.name} sort order" } %></div>
+        <div class="col-md-3"><%= f.submit "Save order", class: "btn btn-outline-primary" %></div>
+      <% end %>
+    <% end %>
+  </div></div>
   <div class="app-card mb-4"><div class="app-card-body">
     <h2 class="h4">Add category</h2>
     <%= render "form", category: @new_category %>
@@ -30,8 +41,8 @@
                   <%= button_to "Remove", labour_rate_category_path(category), method: :patch, params: { labour_rate_category: { active: false } }, class: "btn btn-outline-secondary btn-sm" %>
                 <% else %>
                   <%= button_to "Restore", labour_rate_category_path(category), method: :patch, params: { labour_rate_category: { active: true } }, class: "btn btn-outline-primary btn-sm" %>
+                  <%= button_to "Delete", labour_rate_category_path(category), method: :delete, disabled: @rate_counts.fetch(category.key, 0).positive?, title: @rate_counts.fetch(category.key, 0).positive? ? "In use — remove instead" : "Permanently delete category", form: { data: { turbo_confirm: "Permanently delete #{category.code} — #{category.name}? This cannot be undone." } }, class: "btn btn-outline-danger btn-sm" %>
                 <% end %>
-                <%= button_to "Delete", labour_rate_category_path(category), method: :delete, disabled: @rate_counts.fetch(category.key, 0).positive?, title: @rate_counts.fetch(category.key, 0).positive? ? "In use — remove instead" : "Permanently delete category", form: { data: { turbo_confirm: "Permanently delete #{category.code} — #{category.name}? This cannot be undone." } }, class: "btn btn-outline-danger btn-sm" %>
               </div></td>
             </tr>
           <% end %>

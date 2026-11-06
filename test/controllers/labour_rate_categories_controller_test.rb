@@ -102,6 +102,7 @@ class LabourRateCategoriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal BigDecimal("75"), rate.reload.mid
   end
   test "admin can permanently delete an unused category" do
+    @category.update!(active: false)
     assert_difference "LabourRateCategory.count", -1 do
       delete labour_rate_category_path(@category)
     end
@@ -111,6 +112,7 @@ class LabourRateCategoriesControllerTest < ActionDispatch::IntegrationTest
 
   test "permanent deletion refuses categories with client rates" do
     rate = users(:client).labour_rates.create!(category: @category, mid: 75)
+    @category.update!(active: false)
     assert_no_difference "LabourRateCategory.count" do
       delete labour_rate_category_path(@category)
     end
@@ -119,5 +121,19 @@ class LabourRateCategoriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal BigDecimal("75"), rate.reload.mid
     follow_redirect!
     assert_select "button[disabled]", text: "Delete"
+  end
+
+  test "active categories have remove only and cannot be permanently deleted" do
+    get labour_rate_categories_path
+    assert_response :success
+    assert_select "tr", text: /BRL.*Bricklayer/m do
+      assert_select "button", text: "Remove"
+      assert_select "button", text: "Delete", count: 0
+    end
+    assert_no_difference "LabourRateCategory.count" do
+      delete labour_rate_category_path(@category)
+    end
+    assert_redirected_to labour_rate_categories_path
+    assert_match(/Remove this category before/, flash[:alert])
   end
 end

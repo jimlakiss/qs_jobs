@@ -4,7 +4,7 @@ Clients use **Client Area → Hourly Rates** to maintain their own schedule. Eac
 
 The starting catalogue has 47 active rows. Codes are unique, case-insensitive and stored in uppercase; they allow 1–20 letters, numbers, dots and hyphens (for example, `LABOUR.01-HIGH`). The initial defaults use three letters. The catalogue consolidates Formwork Carpenter, Stone Masonry, Wet Plastering (WPL) and Dry Plastering (DPL); Journeyman is removed because Low/Mid/High handles the rate bands. Structural Steel Welder (SSW) and Structural Steel Erector (SSE) remain separate roles.
 
-Admins use **Rate Categories** in the navigation to add roles, change codes and names, choose a section and sort order, indent a role, or remove and restore categories. Edits apply to all client schedules. Removing archives a category; it does not delete entered rates. The separate **Delete** action permanently deletes an unused category after confirmation. Deletion is blocked when client rates reference the category, including archived rates. Removed codes remain reserved to prevent ambiguity. Restoring a category makes its existing rates available again. Internal keys are permanent, so code and name changes do not detach rates.
+Admins use **Rate Categories** in the navigation to add roles, change codes and names, choose a section and sort order, indent a role, or remove and restore categories. Edits apply to all client schedules. Removing archives a category; it does not delete entered rates. After removing a category, the separate **Delete** action under **Removed categories** permanently deletes an unused category after confirmation. Active categories cannot be deleted directly. Deletion is blocked when client rates reference the category, including archived rates. Removed codes remain reserved to prevent ambiguity. Restoring a category makes its existing rates available again. Internal keys are permanent, so code and name changes do not detach rates.
 
 When consolidating defaults, the migration copies a removed role’s rates into the retained role only if the retained role has no amounts. Conflicting originals remain on the removed category and can be recovered by restoring it. New databases loaded from the schema must run `bin/rails db:seed` to install missing default categories; seeding preserves admin edits.
 
@@ -33,3 +33,7 @@ Future iQs library tables must reference their source rate/category through rest
 ## Admin averages
 
 Open **Rate Categories → Hourly Rate Averages**, or **All Client Averages** from a builder’s rate page. The admin-only report calculates the arithmetic mean separately for each active role and Low/Mid/High band across client users. Blank amounts are excluded, explicit zero amounts are included, and each band shows its own contributing-user count. Admin users’ schedules and archived categories are excluded. The report reflects current saved client rates; it is not an external market-rate benchmark.
+
+## Section order
+
+Use **Rate Categories → Section order** to set each section’s position. Lower numbers appear first; equal positions are ordered by section name. This controls the category list, section dropdown, client schedules and admin averages. A role’s own sort order controls its position within its section. Existing sections and amounts are preserved when the ordering feature is installed.

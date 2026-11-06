@@ -28,6 +28,11 @@ class LabourRateCategoriesController < ApplicationController
   end
 
   def destroy
+    if @category.active?
+      redirect_to labour_rate_categories_path, alert: "Remove this category before permanently deleting it."
+      return
+    end
+
     if @category.destroy
       redirect_to labour_rate_categories_path, notice: "Rate category permanently deleted."
     else
@@ -48,7 +53,9 @@ class LabourRateCategoriesController < ApplicationController
   end
 
   def load_categories
-    @categories = LabourRateCategory.ordered
+    @sections = LabourRateSection.ordered
+    section_positions = @sections.pluck(:name).each_with_index.to_h
+    @categories = LabourRateCategory.ordered.sort_by { |category| [section_positions.fetch(category.section), category.position, category.code] }
     @rate_counts = LabourRate.group(:category_key).count
   end
 end

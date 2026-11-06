@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_06_050000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_06_060000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -160,6 +160,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_050000) do
     t.index "lower((code)::text)", name: "index_labour_rate_categories_on_lower_code", unique: true
     t.index ["key"], name: "index_labour_rate_categories_on_key", unique: true
     t.check_constraint "char_length(code::text) >= 1 AND char_length(code::text) <= 20 AND code::text ~ '^[A-Z0-9.-]+$'::text", name: "labour_rate_categories_valid_code"
+  end
+
+  create_table "labour_rate_sections", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_labour_rate_sections_on_name", unique: true
+    t.check_constraint "\"position\" >= 0", name: "labour_rate_sections_non_negative_position"
   end
 
   create_table "labour_rates", force: :cascade do |t|
@@ -410,6 +419,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_050000) do
   add_foreign_key "contributor_type_assignments", "contributors"
   add_foreign_key "document_extractions", "projects"
   add_foreign_key "document_viewer_states", "projects"
+  add_foreign_key "labour_rate_categories", "labour_rate_sections", column: "section", primary_key: "name", on_delete: :restrict
   add_foreign_key "labour_rates", "labour_rate_categories", column: "category_key", primary_key: "key", on_delete: :restrict
   add_foreign_key "labour_rates", "users", on_delete: :restrict
   add_foreign_key "project_contributors", "contributors"

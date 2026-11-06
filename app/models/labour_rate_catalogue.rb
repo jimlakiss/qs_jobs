@@ -1,7 +1,9 @@
 class LabourRateCatalogue
   def self.groups
-    LabourRateCategory.active.ordered.group_by(&:section).transform_values do |categories|
-      categories.map(&:catalogue_entry)
+    categories_by_section = LabourRateCategory.active.ordered.group_by(&:section)
+    LabourRateSection.ordered.each_with_object({}) do |section, groups|
+      categories = categories_by_section[section.name]
+      groups[section.name] = categories.map(&:catalogue_entry) if categories.present?
     end
   end
 

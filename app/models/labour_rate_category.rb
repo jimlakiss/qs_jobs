@@ -3,6 +3,7 @@ class LabourRateCategory < ApplicationRecord
   attr_readonly :key
   before_validation :normalize_fields
   before_validation :assign_key, on: :create
+  before_save :ensure_section
 
   validates :key, presence: true, uniqueness: true
   validates :code, presence: true, length: { maximum: 20 },
@@ -28,5 +29,11 @@ class LabourRateCategory < ApplicationRecord
 
   def assign_key
     self.key ||= SecureRandom.uuid
+  end
+
+  def ensure_section
+    LabourRateSection.find_or_create_by!(name: section) do |record|
+      record.position = (LabourRateSection.maximum(:position) || -1) + 1
+    end
   end
 end

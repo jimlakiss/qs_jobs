@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   devise_for :users, skip: [:registrations]
   resource :labour_rates, only: [:show, :update]
   resources :labour_rate_averages, only: [:index]
+  resources :labour_rate_sections, only: [:update]
   resources :labour_rate_categories, only: [:index, :create, :edit, :update, :destroy]
   get "hourly_rate/edit", to: redirect("/labour_rates")
 

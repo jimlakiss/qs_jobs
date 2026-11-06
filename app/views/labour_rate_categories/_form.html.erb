@@ -14,7 +14,7 @@
     </div>
     <div class="col-md-4">
       <%= f.label :section, "Section", class: "form-label" %>
-      <%= f.select :section, (LabourRateCategory.distinct.order(:section).pluck(:section) + [category.section]).compact_blank.uniq, {}, required: true, class: "form-select" %>
+      <%= f.select :section, (LabourRateSection.ordered.pluck(:name) + [category.section]).compact_blank.uniq, {}, required: true, class: "form-select" %>
     </div>
     <div class="col-md-2">
       <%= f.label :position, "Sort order", class: "form-label" %>
