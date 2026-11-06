@@ -55,7 +55,7 @@ class LabourRateCategoriesController < ApplicationController
   def load_categories
     @sections = LabourRateSection.ordered
     section_positions = @sections.pluck(:name).each_with_index.to_h
-    @categories = LabourRateCategory.ordered.sort_by { |category| [section_positions.fetch(category.section), category.position, category.code] }
+    @categories = LabourRateCategory.ordered.sort_by { |category| [ section_positions.fetch(category.section), category.position, category.code ] }
     @rate_counts = LabourRate.group(:category_key).count
   end
 end

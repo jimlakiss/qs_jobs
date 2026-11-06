@@ -86,8 +86,10 @@
 
         <dt class="col-md-3">Website</dt>
         <dd class="col-md-9">
-          <% if @contributor.url.present? %>
-            <%= link_to @contributor.url, @contributor.url, target: "_blank", rel: "noreferrer" %>
+          <% if (website_url = contributor_website_url(@contributor)) %>
+            <%= link_to @contributor.url, website_url, target: "_blank", rel: "noreferrer" %>
+          <% elsif @contributor.url.present? %>
+            <%= @contributor.url %>
           <% else %>
             —
           <% end %>

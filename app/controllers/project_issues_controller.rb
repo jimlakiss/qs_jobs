@@ -1,7 +1,7 @@
 class ProjectIssuesController < ApplicationController
   before_action :require_admin!
   before_action :set_project
-  before_action :set_project_issue, only: [:show, :edit, :update, :destroy, :destroy_document]
+  before_action :set_project_issue, only: [ :show, :edit, :update, :destroy, :destroy_document ]
 
   def new
     @project_issue = @project.project_issues.new(description: "Estimate Issue")
@@ -104,7 +104,7 @@ class ProjectIssuesController < ApplicationController
 
   def load_recipients
     @project_issue_recipients = project_issue_recipients
-    @project_issue_recipient_labels = @project_issue_recipients.to_h { |recipient| [recipient.id, recipient_label_for(recipient)] }
+    @project_issue_recipient_labels = @project_issue_recipients.to_h { |recipient| [ recipient.id, recipient_label_for(recipient) ] }
     @project_issue_unavailable_contributors = unavailable_assigned_contributors
   end
 
@@ -142,7 +142,7 @@ class ProjectIssuesController < ApplicationController
   def recipient_label_for(recipient)
     contributor = contributor_for_recipient(recipient)
 
-    [contributor&.company_name, recipient.email].compact.join(" - ")
+    [ contributor&.company_name, recipient.email ].compact.join(" - ")
   end
 
   def unavailable_assigned_contributors

@@ -13,7 +13,7 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "a[href=?]", "/projects/#{project.id}/labour_rates", count: 0
 
-    [:get, :patch].each do |method|
+    [ :get, :patch ].each do |method|
       assert_raises(ActionController::RoutingError) do
         Rails.application.routes.recognize_path("/projects/#{project.id}/labour_rates", method: method)
       end
@@ -64,7 +64,7 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     get projects_path
 
     assert_response :success
-    assert_equal ["2627-010", "2627-009", "2627-007"], rendered_project_codes
+    assert_equal [ "2627-010", "2627-009", "2627-007" ], rendered_project_codes
   end
 
   test "projects can be sorted by code from highest to lowest" do
@@ -75,7 +75,7 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     get projects_path(sort: "code_desc")
 
     assert_response :success
-    assert_equal ["2627-010", "2627-009", "2627-007"], rendered_project_codes
+    assert_equal [ "2627-010", "2627-009", "2627-007" ], rendered_project_codes
   end
 
   test "projects index defaults to 25 projects per page" do
@@ -113,7 +113,7 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     get projects_path(page: 2)
 
     assert_response :success
-    assert_equal ["9700-005", "9700-004", "9700-003", "9700-002", "9700-001"], rendered_project_codes
+    assert_equal [ "9700-005", "9700-004", "9700-003", "9700-002", "9700-001" ], rendered_project_codes
     assert_includes response.body, "Showing 26-30 of 30 projects"
   end
 

@@ -21,7 +21,7 @@ class ProjectIssueMailerTest < ActionMailer::TestCase
     html = email.html_part.body.decoded
     text = email.text_part.body.decoded
 
-    assert_equal ["client@example.com"], email.to
+    assert_equal [ "client@example.com" ], email.to
     assert_equal "2526-041 - iQs Demos | Test Document Issue | Revision 0", email.subject
 
     assert_includes html, "Hi James,"

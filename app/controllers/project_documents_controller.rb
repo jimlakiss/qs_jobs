@@ -8,7 +8,7 @@ class ProjectDocumentsController < ApplicationController
 
   before_action :require_admin!
   before_action :set_project
-  before_action :set_document, only: [:viewer, :update, :destroy, :save_extraction, :viewer_state, :upload_export]
+  before_action :set_document, only: [ :viewer, :update, :destroy, :save_extraction, :viewer_state, :upload_export ]
 
   def viewer
     redirect_to @project, alert: "Only PDF documents can be opened in the viewer" unless pdf_document?
@@ -72,7 +72,7 @@ class ProjectDocumentsController < ApplicationController
   end
 
   def viewer_state
-    if request.get?
+    if request.get? || request.head?
       render json: { viewer_state: viewer_state_data }
       return
     end
@@ -139,7 +139,7 @@ class ProjectDocumentsController < ApplicationController
         viewerStateUrl: viewer_state_url_for(attachment),
         uploadExportUrl: upload_export_project_document_path(@project, attachment)
       }
-    end.sort_by { |item| [item[:group].downcase, item[:name].downcase] }
+    end.sort_by { |item| [ item[:group].downcase, item[:name].downcase ] }
   end
 
   def extraction_payload

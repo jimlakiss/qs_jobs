@@ -13,7 +13,7 @@ class CreateDocumentExtractions < ActiveRecord::Migration[8.1]
 
       t.timestamps
 
-      t.index [:project_id, :active_storage_attachment_id], unique: true, name: "index_document_extractions_on_project_and_attachment"
+      t.index [ :project_id, :active_storage_attachment_id ], unique: true, name: "index_document_extractions_on_project_and_attachment"
       t.index :active_storage_attachment_id
     end
   end

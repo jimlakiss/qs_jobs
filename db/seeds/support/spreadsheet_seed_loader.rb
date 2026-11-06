@@ -126,7 +126,7 @@ class SpreadsheetSeedLoader
       email: row[normalize_header(mapping[:email])]
     )
     contributor.save!
-    assign_contributor_types(contributor, [mapping[:type]])
+    assign_contributor_types(contributor, [ mapping[:type] ])
     contributor
   end
 
@@ -162,7 +162,7 @@ class SpreadsheetSeedLoader
   end
 
   def unzip_file(path, internal_path)
-    IO.popen(["unzip", "-p", path, internal_path], &:read)
+    IO.popen([ "unzip", "-p", path, internal_path ], &:read)
   end
 
   def read_cell_value(cell, shared_strings)
@@ -259,7 +259,7 @@ class SpreadsheetSeedLoader
       role = first_present(row, "role", "contributor_type", "type")
       contributor_name = first_present(row, "company_name", "contributor", "company")
 
-      next if [project_code, role, contributor_name].any?(&:blank?)
+      next if [ project_code, role, contributor_name ].any?(&:blank?)
 
       project = Project.find_by!(code: project_code.strip)
       contributor = Contributor.find_by!(company_name: contributor_name.strip)

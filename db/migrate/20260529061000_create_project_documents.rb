@@ -14,7 +14,7 @@ class CreateProjectDocuments < ActiveRecord::Migration[8.1]
       t.timestamps
 
       t.index :active_storage_attachment_id, unique: true
-      t.index [:project_id, :category]
+      t.index [ :project_id, :category ]
       t.index :received_at
     end
   end

@@ -14,7 +14,7 @@ class DocumentExtractionsControllerTest < ActionDispatch::IntegrationTest
       active_storage_attachment_id: @document.id,
       source_filename: "drawings.pdf",
       document_details: { project_id: "EXT-001" },
-      sheets: [{ page: 1, sheet_id: "A001" }],
+      sheets: [ { page: 1, sheet_id: "A001" } ],
       extracted_at: Time.current
     )
   end

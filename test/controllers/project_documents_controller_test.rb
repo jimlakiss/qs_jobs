@@ -6,6 +6,16 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     @project = Project.create!(code: "DOC-001", address: "1 Test Street")
   end
 
+  test "HEAD viewer state is read only" do
+    @project.documents.attach(io: file_fixture("test_document.txt").open, filename: "test_document.txt", content_type: "text/plain")
+    document = @project.documents.first
+    assert_no_difference "DocumentViewerState.count" do
+      head viewer_state_project_document_path(@project, document), as: :json
+    end
+    assert_response :success
+    assert_empty response.body
+  end
+
   test "uploads documents to a project" do
     file = fixture_file_upload("test_document.txt", "text/plain")
 
@@ -13,7 +23,7 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
       post project_documents_path(@project),
         params: {
           project: {
-            documents: [file],
+            documents: [ file ],
             document_group_name: "Architectural",
             received_at: "2026-05-28T09:30",
             source: "Email",
@@ -72,7 +82,7 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
       post project_documents_path(@project),
         params: {
           project: {
-            documents: [file],
+            documents: [ file ],
             source: "Consultant"
           }
         }
@@ -101,7 +111,7 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
       post project_documents_path(@project),
         params: {
           project: {
-            documents: [blob.signed_id],
+            documents: [ blob.signed_id ],
             source: "Consultant"
           }
         }
@@ -241,7 +251,7 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
         params: {
           extraction: {
             document_details: { project_id: "VW-001", prepared_by: "Architect" },
-            sheets: [{ page: 1, sheet_id: "RAW-001", description: "Raw cover sheet" }],
+            sheets: [ { page: 1, sheet_id: "RAW-001", description: "Raw cover sheet" } ],
             regions: { sheet_id: { x: 0.1, y: 0.2, w: 0.3, h: 0.4 } },
             measurements: {},
             staging_data: [
@@ -288,12 +298,12 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
             currentPage: 2,
             measurementsByPage: {
               "2" => [
-                { type: "linear", label: "FLOOR AREA", name: "Bedroom 1", points: [{ x: 0.1, y: 0.2 }, { x: 0.3, y: 0.4 }] }
+                { type: "linear", label: "FLOOR AREA", name: "Bedroom 1", points: [ { x: 0.1, y: 0.2 }, { x: 0.3, y: 0.4 } ] }
               ]
             },
             scaleZonesByPage: {
               "2" => [
-                { label: "1:100", mpp: 100, vertices: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }] }
+                { label: "1:100", mpp: 100, vertices: [ { x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 } ] }
               ]
             }
           }
@@ -324,7 +334,7 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
       data: {
         version: 1,
         documentDetails: { project_id: "DRAFT-001" },
-        measurementsByPage: { "1" => [{ type: "count", points: [{ x: 0.2, y: 0.4 }] }] }
+        measurementsByPage: { "1" => [ { type: "count", points: [ { x: 0.2, y: 0.4 } ] } ] }
       },
       saved_at: Time.current
     )
@@ -555,7 +565,7 @@ class ProjectDocumentsControllerTest < ActionDispatch::IntegrationTest
     extraction = @project.document_extractions.create!(
       active_storage_attachment_id: source_document.id,
       source_filename: "drawings.pdf",
-      sheets: [{ page: 1, sheet_id: "A001" }],
+      sheets: [ { page: 1, sheet_id: "A001" } ],
       extracted_at: Time.current
     )
 

@@ -17,7 +17,7 @@ class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
             required_by: Date.current + 7.days,
             notes: "Please review the architectural drawings.",
             document_group_name: "Architectural",
-            documents: [fixture_file_upload("test_document.txt", "text/plain")]
+            documents: [ fixture_file_upload("test_document.txt", "text/plain") ]
           }
         }
     end
@@ -69,7 +69,7 @@ class ClientSubmissionsControllerTest < ActionDispatch::IntegrationTest
       assert_redirected_to client_submission_path(submission)
       assert submission.reload.submitted?
       assert submission.submitted_at.present?
-      assert_equal ["client@example.com", "iqsjobs@cdconsult.net.au"], ActionMailer::Base.deliveries.last(2).flat_map(&:to)
+      assert_equal [ "client@example.com", "iqsjobs@cdconsult.net.au" ], ActionMailer::Base.deliveries.last(2).flat_map(&:to)
     ensure
       ENV["CLIENT_SUBMISSIONS_EMAIL"] = previous_internal_email
     end

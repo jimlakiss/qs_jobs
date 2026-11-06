@@ -1,6 +1,6 @@
 class IssuedDocumentsController < ApplicationController
   before_action :require_client!
-  before_action :set_project_issue, only: [:show]
+  before_action :set_project_issue, only: [ :show ]
 
   def index
     @project_issues = current_user.received_project_issues.includes(:project, :contributor).available_to_clients
