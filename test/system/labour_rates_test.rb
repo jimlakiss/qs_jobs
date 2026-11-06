@@ -21,14 +21,11 @@ class LabourRatesTest < ApplicationSystemTestCase
         .map(input => ({name: input.name, value: input.value, message: input.validationMessage}))
     JS
     assert_empty invalid_fields
-    page.execute_script(<<~JS)
-      window.rateFormEvents = [];
-      for (const type of ['click', 'submit', 'invalid']) {
-        document.addEventListener(type, event => window.rateFormEvents.push({type, target: event.target.outerHTML.slice(0, 250)}), true);
-      }
-    JS
-    click_button "Save hourly rates", match: :first
-    assert page.has_text?("Your hourly rate schedule has been saved."), page.evaluate_script("window.rateFormEvents").inspect
+    # Activate the real submit control; the runner's ChromeDriver also drops its mouse click.
+    save_button = find_button("Save hourly rates", match: :first)
+    page.execute_script("arguments[0].click()", save_button)
+    assert_text "Your hourly rate schedule has been saved."
+
 
     visit labour_rates_path
     assert_field "Bricklayer — Mid ($/hour)", with: "75.0"
