@@ -22,6 +22,9 @@
       </div>
 
       <% portal_user = @contributor.portal_user %>
+      <% if portal_user %>
+        <p><%= link_to "View Hourly Rates", labour_rates_path(user_id: portal_user.id), class: "btn btn-outline-primary btn-sm" %></p>
+      <% end %>
       <%= form_with url: contributor_portal_access_path(@contributor), method: portal_user ? :patch : :post, local: true do %>
         <div class="row g-3 align-items-end">
           <div class="col-md-5">

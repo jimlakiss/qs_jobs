@@ -1,0 +1,4 @@
+<nav class="nav nav-tabs mb-4" aria-label="Client portal">
+  <%= link_to "Uploads & Documents", client_area_path, class: "nav-link #{'active' if controller_name == 'client_submissions' && action_name == 'index'}" %>
+  <%= link_to "Hourly Rates", labour_rates_path, class: "nav-link #{'active' if controller_name == 'labour_rates'}" %>
+</nav>

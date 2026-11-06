@@ -1,0 +1,8 @@
+<% content_for :title, "Edit Rate Category | iQs Jobs" %>
+<section class="app-page">
+  <div class="page-header">
+    <div><h1 class="page-title">Edit Rate Category</h1><p class="page-subtitle">Changes appear in client schedules. Existing rate amounts are preserved.</p></div>
+    <%= link_to "Back to Categories", labour_rate_categories_path, class: "btn btn-outline-secondary" %>
+  </div>
+  <div class="app-card"><div class="app-card-body"><%= render "form", category: @category %></div></div>
+</section>

@@ -10,6 +10,13 @@
 
 require_relative "seeds/support/spreadsheet_seed_loader"
 
+# Insert missing defaults without overwriting changes made in admin settings.
+JSON.parse(File.read(Rails.root.join("db/seeds/labour_rate_categories.json"))).each do |attributes|
+  LabourRateCategory.find_or_create_by!(key: attributes.fetch("key")) do |category|
+    category.assign_attributes(attributes.except("key"))
+  end
+end
+
 # Schema-loaded databases need the same initial workflow as migrated databases.
 if ProjectStatus.none?
   ProjectStatus::DEFAULT_NAMES.each_with_index do |name, position|

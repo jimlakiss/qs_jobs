@@ -1,0 +1,43 @@
+<% content_for :title, "Hourly Rate Averages | iQs Jobs" %>
+<section class="app-page">
+  <div class="page-header">
+    <div>
+      <span class="pill-note">Admin · All clients</span>
+      <h1 class="page-title">Hourly Rate Averages</h1>
+      <p class="page-subtitle">Average hourly rates across all client users, calculated separately for each role and band.</p>
+      <p class="text-muted mb-0">Blank rates are excluded; zero rates are included. Each user counts once per role and band. Counts show users with a rate entered.</p>
+    </div>
+    <%= link_to "Rate Categories", labour_rate_categories_path, class: "btn btn-outline-secondary" %>
+  </div>
+
+  <% @groups.each do |section, entries| %>
+    <div class="app-card table-shell mb-4">
+      <div class="app-card-body border-bottom"><h2 class="h4 mb-0"><%= section %></h2></div>
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead class="table-light">
+            <tr><th scope="col">Code</th><th scope="col">Role</th>
+              <% LabourRate::BANDS.each do |band| %>
+                <th scope="col" class="text-end"><%= band.titleize %> average ($/hr)</th>
+                <th scope="col" class="text-end"><%= band.titleize %> users</th>
+              <% end %>
+            </tr>
+          </thead>
+          <tbody>
+            <% entries.each do |entry| %>
+              <tr>
+                <td class="text-muted small"><%= entry[:code] %></td>
+                <th scope="row" class="<%= entry[:subheading] ? 'ps-4 fw-normal' : 'fw-semibold' %>"><%= entry[:name] %></th>
+                <% LabourRate::BANDS.each do |band| %>
+                  <% summary = @averages.dig(entry[:key], band) %>
+                  <td class="text-end"><%= summary && summary[:count].positive? ? number_with_precision(summary[:average], precision: 2) : "—" %></td>
+                  <td class="text-end text-muted"><%= summary&.fetch(:count) || 0 %></td>
+                <% end %>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% end %>
+</section>

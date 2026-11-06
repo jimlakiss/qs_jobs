@@ -1,0 +1,85 @@
+<% content_for :title, "Hourly Rates | iQs Jobs" %>
+
+<section class="app-page">
+  <%= render "client_submissions/portal_tabs" if client_user? %>
+  <div class="page-header">
+    <div>
+      <span class="pill-note"><%= @editable ? "Your rate schedule" : "Client rate schedule" %></span>
+      <h1 class="page-title"><%= @editable ? "Hourly Rates" : "#{@user.contributor&.company_name || @user.email} · Hourly Rates" %></h1>
+      <p class="page-subtitle">Hourly rates by role for estimating your jobs.</p>
+      <p class="text-muted mb-0">All amounts are $/hour. If only one hourly rate per role is required, please use MID. Leave unused rates blank; zero means no charge.</p>
+      <% if @editable %>
+        <p id="rate-average-help" class="text-muted small mt-2 mb-0">Faint amounts in empty fields are averages of other clients’ entered rates for guidance. Enter and save your own amounts to use them; leaving a field blank does not save the average.</p>
+      <% end %>
+    </div>
+    <% if admin_user? %>
+      <%= link_to "All Client Averages", labour_rate_averages_path, class: "btn btn-outline-secondary" %>
+      <%= link_to "Back to Contributor", @user.contributor ? contributor_path(@user.contributor) : contributors_path, class: "btn btn-outline-secondary" %>
+    <% end %>
+  </div>
+
+  <% unless @editable %>
+    <div class="alert alert-info"><strong><%= @user.contributor&.company_name || @user.email %></strong> — <%= @user.email %>. This schedule is maintained by the client.</div>
+  <% end %>
+
+  <%= form_with model: @user, url: labour_rates_path, method: :patch do |f| %>
+    <% if @user.errors.any? %>
+      <div class="alert alert-danger" role="alert">
+        <strong>The schedule could not be saved.</strong> No rates were changed.
+        <ul class="mb-0"><% @user.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+      </div>
+    <% end %>
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+      <p class="text-muted mb-0"><%= @rates_by_key.values.count(&:populated?) %> of <%= LabourRateCatalogue.entries.size %> roles have rates entered.</p>
+      <%= f.submit "Save hourly rates", class: "btn btn-primary" if @editable %>
+    </div>
+
+    <% @groups.each do |group, entries| %>
+      <div class="app-card table-shell mb-4">
+        <div class="app-card-body border-bottom">
+          <h2 class="h4 mb-0"><%= group %></h2>
+        </div>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Code</th>
+                <th scope="col">Role</th>
+                <% LabourRate::BANDS.each do |band| %>
+                  <th scope="col" style="min-width: 125px"><%= band.titleize %> ($/hr)</th>
+                <% end %>
+              </tr>
+            </thead>
+            <tbody>
+              <% entries.each do |entry| %>
+                <% rate = @rates_by_key.fetch(entry[:key]) %>
+                <%= f.fields_for :labour_rates, rate, include_id: false do |rf| %>
+                  <tr class="<%= 'table-danger' if rate.errors.any? %>">
+                    <td class="text-muted small"><%= entry[:code] %><%= rf.hidden_field :category_key %><%= rf.hidden_field :id if rate.persisted? %></td>
+                    <th scope="row" class="<%= entry[:subheading] ? 'ps-4 fw-normal' : 'fw-semibold' %>">
+                      <%= entry[:name] %>
+                      <% if rate.errors.any? %>
+                        <div class="text-danger small fw-normal"><%= rate.errors.full_messages.to_sentence %></div>
+                      <% end %>
+                    </th>
+                    <% LabourRate::BANDS.each do |band| %>
+                      <% average = @rate_averages.dig(entry[:key], band, :average) %>
+                      <td>
+                        <%= rf.label band, "#{entry[:name]} — #{band.titleize} ($/hour)", class: "visually-hidden" %>
+                        <%= rf.number_field band, value: rate.public_send("#{band}_before_type_cast"), min: 0, max: "99999999.99", step: "0.01", placeholder: average.nil? ? "Not set" : number_with_precision(average, precision: 2), class: "form-control", disabled: !@editable, aria: @editable ? { describedby: "rate-average-help" } : {} %>
+                      </td>
+                    <% end %>
+                  </tr>
+                <% end %>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% end %>
+
+    <p class="text-muted small">Hire Items uses an hourly allowance here.</p>
+    <%= f.submit "Save hourly rates", class: "btn btn-primary" if @editable %>
+  <% end %>
+</section>

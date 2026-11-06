@@ -1,0 +1,6 @@
+<% JSON.parse(File.read(Rails.root.join("db/seeds/labour_rate_categories.json"))).each_with_index do |category, index| %>
+category_<%= index %>:
+<% category.each do |key, value| %>
+  <%= key %>: <%= value.to_json %>
+<% end %>
+<% end %>

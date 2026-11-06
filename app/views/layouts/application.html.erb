@@ -47,6 +47,9 @@
               <li class="nav-item">
                 <%= link_to "Contributors", contributors_path, class: "nav-link" %>
               </li>
+              <li class="nav-item">
+                <%= link_to "Rate Categories", labour_rate_categories_path, class: "nav-link" %>
+              </li>
             <% elsif client_user? %>
               <li class="nav-item">
                 <%= link_to "Client Area", client_area_path, class: "nav-link" %>

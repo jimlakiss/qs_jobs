@@ -1,0 +1,29 @@
+<%= form_with model: category do |f| %>
+  <% if category.errors.any? %>
+    <div class="alert alert-danger" role="alert"><%= category.errors.full_messages.to_sentence %></div>
+  <% end %>
+  <div class="row g-3">
+    <div class="col-md-2">
+      <%= f.label :code, "Code", class: "form-label" %>
+      <%= f.text_field :code, required: true, maxlength: 20, pattern: '[A-Za-z0-9.\-]+', class: "form-control", aria: { describedby: "rate-code-help" } %>
+      <div id="rate-code-help" class="form-text">Up to 20 characters: letters, numbers, dots (.) and hyphens (-).</div>
+    </div>
+    <div class="col-md-4">
+      <%= f.label :name, "Role", class: "form-label" %>
+      <%= f.text_field :name, required: true, maxlength: 120, class: "form-control" %>
+    </div>
+    <div class="col-md-4">
+      <%= f.label :section, "Section", class: "form-label" %>
+      <%= f.select :section, (LabourRateCategory.distinct.order(:section).pluck(:section) + [category.section]).compact_blank.uniq, {}, required: true, class: "form-select" %>
+    </div>
+    <div class="col-md-2">
+      <%= f.label :position, "Sort order", class: "form-label" %>
+      <%= f.number_field :position, min: 0, step: 1, required: true, class: "form-control" %>
+    </div>
+    <div class="col-12 d-flex gap-4 flex-wrap">
+      <div class="form-check"><%= f.check_box :subheading, class: "form-check-input" %><%= f.label :subheading, "Indent as subheading", class: "form-check-label" %></div>
+      <div class="form-check"><%= f.check_box :active, class: "form-check-input" %><%= f.label :active, "Available in client portal", class: "form-check-label" %></div>
+    </div>
+  </div>
+  <%= f.submit category.persisted? ? "Save category" : "Add category", class: "btn btn-primary mt-3" %>
+<% end %>

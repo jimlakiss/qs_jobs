@@ -1,0 +1,461 @@
+[
+  {
+    "key": "AP",
+    "code": "DAC",
+    "name": "Design, Approvals & Consultants",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 0
+  },
+  {
+    "key": "BR",
+    "code": "BRL",
+    "name": "Bricklayer",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 1
+  },
+  {
+    "key": "CA",
+    "code": "CAR",
+    "name": "Carpenter",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 2
+  },
+  {
+    "key": "CA.journeyman",
+    "code": "CJM",
+    "name": "Journeyman",
+    "subheading": true,
+    "section": "Trades & labour",
+    "active": false,
+    "position": 3
+  },
+  {
+    "key": "CC",
+    "code": "CCD",
+    "name": "Concrete Cutting, Drilling & Coring",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 4
+  },
+  {
+    "key": "CO",
+    "code": "CON",
+    "name": "Concreter",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 5
+  },
+  {
+    "key": "CP",
+    "code": "CPL",
+    "name": "Concrete Polishing",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 6
+  },
+  {
+    "key": "DE",
+    "code": "DEM",
+    "name": "Demolition",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 7
+  },
+  {
+    "key": "EL",
+    "code": "ELE",
+    "name": "Electrician",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 8
+  },
+  {
+    "key": "EP",
+    "code": "PAV",
+    "name": "External Paving",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 9
+  },
+  {
+    "key": "EX",
+    "code": "EXC",
+    "name": "Excavator",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 10
+  },
+  {
+    "key": "FC",
+    "code": "FLR",
+    "name": "Floor Coverings",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 11
+  },
+  {
+    "key": "FS",
+    "code": "FIR",
+    "name": "Fire Services",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 12
+  },
+  {
+    "key": "FW",
+    "code": "FRM",
+    "name": "Formwork Carpenter",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 13
+  },
+  {
+    "key": "FW.carpenter_formworker",
+    "code": "CFW",
+    "name": "Carpenter Formworker",
+    "subheading": true,
+    "section": "Trades & labour",
+    "active": false,
+    "position": 14
+  },
+  {
+    "key": "GL",
+    "code": "GLA",
+    "name": "Glazier",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 15
+  },
+  {
+    "key": "HI",
+    "code": "HIR",
+    "name": "Hire Items",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 16
+  },
+  {
+    "key": "IN",
+    "code": "INS",
+    "name": "Insulation",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 17
+  },
+  {
+    "key": "JO",
+    "code": "JOI",
+    "name": "Joinery",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 18
+  },
+  {
+    "key": "LH",
+    "code": "LUN",
+    "name": "General Unskilled Labour",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 19
+  },
+  {
+    "key": "LH.labourer_semi_skilled",
+    "code": "LSS",
+    "name": "Labourer Semi Skilled",
+    "subheading": true,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 20
+  },
+  {
+    "key": "LH.labour_skilled_generic",
+    "code": "LSK",
+    "name": "Labour Skilled Generic",
+    "subheading": true,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 21
+  },
+  {
+    "key": "LH.dogman",
+    "code": "DOG",
+    "name": "Dogman",
+    "subheading": true,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 22
+  },
+  {
+    "key": "LS",
+    "code": "LAN",
+    "name": "Landscaper",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 23
+  },
+  {
+    "key": "MA",
+    "code": "MAS",
+    "name": "Stone Masonry",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 24
+  },
+  {
+    "key": "MA.stone_mason",
+    "code": "STM",
+    "name": "Stone Mason",
+    "subheading": true,
+    "section": "Trades & labour",
+    "active": false,
+    "position": 25
+  },
+  {
+    "key": "ME",
+    "code": "MEC",
+    "name": "Mechanical",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 26
+  },
+  {
+    "key": "MW",
+    "code": "MET",
+    "name": "Metal Work",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 27
+  },
+  {
+    "key": "MW.structural_steel_welder",
+    "code": "SSW",
+    "name": "Structural Steel Welder",
+    "subheading": true,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 28
+  },
+  {
+    "key": "MW.structural_steel_erector",
+    "code": "SSE",
+    "name": "Structural Steel Erector",
+    "subheading": true,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 29
+  },
+  {
+    "key": "PA",
+    "code": "PAI",
+    "name": "Painter",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 30
+  },
+  {
+    "key": "PB",
+    "code": "DPL",
+    "name": "Dry Plastering",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 31
+  },
+  {
+    "key": "PF",
+    "code": "PFW",
+    "name": "Permanent Formwork Wall",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 32
+  },
+  {
+    "key": "PL",
+    "code": "PLU",
+    "name": "Plumber",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 33
+  },
+  {
+    "key": "PT",
+    "code": "PSC",
+    "name": "Partitioning & Suspended Ceilings",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 34
+  },
+  {
+    "key": "RE",
+    "code": "WPL",
+    "name": "Wet Plastering",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 35
+  },
+  {
+    "key": "RE.plasterer",
+    "code": "PLS",
+    "name": "Plasterer",
+    "subheading": true,
+    "section": "Trades & labour",
+    "active": false,
+    "position": 36
+  },
+  {
+    "key": "RO",
+    "code": "ROO",
+    "name": "Roofer",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 37
+  },
+  {
+    "key": "RP",
+    "code": "RPL",
+    "name": "Roof Plumber",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 38
+  },
+  {
+    "key": "SC",
+    "code": "SHC",
+    "name": "Shotcrete",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 39
+  },
+  {
+    "key": "SF",
+    "code": "SFX",
+    "name": "Steel Fixing",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 40
+  },
+  {
+    "key": "SP",
+    "code": "SPO",
+    "name": "Stone Polisher",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 41
+  },
+  {
+    "key": "TC",
+    "code": "TER",
+    "name": "Termite Control",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 42
+  },
+  {
+    "key": "TI",
+    "code": "TIL",
+    "name": "Tiler",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 43
+  },
+  {
+    "key": "WD",
+    "code": "WDR",
+    "name": "Window & External Doors",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 44
+  },
+  {
+    "key": "WP",
+    "code": "WPR",
+    "name": "Waterproofer",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 45
+  },
+  {
+    "key": "WR",
+    "code": "WST",
+    "name": "Waste Removal",
+    "subheading": false,
+    "section": "Trades & labour",
+    "active": true,
+    "position": 46
+  },
+  {
+    "key": "SU.project_manager",
+    "code": "PMG",
+    "name": "Project Manager",
+    "subheading": false,
+    "section": "Supervision",
+    "active": true,
+    "position": 47
+  },
+  {
+    "key": "SU.site_supervisor",
+    "code": "SUP",
+    "name": "Site Supervisor",
+    "subheading": false,
+    "section": "Supervision",
+    "active": true,
+    "position": 48
+  },
+  {
+    "key": "SU.contracts_administrator",
+    "code": "CAD",
+    "name": "Contracts Administrator",
+    "subheading": false,
+    "section": "Supervision",
+    "active": true,
+    "position": 49
+  },
+  {
+    "key": "SU.builder_director",
+    "code": "BDR",
+    "name": "Builder/Director",
+    "subheading": false,
+    "section": "Supervision",
+    "active": true,
+    "position": 50
+  }
+]

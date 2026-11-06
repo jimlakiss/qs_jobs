@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_001000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_06_050000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -145,6 +145,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_001000) do
     t.index ["active_storage_attachment_id"], name: "index_document_viewer_states_on_active_storage_attachment_id"
     t.index ["project_id", "active_storage_attachment_id"], name: "index_document_viewer_states_on_project_and_attachment", unique: true
     t.index ["project_id"], name: "index_document_viewer_states_on_project_id"
+  end
+
+  create_table "labour_rate_categories", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.string "key", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.string "section", default: "Trades & labour", null: false
+    t.boolean "subheading", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.index "lower((code)::text)", name: "index_labour_rate_categories_on_lower_code", unique: true
+    t.index ["key"], name: "index_labour_rate_categories_on_key", unique: true
+    t.check_constraint "char_length(code::text) >= 1 AND char_length(code::text) <= 20 AND code::text ~ '^[A-Z0-9.-]+$'::text", name: "labour_rate_categories_valid_code"
+  end
+
+  create_table "labour_rates", force: :cascade do |t|
+    t.string "category_key", null: false
+    t.datetime "created_at", null: false
+    t.decimal "high", precision: 10, scale: 2
+    t.decimal "low", precision: 10, scale: 2
+    t.decimal "mid", precision: 10, scale: 2
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["category_key"], name: "index_labour_rates_on_category_key"
+    t.index ["user_id", "category_key"], name: "index_labour_rates_on_user_id_and_category_key", unique: true
+    t.index ["user_id"], name: "index_labour_rates_on_user_id"
+    t.check_constraint "(low IS NULL OR low >= 0::numeric) AND (mid IS NULL OR mid >= 0::numeric) AND (high IS NULL OR high >= 0::numeric)", name: "labour_rates_non_negative"
+    t.check_constraint "(low IS NULL OR mid IS NULL OR low <= mid) AND (mid IS NULL OR high IS NULL OR mid <= high) AND (low IS NULL OR high IS NULL OR low <= high)", name: "labour_rates_band_order"
   end
 
   create_table "project_contributors", force: :cascade do |t|
@@ -356,6 +386,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_001000) do
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
+    t.decimal "hourly_rate", precision: 10, scale: 2
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
@@ -365,6 +396,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_001000) do
     t.index ["contributor_id"], name: "index_users_on_unique_contributor_portal_access", unique: true, where: "(contributor_id IS NOT NULL)"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.check_constraint "hourly_rate >= 0::numeric", name: "users_non_negative_hourly_rate"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -378,6 +410,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_001000) do
   add_foreign_key "contributor_type_assignments", "contributors"
   add_foreign_key "document_extractions", "projects"
   add_foreign_key "document_viewer_states", "projects"
+  add_foreign_key "labour_rates", "labour_rate_categories", column: "category_key", primary_key: "key", on_delete: :restrict
+  add_foreign_key "labour_rates", "users", on_delete: :restrict
   add_foreign_key "project_contributors", "contributors"
   add_foreign_key "project_contributors", "projects"
   add_foreign_key "project_documents", "document_extractions"

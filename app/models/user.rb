@@ -15,6 +15,10 @@ class User < ApplicationRecord
   has_many :received_project_issues, class_name: "ProjectIssue", foreign_key: :recipient_user_id, dependent: :restrict_with_error
 
   validates :contributor_id, uniqueness: { allow_nil: true }
+  has_many :labour_rates, dependent: :restrict_with_error
+  accepts_nested_attributes_for :labour_rates, reject_if: ->(attributes) {
+    attributes["id"].blank? && %w[low mid high].all? { |band| attributes[band].blank? }
+  }
 
   def client_upload_access?
     client? && contributor&.project_upload_access?

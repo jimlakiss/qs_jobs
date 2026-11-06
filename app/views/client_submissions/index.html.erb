@@ -1,4 +1,5 @@
 <section class="app-page">
+  <%= render "client_submissions/portal_tabs" if client_user? %>
   <div class="page-header">
     <div>
       <span class="pill-note"><%= admin_user? ? "Client intake" : "Client portal" %></span>

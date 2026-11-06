@@ -7,6 +7,19 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:one)
   end
 
+  test "project pages have no hourly rate links or project rate endpoints" do
+    project = Project.create!(code: "NO-PROJECT-RATES")
+    get project_path(project)
+    assert_response :success
+    assert_select "a[href=?]", "/projects/#{project.id}/labour_rates", count: 0
+
+    [:get, :patch].each do |method|
+      assert_raises(ActionController::RoutingError) do
+        Rails.application.routes.recognize_path("/projects/#{project.id}/labour_rates", method: method)
+      end
+    end
+  end
+
   test "project forms accept duration and a start based schedule" do
     post projects_path, params: { project: {
       code: "FORM-SCHEDULE", schedule_from: "start_date", start_date: "2026-10-22", duration_days: 3
