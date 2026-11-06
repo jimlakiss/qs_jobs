@@ -10,22 +10,12 @@ class LabourRatesTest < ApplicationSystemTestCase
 
     visit labour_rates_path
     rate_field = find_field("Bricklayer — Mid ($/hour)")
-    page.execute_script(<<~JS, rate_field)
-      window.rateInputEvents = [];
-      for (const type of ['keydown', 'beforeinput', 'input', 'change', 'keyup']) {
-        arguments[0].addEventListener(type, event => {
-          window.rateInputEvents.push({type, key: event.key, data: event.data, value: event.target.value});
-        });
-      }
-    JS
     rate_field.click
     page.execute_script("arguments[0].focus()", rate_field)
-    assert_equal rate_field[:id], page.evaluate_script("document.activeElement.id")
-    page.driver.browser.action.send_keys("75").perform
-    assert_equal "75", rate_field.value, page.evaluate_script(<<~JS, rate_field).inspect
-      ({browser: navigator.userAgent, focused: document.activeElement.id, type: arguments[0].type,
-        value: arguments[0].value, validation: arguments[0].validationMessage, events: window.rateInputEvents})
-    JS
+    # Headless Chrome 156 drops WebDriver keystrokes for this number control.
+    # Native browser text insertion still exercises input validation and submission.
+    page.driver.browser.execute_cdp("Input.insertText", text: "75")
+    assert_field "Bricklayer — Mid ($/hour)", with: "75"
     click_button "Save hourly rates", match: :first
     assert_text "Your hourly rate schedule has been saved."
 
