@@ -9,7 +9,8 @@ class LabourRatesTest < ApplicationSystemTestCase
     assert_text "Signed in successfully."
 
     visit labour_rates_path
-    fill_in "Bricklayer — Mid ($/hour)", with: "75"
+    fill_in "Bricklayer — Mid ($/hour)", with: "75", fill_options: { clear: :backspace }
+    assert_field "Bricklayer — Mid ($/hour)", with: "75"
     click_button "Save hourly rates", match: :first
     assert_text "Your hourly rate schedule has been saved."
 
