@@ -11,7 +11,7 @@ class LabourRatesTest < ApplicationSystemTestCase
     visit labour_rates_path
     rate_field = find_field("Bricklayer — Mid ($/hour)")
     rate_field.click
-    rate_field.native.send_keys("75")
+    page.driver.browser.action.send_keys("75").perform
     assert_field "Bricklayer — Mid ($/hour)", with: "75"
     click_button "Save hourly rates", match: :first
     assert_text "Your hourly rate schedule has been saved."
