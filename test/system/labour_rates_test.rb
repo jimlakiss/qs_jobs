@@ -19,6 +19,8 @@ class LabourRatesTest < ApplicationSystemTestCase
       }
     JS
     rate_field.click
+    page.execute_script("arguments[0].focus()", rate_field)
+    assert_equal rate_field[:id], page.evaluate_script("document.activeElement.id")
     page.driver.browser.action.send_keys("75").perform
     assert_equal "75", rate_field.value, page.evaluate_script(<<~JS, rate_field).inspect
       ({browser: navigator.userAgent, focused: document.activeElement.id, type: arguments[0].type,
