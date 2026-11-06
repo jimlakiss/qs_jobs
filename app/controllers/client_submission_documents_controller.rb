@@ -2,7 +2,7 @@ class ClientSubmissionDocumentsController < ApplicationController
   before_action :set_client_submission
   before_action :authorize_client_submission!
   before_action :ensure_draft!
-  before_action :set_document, only: [:update, :destroy]
+  before_action :set_document, only: [ :update, :destroy ]
 
   def create
     if document_params[:documents].present?

@@ -8,7 +8,7 @@ class CreateDocumentViewerStates < ActiveRecord::Migration[8.1]
 
       t.timestamps
 
-      t.index [:project_id, :active_storage_attachment_id], unique: true, name: "index_document_viewer_states_on_project_and_attachment"
+      t.index [ :project_id, :active_storage_attachment_id ], unique: true, name: "index_document_viewer_states_on_project_and_attachment"
       t.index :active_storage_attachment_id
     end
   end

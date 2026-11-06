@@ -1,8 +1,8 @@
 class ClientSubmissionsController < ApplicationController
-  before_action :require_client_upload_access!, only: [:new, :create]
-  before_action :set_client_submission, only: [:show, :edit, :update, :destroy, :submit, :convert, :attach_to_project, :archive, :unarchive]
-  before_action :authorize_client_submission!, only: [:show, :edit, :update, :destroy, :submit]
-  before_action :require_admin!, only: [:convert, :attach_to_project, :archive, :unarchive]
+  before_action :require_client_upload_access!, only: [ :new, :create ]
+  before_action :set_client_submission, only: [ :show, :edit, :update, :destroy, :submit, :convert, :attach_to_project, :archive, :unarchive ]
+  before_action :authorize_client_submission!, only: [ :show, :edit, :update, :destroy, :submit ]
+  before_action :require_admin!, only: [ :convert, :attach_to_project, :archive, :unarchive ]
 
   def index
     @client_submissions =

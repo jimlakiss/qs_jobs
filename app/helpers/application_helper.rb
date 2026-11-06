@@ -18,7 +18,7 @@ module ApplicationHelper
     documents.group_by do |document|
       metadata_by_attachment_id[document.id]&.document_group&.name.presence || "Ungrouped Documents"
     end.sort_by do |group_name, _group_documents|
-      [group_name == "Ungrouped Documents" ? 1 : 0, group_name.downcase]
+      [ group_name == "Ungrouped Documents" ? 1 : 0, group_name.downcase ]
     end
   end
 

@@ -24,7 +24,7 @@ class ProjectIssuesControllerTest < ActionDispatch::IntegrationTest
                 revision: "A",
                 version: "2",
                 body: "Please download the attached estimate.",
-                documents: [fixture_file_upload("test_document.txt", "text/plain")]
+                documents: [ fixture_file_upload("test_document.txt", "text/plain") ]
               }
             }
         end
@@ -39,7 +39,7 @@ class ProjectIssuesControllerTest < ActionDispatch::IntegrationTest
     assert_equal users(:client), issue.recipient_user
     assert_equal "ISSUE-001 - 1 Issue Street | Issued estimate | Revision A Version 2", issue.title
     assert issue.documents.attached?
-    assert_equal ["client@example.com"], ActionMailer::Base.deliveries.last.to
+    assert_equal [ "client@example.com" ], ActionMailer::Base.deliveries.last.to
     assert_equal "ISSUE-001 - 1 Issue Street | Issued estimate | Revision A Version 2", ActionMailer::Base.deliveries.last.subject
     assert_includes ActionMailer::Base.deliveries.last.body.encoded, issued_document_url(issue, host: "example.com")
   end
@@ -55,7 +55,7 @@ class ProjectIssuesControllerTest < ActionDispatch::IntegrationTest
               revision: "",
               version: "",
               body: "Please download the attached estimate.",
-              documents: [fixture_file_upload("test_document.txt", "text/plain")]
+              documents: [ fixture_file_upload("test_document.txt", "text/plain") ]
             }
           }
       end
@@ -95,7 +95,7 @@ class ProjectIssuesControllerTest < ActionDispatch::IntegrationTest
             recipient_user_id: submission_user.id,
             description: "Issued estimate",
             body: "Please download the attached estimate.",
-            documents: [fixture_file_upload("test_document.txt", "text/plain")]
+            documents: [ fixture_file_upload("test_document.txt", "text/plain") ]
           }
         }
     end
@@ -138,7 +138,7 @@ class ProjectIssuesControllerTest < ActionDispatch::IntegrationTest
             recipient_user_id: users(:other_client).id,
             description: "Issued to builder",
             body: "Builder package.",
-            documents: [fixture_file_upload("test_document.txt", "text/plain")]
+            documents: [ fixture_file_upload("test_document.txt", "text/plain") ]
           }
         }
     end
@@ -254,7 +254,7 @@ class ProjectIssuesControllerTest < ActionDispatch::IntegrationTest
           recipient_user_id: users(:client).id,
           description: issue.description,
           body: issue.body,
-          documents: [fixture_file_upload("test_drawing.dwg", "application/acad")]
+          documents: [ fixture_file_upload("test_drawing.dwg", "application/acad") ]
         },
         commit: "Save Issue"
       }
@@ -269,7 +269,7 @@ class ProjectIssuesControllerTest < ActionDispatch::IntegrationTest
           description: issue.description,
           body: issue.body,
           replace_documents: "1",
-          documents: [fixture_file_upload("test_drawing.dwg", "application/acad")]
+          documents: [ fixture_file_upload("test_drawing.dwg", "application/acad") ]
         },
         commit: "Save Issue"
       }

@@ -14,8 +14,8 @@ class CreateSolidQueueTables < ActiveRecord::Migration[8.1]
       t.index :active_job_id, if_not_exists: true
       t.index :class_name, if_not_exists: true
       t.index :finished_at, if_not_exists: true
-      t.index [:queue_name, :finished_at], name: "index_solid_queue_jobs_for_filtering", if_not_exists: true
-      t.index [:scheduled_at, :finished_at], name: "index_solid_queue_jobs_for_alerting", if_not_exists: true
+      t.index [ :queue_name, :finished_at ], name: "index_solid_queue_jobs_for_filtering", if_not_exists: true
+      t.index [ :scheduled_at, :finished_at ], name: "index_solid_queue_jobs_for_alerting", if_not_exists: true
     end
 
     create_table :solid_queue_blocked_executions, if_not_exists: true do |t|
@@ -26,8 +26,8 @@ class CreateSolidQueueTables < ActiveRecord::Migration[8.1]
       t.datetime :expires_at, null: false
       t.datetime :created_at, null: false
 
-      t.index [:concurrency_key, :priority, :job_id], name: "index_solid_queue_blocked_executions_for_release", if_not_exists: true
-      t.index [:expires_at, :concurrency_key], name: "index_solid_queue_blocked_executions_for_maintenance", if_not_exists: true
+      t.index [ :concurrency_key, :priority, :job_id ], name: "index_solid_queue_blocked_executions_for_release", if_not_exists: true
+      t.index [ :expires_at, :concurrency_key ], name: "index_solid_queue_blocked_executions_for_maintenance", if_not_exists: true
       t.index :job_id, unique: true, if_not_exists: true
     end
 
@@ -37,7 +37,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[8.1]
       t.datetime :created_at, null: false
 
       t.index :job_id, unique: true, if_not_exists: true
-      t.index [:process_id, :job_id], if_not_exists: true
+      t.index [ :process_id, :job_id ], if_not_exists: true
     end
 
     create_table :solid_queue_failed_executions, if_not_exists: true do |t|
@@ -55,8 +55,8 @@ class CreateSolidQueueTables < ActiveRecord::Migration[8.1]
       t.datetime :created_at, null: false
 
       t.index :job_id, unique: true, if_not_exists: true
-      t.index [:priority, :job_id], name: "index_solid_queue_poll_all", if_not_exists: true
-      t.index [:queue_name, :priority, :job_id], name: "index_solid_queue_poll_by_queue", if_not_exists: true
+      t.index [ :priority, :job_id ], name: "index_solid_queue_poll_all", if_not_exists: true
+      t.index [ :queue_name, :priority, :job_id ], name: "index_solid_queue_poll_by_queue", if_not_exists: true
     end
 
     create_table :solid_queue_scheduled_executions, if_not_exists: true do |t|
@@ -67,7 +67,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[8.1]
       t.datetime :created_at, null: false
 
       t.index :job_id, unique: true, if_not_exists: true
-      t.index [:scheduled_at, :priority, :job_id], name: "index_solid_queue_dispatch_all", if_not_exists: true
+      t.index [ :scheduled_at, :priority, :job_id ], name: "index_solid_queue_dispatch_all", if_not_exists: true
     end
 
     create_table :solid_queue_recurring_executions, if_not_exists: true do |t|
@@ -77,7 +77,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[8.1]
       t.datetime :created_at, null: false
 
       t.index :job_id, unique: true, if_not_exists: true
-      t.index [:task_key, :run_at], unique: true, if_not_exists: true
+      t.index [ :task_key, :run_at ], unique: true, if_not_exists: true
     end
 
     create_table :solid_queue_recurring_tasks, if_not_exists: true do |t|
@@ -114,7 +114,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[8.1]
       t.string :name, null: false
 
       t.index :last_heartbeat_at, if_not_exists: true
-      t.index [:name, :supervisor_id], unique: true, if_not_exists: true
+      t.index [ :name, :supervisor_id ], unique: true, if_not_exists: true
       t.index :supervisor_id, if_not_exists: true
     end
 
@@ -125,7 +125,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[8.1]
       t.timestamps
 
       t.index :expires_at, if_not_exists: true
-      t.index [:key, :value], if_not_exists: true
+      t.index [ :key, :value ], if_not_exists: true
       t.index :key, unique: true, if_not_exists: true
     end
 

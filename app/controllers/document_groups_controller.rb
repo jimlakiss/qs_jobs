@@ -154,6 +154,6 @@ class DocumentGroupsController < ApplicationController
         viewerStateUrl: viewer_state_project_document_path(@project, attachment),
         uploadExportUrl: upload_export_project_document_path(@project, attachment)
       }
-    end.sort_by { |item| [item[:group].downcase, item[:name].downcase] }
+    end.sort_by { |item| [ item[:group].downcase, item[:name].downcase ] }
   end
 end

@@ -55,6 +55,6 @@ class ProjectIssue < ApplicationRecord
     revision_label = revision.to_s.strip.presence&.then { |value| "Revision #{value}" }
     version_label = version.to_s.strip.presence&.then { |value| "Version #{value}" }
 
-    [revision_label, version_label].compact.join(" ").presence
+    [ revision_label, version_label ].compact.join(" ").presence
   end
 end

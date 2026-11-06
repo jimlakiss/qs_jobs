@@ -5,6 +5,19 @@ class ContributorsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:one)
   end
 
+  test "contributor website links only use http or https" do
+    contributor = contributors(:citywide)
+    [ "javascript:alert(1)", "data:text/html,test", "//example.com", "not a url" ].each do |url|
+      contributor.update!(url: url)
+      get contributor_path(contributor)
+      assert_response :success
+      assert_select "a[href=?]", url, count: 0
+    end
+    contributor.update!(url: "https://example.com")
+    get contributor_path(contributor)
+    assert_select "a[href='https://example.com']", text: "https://example.com"
+  end
+
   test "admin can create contributor with contributor type" do
     assert_difference("Contributor.count", 1) do
       post contributors_path, params: {
@@ -13,14 +26,14 @@ class ContributorsControllerTest < ActionDispatch::IntegrationTest
           key_contact: "Nadia",
           email: "nadia@example.com",
           phone_number: "02 9000 0000",
-          contributor_type_ids: [contributor_types(:two).id]
+          contributor_type_ids: [ contributor_types(:two).id ]
         }
       }
     end
 
     contributor = Contributor.find_by!(company_name: "Northside Engineers Pty Ltd")
     assert_redirected_to contributor_path(contributor)
-    assert_equal ["Structural Engineer"], contributor.contributor_type_names
+    assert_equal [ "Structural Engineer" ], contributor.contributor_type_names
   end
 
   test "new contributor form shows validation errors" do
@@ -45,7 +58,7 @@ class ContributorsControllerTest < ActionDispatch::IntegrationTest
     get contributor_path(contributor)
 
     assert_response :success
-    assert_equal ["2627-010", "2627-009", "2627-007"], rendered_associated_project_codes
+    assert_equal [ "2627-010", "2627-009", "2627-007" ], rendered_associated_project_codes
   end
 
   private

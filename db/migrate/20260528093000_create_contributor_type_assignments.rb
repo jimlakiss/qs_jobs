@@ -16,7 +16,7 @@ class CreateContributorTypeAssignments < ActiveRecord::Migration[8.1]
     end
 
     add_index :contributor_type_assignments,
-              [:contributor_id, :contributor_type_id],
+              [ :contributor_id, :contributor_type_id ],
               unique: true,
               name: "index_contributor_type_assignments_uniqueness"
 

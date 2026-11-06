@@ -12,7 +12,7 @@ class DocumentGroup < ApplicationRecord
   validates :category, inclusion: { in: CATEGORIES }
   validates :name,
     uniqueness: {
-      scope: [:groupable_type, :groupable_id, :category],
+      scope: [ :groupable_type, :groupable_id, :category ],
       case_sensitive: false
     }
 

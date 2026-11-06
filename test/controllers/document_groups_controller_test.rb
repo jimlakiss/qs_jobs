@@ -66,7 +66,7 @@ class DocumentGroupsControllerTest < ActionDispatch::IntegrationTest
         version: 1,
         measurementsByPage: {
           "1" => [
-            { type: "count", points: [{ x: 0.2, y: 0.4 }] }
+            { type: "count", points: [ { x: 0.2, y: 0.4 } ] }
           ]
         }
       },
