@@ -16,8 +16,19 @@ class LabourRatesTest < ApplicationSystemTestCase
     # Native browser text insertion still exercises input validation and submission.
     page.driver.browser.execute_cdp("Input.insertText", text: "75")
     assert_field "Bricklayer — Mid ($/hour)", with: "75"
+    invalid_fields = page.evaluate_script(<<~JS)
+      Array.from(document.querySelectorAll('input')).filter(input => !input.validity.valid)
+        .map(input => ({name: input.name, value: input.value, message: input.validationMessage}))
+    JS
+    assert_empty invalid_fields
+    page.execute_script(<<~JS)
+      window.rateFormEvents = [];
+      for (const type of ['click', 'submit', 'invalid']) {
+        document.addEventListener(type, event => window.rateFormEvents.push({type, target: event.target.outerHTML.slice(0, 250)}), true);
+      }
+    JS
     click_button "Save hourly rates", match: :first
-    assert_text "Your hourly rate schedule has been saved."
+    assert page.has_text?("Your hourly rate schedule has been saved."), page.evaluate_script("window.rateFormEvents").inspect
 
     visit labour_rates_path
     assert_field "Bricklayer — Mid ($/hour)", with: "75.0"
